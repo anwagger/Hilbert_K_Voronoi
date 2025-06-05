@@ -1,11 +1,11 @@
-class voronoi_cell {
+class VoronoiCell {
     constructor(bisectors, bound){
         this.bisectors = bisectors
         this.bound = bound
     }
 }
 
-class voronoi_diagram {
+class VoronoiDiagram {
     constructor(cells,degree,partition_tree){
         this.cells = cells
         this.degree = degree
@@ -13,4 +13,4 @@ class voronoi_diagram {
     }
 }
 
-export {voronoi_cell, voronoi_diagram}
+export {VoronoiCell, VoronoiDiagram}

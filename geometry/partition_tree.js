@@ -4,7 +4,7 @@ const Partition_Node_Type = {
     CELL: 2,
 };
 
-class partition_tree {
+class PartitionTree {
     constructor(type, data){
         switch (type) {
             case Partition_Node_Type.X:
@@ -25,4 +25,4 @@ class partition_tree {
     }
 }
 
-export {Partition_Node_Type, partition_tree}
+export {Partition_Node_Type, PartitionTree}

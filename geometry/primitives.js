@@ -1,22 +1,22 @@
-class point {
+class Point {
     constructor(x,y){
         this.x = x;
         this.y = y;
     };
 }
-class segment {
+class Segment {
     constructor(start,end){
         this.start = start;
         this.end = end;
     };
 }
-class polygon {
+class Polygon {
     constructor(points) {
         this.points = points;
     }
 } 
 
-class bound {
+class Bound {
     constructor(top,bottom,left,right){
         this.top = top;
         this.bottom = bottom;
@@ -25,7 +25,7 @@ class bound {
     }
 }
 
-class spoke {
+class Spoke {
     constructor(segment,front,back){
         this.segment = segment
         this.front = front // point
@@ -34,7 +34,7 @@ class spoke {
 }
 
 
-class sector {
+class Sector {
     constructor(polygon, p1,p2,p1_exit,p1_end,p2_exit,p2_end){
         this.polygon = polygon
         this.p1 = p1
@@ -46,4 +46,4 @@ class sector {
     }
 }
 
-export {point, segment, polygon, bound, spoke, sector}
+export {Point, Segment, Polygon, Bound, Spoke, Sector}

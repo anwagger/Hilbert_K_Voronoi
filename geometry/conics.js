@@ -1,4 +1,4 @@
-class conic {
+class Conic {
     constructor(equation){
         const {A,B,C,D,E,F} = equation
         this.A = A
@@ -12,7 +12,7 @@ class conic {
 
 
 // still figuring this out
-class parameterized_conic {
+class ParameterizedConic {
     constructor(type,angle,conic){
 
     }
@@ -25,7 +25,7 @@ const Conic_Type = {
     HYPERBOLA: 3,
 }
 
-function get_conic_type(conic){
+function getConicType(conic){
     const c = conic
     const d = c.B*c.B - 4*c.A*c.C
     if (d === 0){
@@ -53,17 +53,12 @@ more complex, but...
 
 */
 
-function line_equation(segment){
-    const p1 = segment.start
-    const p2 = segment.end
-    return p2.y - p1.y , p1.x - p2.x, p2.x * p1.y - p1.x * p2.y
-}
 
-function bisector_conic_from_sector(boundary,sector){
-    const [a1,a2,a3] = line_equation(sector.p1_enter)
-    const [b1,b2,b3] = line_equation(sector.p1_exit)
-    const [c1,c2,c3] = line_equation(sector.p2_enter)
-    const [d1,d2,d3] = line_equation(sector.p2_exit)
+function bisectorConicFromSector(boundary,sector){
+    const [a1,a2,a3] = lineEquation(sector.p1_enter)
+    const [b1,b2,b3] = lineEquation(sector.p1_exit)
+    const [c1,c2,c3] = lineEquation(sector.p2_enter)
+    const [d1,d2,d3] = lineEquation(sector.p2_exit)
 
     const p1 = sector.p1
     const p2 = sector.p2
@@ -73,7 +68,7 @@ function bisector_conic_from_sector(boundary,sector){
     /
     ((d1*p2.x+d2*p2.y+d3)*(a1*p1.x+a2*p1.y+a3))
 
-    let conic = conic(0,0,0,0,0,0);
+    let conic = new Conic(0,0,0,0,0,0);
 
     conic.A = b1*c1 - a1*d1 * k
     conic.B = b2*c1 + b1*c2 - a1*d2*k - a2*d1*k
@@ -85,9 +80,9 @@ function bisector_conic_from_sector(boundary,sector){
     return conic
 }
 
-function unrotate_conic(c){
+function unrotateConic(c){
     
-    let conic_p = conic(0,0,0,0,0,0);
+    let conic_p = new Conic(0,0,0,0,0,0);
 
     const theta = 0.5 * Math.atan2(c.B,c.A-c.C)
 
@@ -104,7 +99,7 @@ function unrotate_conic(c){
     return conic_p,theta
 }
 
-class conic_segment {
+class ConicSegment {
     constructor(conic,start,end,bound){
         this.conic = conic
         this.start = start
@@ -113,4 +108,4 @@ class conic_segment {
     }
 }
 
-export {conic, conic_segment}
+export {Conic, ConicSegment}

@@ -1,10 +1,10 @@
-class bisector {
+class Bisector {
     constructor(conic_segments){
         this.conic_segments = conic_segments
     }
 }
 
-class bisector_segment {
+class BisectorSegment {
     constructor(bisector,start,end,bound){
         this.bisector = bisector
         this.start = start
@@ -13,4 +13,4 @@ class bisector_segment {
     }
 }
 
-export {bisector, bisector_segment}
+export {Bisector, BisectorSegment}
