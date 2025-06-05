@@ -48,23 +48,26 @@ function pointSegDistance(point, segment) {
   return Math.hypot(px - qx, py - qy);                    
 }
 
+function intersect(s1, s2) {
+  const {a1, b1, c1} = lineEquation(s1)
+  const {a2, b2, c2} = lineEquation(s2)
+  const denominator = (a1 * b2) - (a2 * b1)
+
+  if (Math.abs(denominator) < 1e-10) {
+    return null; 
+  }
+
+  x = ((b1 * c2) - (b2 * c1)) / denominator
+  y = ((c1 * a2) - (c2 * a1)) / denominator
+  return {x, y}
+}
 
 // copied from nithins code, might need to be changed
 function intersectSegments(s1, s2, mode = 'line') {
-  let intersection = math.intersect(
-    [s1.start.x, s1.start.y], [s1.end.x, s1.end.y], 
-    [s2.start.x, s2.start.y], [s2.end.x, s2.end.y]
-  );
-
-  if (intersection == null) {
-    [s1, s2] = [s2, s1];
-    intersection = math.intersect(
-      [s1.start.x, s1.start.y], [s1.end.x, s1.end.y], 
-      [s2.start.x, s2.start.y], [s2.end.x, s2.end.y]);
-  }
+  let intersection = intersect(s1, s2)
 
   if (intersection) {
-    const [x, y] = intersection;
+    const {x, y} = intersection;
     const point = new Point(x, y);
 
     if (mode === 'segment') {
