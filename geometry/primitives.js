@@ -46,4 +46,9 @@ class Sector {
     }
 }
 
-export {Point, Segment, Polygon, Bound, Spoke, Sector}
+export {Point, 
+        Segment, 
+        Polygon, 
+        Bound, 
+        Spoke, 
+        Sector}

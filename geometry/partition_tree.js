@@ -25,4 +25,5 @@ class PartitionTree {
     }
 }
 
-export {Partition_Node_Type, PartitionTree}
+export {Partition_Node_Type, 
+        PartitionTree}

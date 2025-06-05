@@ -130,12 +130,12 @@ function pointInPolygon(point, polygon) {
 }
 
 export {euclideanDistance, 
-    halfCrossRatio, 
-    weakFunk, 
-    crossRatio, 
-    hilbertMetric, 
-    lineEquation, 
-    pointSegDistance, 
-    intersectSegments,
-    intersectsPolygon,
-    pointInPolygon}
+        halfCrossRatio, 
+        weakFunk, 
+        crossRatio, 
+        hilbertMetric, 
+        lineEquation, 
+        pointSegDistance, 
+        intersectSegments,
+        intersectsPolygon,
+        pointInPolygon}

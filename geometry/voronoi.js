@@ -13,4 +13,5 @@ class VoronoiDiagram {
     }
 }
 
-export {VoronoiCell, VoronoiDiagram}
+export {VoronoiCell, 
+        VoronoiDiagram}

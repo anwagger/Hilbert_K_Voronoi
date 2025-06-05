@@ -54,4 +54,6 @@ class HilbertSpace {
     }
 }
 
-export {HilbertPoint, HilbertPair, HilbertSpace}
+export {HilbertPoint, 
+        HilbertPair, 
+        HilbertSpace}
