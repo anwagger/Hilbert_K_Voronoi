@@ -12,3 +12,5 @@ class voronoi_diagram {
         this.partition_tree = partition_tree
     }
 }
+
+export {voronoi_cell, voronoi_diagram}

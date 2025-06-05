@@ -12,3 +12,5 @@ class bisector_segment {
         this.bound = bound
     }
 }
+
+export {bisector, bisector_segment}

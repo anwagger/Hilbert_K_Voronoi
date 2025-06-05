@@ -28,20 +28,22 @@ class bound {
 class spoke {
     constructor(segment,front,back){
         this.segment = segment
-        this.front = front
-        this.back = back
+        this.front = front // point
+        this.back = back // segment from index - index+1
     }
 }
 
 
 class sector {
-    constructor(polygon, p1,p2,p1_enter,p1_end,p2_enter,p2_end){
+    constructor(polygon, p1,p2,p1_exit,p1_end,p2_exit,p2_end){
         this.polygon = polygon
         this.p1 = p1
         this.p2 = p2
-        this.p1_enter = p1_enter
+        this.p1_exit = p1_exit
         this.p1_end = p1_end
-        this.p2_enter = p2_enter
+        this.p2_exit = p2_exit
         this.p2_end = p2_end
     }
 }
+
+export {point, segment, polygon, bound, spoke, sector}

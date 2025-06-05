@@ -24,3 +24,5 @@ class partition_tree {
         }
     }
 }
+
+export {Partition_Node_Type, partition_tree}
