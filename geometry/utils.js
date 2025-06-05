@@ -68,10 +68,10 @@ function intersectSegments(s1, s2, mode = 'line') {
     const point = new Point(x, y);
 
     if (mode === 'segment') {
-      const isBetween = (a, b, c) => a <= c && c <= b || b <= c && c <= a;
+      const is_between = (a, b, c) => a <= c && c <= b || b <= c && c <= a;
 
-      const is_on_seg1 = isBetween(s1.start.x, s1.end.x, point.x) && isBetween(s1.start.y, s1.end.y, point.y);
-      const is_on_seg2 = isBetween(s2.start.x, s2.end.x, point.x) && isBetween(s2.start.y, s2.end.y, point.y);
+      const is_on_seg1 = is_between(s1.start.x, s1.end.x, point.x) && is_between(s1.start.y, s1.end.y, point.y);
+      const is_on_seg2 = is_between(s2.start.x, s2.end.x, point.x) && is_between(s2.start.y, s2.end.y, point.y);
 
       if (is_on_seg1 && is_on_seg2) {
         return point;
@@ -97,7 +97,7 @@ function intersectsPolygon(segment, polygon) {
         const p2 = points[(i + 1) % n]; 
         const poly_seg = new Segment(p1, p2);
 
-        if (intersectSegments(segment, polySeg)) {
+        if (intersectSegments(segment, poly_seg)) {
             return true;
         }
     }
