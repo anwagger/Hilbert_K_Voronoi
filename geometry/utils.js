@@ -48,7 +48,7 @@ function pointSegDistance(point, segment) {
   return Math.hypot(px - qx, py - qy);                    
 }
 
-function intersect(s1, s2) {
+function intersectSegmentsAsLines(s1, s2) {
   const {a1, b1, c1} = lineEquation(s1)
   const {a2, b2, c2} = lineEquation(s2)
   const denominator = (a1 * b2) - (a2 * b1)
@@ -59,31 +59,24 @@ function intersect(s1, s2) {
 
   x = ((b1 * c2) - (b2 * c1)) / denominator
   y = ((c1 * a2) - (c2 * a1)) / denominator
-  return {x, y}
+  return new Point(x, y)
+}
+
+function isBetween(a, b, c){
+  return a <= c && c <= b || b <= c && c <= a;
 }
 
 // copied from nithins code, might need to be changed
-function intersectSegments(s1, s2, mode = 'line') {
-  let intersection = intersect(s1, s2)
+function intersectSegments(s1, s2) {
+  let point = intersectSegmentsAsLines(s1, s2)
 
-  if (intersection) {
-    const {x, y} = intersection;
-    const point = new Point(x, y);
+  if (point) {
+    const is_on_seg1 = isBetween(s1.start.x, s1.end.x, point.x) && isBetween(s1.start.y, s1.end.y, point.y);
+    const is_on_seg2 = isBetween(s2.start.x, s2.end.x, point.x) && isBetween(s2.start.y, s2.end.y, point.y);
 
-    if (mode === 'segment') {
-      const is_between = (a, b, c) => a <= c && c <= b || b <= c && c <= a;
-
-      const is_on_seg1 = is_between(s1.start.x, s1.end.x, point.x) && is_between(s1.start.y, s1.end.y, point.y);
-      const is_on_seg2 = is_between(s2.start.x, s2.end.x, point.x) && is_between(s2.start.y, s2.end.y, point.y);
-
-      if (is_on_seg1 && is_on_seg2) {
-        return point;
-      } else {
-        return null;
-      }
-    } else {
+    if (is_on_seg1 && is_on_seg2) {
       return point;
-    }
+    }    
   }
   return null;
 }
@@ -91,7 +84,7 @@ function intersectSegments(s1, s2, mode = 'line') {
 
 // polygon is made up of a list of points, can use that list of points to define segments 
 // and see if the segment param intersects with any
-function intersectsPolygon(segment, polygon) {
+function segmentIntersectsPolygon(segment, polygon) {
     const points = polygon.points;
     const n = points.length;
 
@@ -139,6 +132,8 @@ export {euclideanDistance,
         hilbertMetric, 
         lineEquation, 
         pointSegDistance, 
+        intersectSegmentsAsLines,
         intersectSegments,
-        intersectsPolygon,
-        pointInPolygon}
+        segmentIntersectsPolygon,
+        pointInPolygon,
+        isBetween}
