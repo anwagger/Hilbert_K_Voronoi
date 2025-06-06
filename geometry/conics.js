@@ -1,4 +1,4 @@
-import { Point } from "./primitives"
+import { Point, Segment } from "./primitives"
 import { isBetween } from "./utils"
 
 class Conic {
@@ -56,6 +56,17 @@ class Conic {
             }
         }
         return valid_intersections 
+    }
+
+    intersectPolygon(polygon){
+        let points = polygon.points
+        let segment_intersections = []
+        for (let i = 0; i < points.length; i++){
+            let i2 = (i+1) % points.length
+            let intersections = this.intersectSegment(new Segment(points[i],points[i2]))
+            segment_intersections.push(intersections)
+        }
+        return segment_intersections
     }
 }
 
@@ -549,6 +560,37 @@ function bisectorConicFromSector(boundary,sector){
     conic.F = b3*c3 - a3*d3*k;
 
     return conic
+}
+
+function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
+    let intersections = parameterized_conic.conic.intersectPolygon(polygon)
+
+    let ts = []
+    for (let segment_num = 0; segment_num < intersections; segment_num++){
+        for (let point in intersections[segment_num]) {
+            // keep track of t and which segment it collided with
+            ts.push([parameterized_conic.getTOfPoint(point),segment_num])
+        }
+    }
+    let start = [Infinity,-1]
+    let end = [-Infinity,-1]
+    for (let t in ts){
+        if (t[0] < start[0]){
+            start = t
+        }
+        if(t[0] > end[0]){
+            end = t
+        }
+        
+    }
+    // return boundign t's and their associated segments
+    return start[0],start[1],end[0],end[1]
+}
+
+function conicSegmentFromSector(boundary,sector){  
+    let conic = bisectorConicFromSector(boundary,sector)
+    let p_conic = parameterizeConic(conic)
+
 }
 
 function unrotateConic(c){
