@@ -1,4 +1,5 @@
 import { Point } from "./primitives"
+import { isBetween } from "./utils"
 
 class Conic {
     constructor(equation){
@@ -14,176 +15,62 @@ class Conic {
     getEquation(){
         return this.A,this.B,this.C,this.D,this.E,this.F,this.G
     }
+
+    intersectLine(segment){
+        // nithin's code
+        let x1 = segment.start.x;
+        let y1 = segment.start.y;
+        let x2 = segment.end.x;
+        let y2 = segment.end.y;
+        let x_diff = x2 - x1;
+        let y_diff = y2 - y1;
+
+        // Coefficients of the quadratic equation
+        let a = A * x_diff * x_diff + B * x_diff * y_diff + C * y_diff * y_diff;
+        let b = x_diff * (2 * A * x1 + B * y1 + D) + y_diff * (B * x1 + 2 * C * y1 + E);
+        let c = A * x1 * x1 + B * x1 * y1 + C * y1 * y1 + D * x1 + E * y1 + F;
+
+        // Solve the quadratic equation
+        let solutions = solveQuadratic(a, b, c);
+
+        let intersections = []
+
+        // Check if solutions are within the segment
+        for (let t of solutions) {
+            let x = x1 + t * x_diff;
+            let y = y1 + t * y_diff;
+            intersections.push(new Point(x, y));
+        }
+        return intersections
+    }
+
+    intersectSegment(segment){
+        let intersections = this.intersectLine(segment)
+        let valid_intersections = []
+        for (let p of intersections){
+            if (isBetween(segment.start.x,segment.end.x,p.x) 
+                && 
+                isBetween(segment.start.y,segment.end.y,p.y)
+            ){
+                valid_intersections.push(p)
+            }
+        }
+        return valid_intersections 
+    }
 }
 
 
-// still figuring this out
-class ParameterizedConic {
-    constructor(type,orientation,angle,conic,straight_conic,parameterization){
-        this.type = type
-        this.orientation = orientation
-        this.angle = angle
-        this.conic = conic
-        this.straight_conic = straight_conic
-        this.x_mult = parameterization.x_mult
-        this.x_const = parameterization.x_const
-        this.y_mult = parameterization.y_mult
-        this.y_const = parameterization.y_const
-    }
 
-    // takes the culaculated parameterized conic and returns an x and y function for t
-    getVariableFunctions(center = false){
-        const sin = Math.sin(this.angle)
-        const cos = Math.cos(this.angle)
+function intersectConics(c1,c2){
+    let {A1,B1,C1,D1,E1,F1} = c1.getEquation()
+    let {A2,B2,C2,D2,E2,F2} = c2.getEquation()
 
-        let x_off = this.x_const
-        let y_off = this.y_const
-
-        if (center){
-            x_off = 0
-            y_off = 0
-        }
-
-        let x_func = (t) => Infinity
-        let y_func = (t) => Infinity
-        // get x and y for 
-        switch (this.type){
-            case Conic_Type.DEGENERATE:
-                x_func = (t) => this.x_mult*t + x_off
-                y_func = (t) => this.y_mult*t + y_off              
-            break;
-            case Conic_Type.PARABOLA:
-                switch (this.orientation){
-                    case Conic_Orientation.HORIZONTAL:
-                        x_func = (t) => this.x_mult*t*t + x_off
-                        y_func = (t) => this.y_mult*t + y_off
-                    break;
-                    case Conic_Orientation.VERTICAL:
-                        x_func = (t) => this.x_mult*t + x_off
-                        y_func = (t) => this.y_mult*t*t + y_off
-                    break;
-                }
-            break;
-            case Conic_Type.ELLIPSE:
-                x_func = (t) => this.x_mult*cos(t) + x_off
-                y_func = (t) => this.y_mult*sin(t) + y_off
-            break;
-            case Conic_Type.HYPERBOLA:
-                switch (this.orientation){
-                    case Conic_Orientation.HORIZONTAL:
-                        x_func = (t) => this.x_mult / Math.cos(t) + x_off
-                        y_func = (t) => this.y_mult * Math.tan(t) + y_off
-                    break;
-                    case Conic_Orientation.VERTICAL:
-                        x_func = (t) => this.x_mult * Math.tan(t) + x_off
-                        y_func = (t) => this.y_mult / Math.cos(t) + y_off
-                    break;
-                }
-            break;
-        }
-        
-        return {x_func, y_func}
-
-    }
-    // gets a function that gets the point of a given t on the conic
-    getPointFunction(){
-        let {x,y} = this.getVariableFunctions()
-        // unrotate the conic
-        let sin = Math.sin(this.angle)
-        let cos = Math.cos(this.angle)
-        return (t)=> {
-            let x_t = x(t)
-            let y_t = y(t)
-            new Point(cos*x_t - sin*y_t,cos*y_t + sin*x_t)
-        }  
-    }
-    // gets the function that gets the point of a given t on the straight conic
-    getUnrotatedFunction(){
-        let {x,y} = this.getVariableFunctions()
-        return (t)=> new Point(x(t),y(t)) 
-    }
-    // gets the function that given a point gives the t where the point collides
-    // NOT DONE????
-    getUnrotatedInverseFunction(){
-        const sin = Math.sin(this.angle)
-        const cos = Math.cos(this.angle)
-
-        let x_off = this.x_const
-        let y_off = this.y_const
-
-        if (center){
-            x_off = 0
-            y_off = 0
-        }
-
-        let t_func = (x,y) => Infinity
-        // get x and y for 
-        switch (this.type){
-            case Conic_Type.DEGENERATE:
-                t_func = (x,y) => (x - x_off)/this.x_mult
-                //t_func(x,y) => (y  - y_off)/this.y_mult           
-            break;
-            case Conic_Type.PARABOLA:
-                switch (this.orientation){
-                    case Conic_Orientation.HORIZONTAL:
-
-                        //x_func = (t) => this.x_mult*t*t + x_off
-                        t_func = (x,y) => Math.sqrt((x-x_off)/this.x_mult)
-                        //y_func = (t) => this.y_mult*t + y_off
-                        //t_func = (x,y) => (y - y_off)/this.y_mult
-                    break;
-                    case Conic_Orientation.VERTICAL:
-                        //x_func = (t) => this.x_mult*t + x_off
-                        //t_func = (x,y) => (x - x_off)/this.x_mult
-                        //y_func = (t) => this.y_mult*t*t + y_off
-                        t_func = (x,y) => Math.sqrt((y-y_off)/this.y_mult)
-                    break;
-                }
-            break;
-            case Conic_Type.ELLIPSE:
-                //x_func = (t) => this.x_mult*cos(t) + x_off
-                t_func = (x,y) => Math.acos((x - x_off)/this.x_mult)
-                //y_func = (t) => this.y_mult*sin(t) + y_off
-                t_func = (x,y) => Math.asin((y - y_off)/this.y_mult)
-            break;
-            case Conic_Type.HYPERBOLA:
-                switch (this.orientation){
-                    case Conic_Orientation.HORIZONTAL:
-                        //x_func = (t) => this.x_mult / Math.cos(t) + x_off
-                        t_func = (x,y) => Math.acos(this.x_mult/(x - x_off))
-                        //y_func = (t) => this.y_mult * Math.tan(t) + y_off
-                        //t_func = (x,y) => Math.atan((y-y_off)/this.y_mult)
-                    break;
-                    case Conic_Orientation.VERTICAL:
-                        //x_func = (t) => this.x_mult * Math.tan(t) + x_off
-                        //t_func = (x,y) => Math.atan((x-x_off)/this.x_mult)
-                        //y_func = (t) => this.y_mult / Math.cos(t) + y_off
-                        t_func = (x,y) => Math.acos(this.y_mult/(y - y_off))
-                    break;
-                }
-            break;
-        }
-        // unrotate the conic
-        return t_func
-    }
-
-    // checks if equation is satisfies
-    isOn(point){
-        let x = point.x
-        let y = point.y
-        let {A,B,C,D,E,F} = this.conic.getEquation()
-        return A *x*x + B *x*y + C *y*y + D *x  + E *y + F === 0
-    }
-
-    getTOfPoint(point){
-        // TODO
-        /*
-            parameterize the unrotated conic
-            rotate point to be in live with unrotated conic (reverse the angle: [cx + sy , cy - sx])
-            inverse should then be easy*
-        */
-    }
-
+    /*
+        ellipses and 
+        ratio = C1/C2
+     
+     */
+    
 }
 
 function parameterizeConic(conic){
@@ -267,6 +154,285 @@ function parameterizeConic(conic){
 
     return new ParameterizedConic(type,orientation,angle,conic,straight_conic,parameterization)
 }
+
+// still figuring this out
+class ParameterizedConic {
+    constructor(type,orientation,angle,conic,straight_conic,parameterization){
+        this.type = type
+        this.orientation = orientation
+        this.angle = angle
+        this.conic = conic
+        this.straight_conic = straight_conic
+        this.x_mult = parameterization.x_mult
+        this.x_const = parameterization.x_const
+        this.y_mult = parameterization.y_mult
+        this.y_const = parameterization.y_const
+
+        let {x_func,y_func,xi_func,yi_func,dx_func,dy_func} = this.getVariableFunctions()
+        this.x_func = x_func
+        this.y_func = y_func
+        this.xi_func = xi_func
+        this.yi_func = yi_func
+        this.dx_func = dx_func
+        this.dy_func = dy_func
+
+        this.getPointFromT = this.getPointFunction()
+    }
+
+    // takes the culaculated parameterized conic and returns an x and y function for t
+    getVariableFunctions(center = false){
+        const sin = Math.sin(this.angle)
+        const cos = Math.cos(this.angle)
+
+        let x_off = this.x_const
+        let y_off = this.y_const
+
+        if (center){
+            x_off = 0
+            y_off = 0
+        }
+
+        let x_func = (t) => Infinity
+        let y_func = (t) => Infinity
+
+        let xi_func = (x) => [Infinity]
+        let yi_func = (y) => [Infinity]
+
+        let dx_func = () => [Infinity]
+        let dy_func = () => [Infinity]
+        // get x and y for 
+        switch (this.type){
+            case Conic_Type.DEGENERATE:
+                x_func = (t) => this.x_mult*t + x_off
+                y_func = (t) => this.y_mult*t + y_off      
+                
+                xi_func = (x) => [(x - x_off)/this.x_mult]
+                yi_func = (y) => [(y  - y_off)/this.y_mult]   
+                
+                /*
+                solving derivatives
+                X:
+                    0 = cos*x_mult - sin*y_mult
+                Y:
+                    0 = cos*y_mult + sin*x_mult
+
+                    not super helpful
+                */
+                
+            break;
+            case Conic_Type.PARABOLA:
+                switch (this.orientation){
+                    case Conic_Orientation.HORIZONTAL:
+                        x_func = (t) => this.x_mult*t*t + x_off
+                        y_func = (t) => this.y_mult*t + y_off
+
+                        xi_func = (x) => {
+                            let t = Math.sqrt((x-x_off)/this.x_mult)
+                            return [t, -t]
+                        }
+                        yi_func = (y) => [(y - y_off)/this.y_mult]
+
+                        /*
+                        solving derivates
+                        X:
+                            0 = cos*2*x_mult*t - sin*y_mult
+                            t = sin*y_mult/(cos*2*x_mult)
+                        Y: 
+                            0  = cos*y_mult + sin*2*x_mult*t
+                            t = -cos*y_mult/(sin*2*x_mult)
+                        */
+
+                        dx_func = () => [sin*y_mult/(cos*2*x_mult)]
+                        dy_func = () => [-cos*y_mult/(sin*2*x_mult)]
+
+                    break;
+                    case Conic_Orientation.VERTICAL:
+                        x_func = (t) => this.x_mult*t + x_off
+                        y_func = (t) => this.y_mult*t*t + y_off
+
+                        xi_func = (x) => [(x - x_off)/this.x_mult]
+                        yi_func = (y) => {
+                            let t = Math.sqrt((y-y_off)/this.y_mult)
+                            return [t,-t]
+                        }
+
+                        /*
+                        solving derivates
+                        X:
+                            0 = cos*x_mult - sin*2*y_mult*t
+                            t = cos*x_mult/(sin*2*y_mult)
+                        Y: 
+                            0  = cos*2*y_mult*t + sin*x_mult
+                            t = -sin*x_mult/(cos*2*y_mult)
+                        */
+
+                        dx_func = () => [cos*x_mult/(sin*2*y_mult)]
+                        dy_func = () => [-sin*x_mult/(cos*2*y_mult)]
+
+                    break;
+                }
+            break;
+            case Conic_Type.ELLIPSE:
+                x_func = (t) => this.x_mult*cos(t) + x_off
+                y_func = (t) => this.y_mult*sin(t) + y_off
+
+                xi_func = (x) => {
+                    let t = Math.acos((x - x_off)/this.x_mult)
+                    return [t,-t]
+                }
+                yi_func = (y) => {
+                    let t = Math.asin((y - y_off)/this.y_mult)
+                    return [t, Math.PI - t]
+                }
+
+                /*
+                solving derivates
+                X:
+                    0 = cos*x_mult*(-sin(t)) - sin*y_mult*cos(t)
+                    tan(t) = -sin*y_mult/(cos*x_mult)
+                    t = atan(-sin*y_mult/(cos*x_mult))
+                Y: 
+                    0 = cos * this.y_mult*cos(t) + sin * this.x_mult * (-sin(t))
+                    tan(t) = cos*this.y_mult/(sin*this.x_mult)
+                    t = atan(cos*this.y_mult/(sin*this.x_mult))
+                */
+                dx_func = () => {
+                    let t = Math.atan(-sin*y_mult/(cos*x_mult))
+                    return [t, t + Math.PI]
+                }
+                dy_func = () => {
+                    let t = Math.atan(cos*this.y_mult/(sin*this.x_mult))
+                    return [t, t + Math.PI]
+                }
+            break;
+            case Conic_Type.HYPERBOLA:
+                switch (this.orientation){
+                    case Conic_Orientation.HORIZONTAL:
+                        x_func = (t) => this.x_mult / Math.cos(t) + x_off
+                        y_func = (t) => this.y_mult * Math.tan(t) + y_off
+
+                        xi_func = (x) => {
+                            let t = Math.acos(this.x_mult/(x - x_off))
+                            return [t,-t]
+                        }
+                        yi_func = (y) => {
+                            let t = Math.atan((y-y_off)/this.y_mult)
+                            return [t, t + Math.PI]
+                        }
+
+                        /*
+                        solving derivates
+                        X:
+                            0 = cos*this.x_mult*sec(t)*tan(t) - sin*this.y_mult*sec(t)*sec(t)
+                            csc(x) = cos*this.x_mult/(sin*this.y_mult)
+                            x = acsc(cos*this.x_mult/(sin*this.y_mult))
+                        Y: 
+                            0 = cos*this.y_mult*sec(t)*sec(t) + sin*this.x_mult*sec(t)*tan(t)
+                            csc(x) = -cos*this.y_mult/(sin*this.x_mult)
+                            x = acsc(-cos*this.y_mult/(sin*this.x_mult))
+                        */
+                        dx_func = () => {
+                            let t = Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
+                            [t,-t + Math.PI]
+                        }
+                        dy_func = () => {
+                            let t = Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
+                            [t,-t + Math.PI]
+                        }
+                    break;
+                    case Conic_Orientation.VERTICAL:
+                        x_func = (t) => this.x_mult * Math.tan(t) + x_off
+                        y_func = (t) => this.y_mult / Math.cos(t) + y_off
+
+                        xi_func = (x) => {
+                            let t = Math.atan((x-x_off)/this.x_mult)
+                            return [t, t + Math.PI] 
+                        }
+                        yi_func = (y) => {
+                            let t = Math.acos(this.y_mult/(y - y_off))
+                            return [t,-t]
+                        }
+                        /*
+                        solving derivates
+                        X:
+                            0 = cos*this.x_mult*sec(t)*sec(t) - sin*this.y_mult*sec(t)*tan(t)
+                            sin(t) = (cos*this.x_mult)/(sin*this.y_mult)
+                            t = asin(cos*this.x_mult)/(sin*this.y_mult)
+                        Y: 
+                            0 = cos*this.y_mult*sec(t)tan(t) + sin*this.x_mult*sec(t)*sec(t)
+                            sin(t) = -sin*this.x_mult/(cos*this.y_mult)
+                            t = asin(-sin*this.x_mult/(cos*this.y_mult))
+                        */
+                       dx_func = () => {
+                            let t = Math.asin((cos*this.x_mult)/(sin*this.y_mult))
+                            return [t,-t + Math.PI]
+                       }
+                       dy_func = () => {
+                            let t = Math.asin((-sin*this.x_mult)/(cos*this.y_mult))
+                            return [t,-t + Math.PI]
+                       }
+                    break;
+                }
+            break;
+        }
+        
+        return {x_func, y_func,xi_func,yi_func,dx_func,dy_func}
+
+    }
+    // gets a function that gets the point of a given t on the conic
+    getPointFunction(){
+        // unrotate the conic
+        let sin = Math.sin(this.angle)
+        let cos = Math.cos(this.angle)
+        return (t)=> {
+            let x_t = this.x_func(t)
+            let y_t = this.y_func(t)
+            new Point(cos*x_t - sin*y_t,cos*y_t + sin*x_t)
+        }  
+    }
+    // gets the function that gets the point of a given t on the straight conic
+    getUnrotatedFunction(){
+        let {x,y} = this.getVariableFunctions()
+        return (t)=> new Point(x(t),y(t)) 
+    }
+
+    // checks if equation is satisfies
+    isOn(point){
+        let x = point.x
+        let y = point.y
+        let {A,B,C,D,E,F} = this.conic.getEquation()
+        return A *x*x + B *x*y + C *y*y + D *x  + E *y + F === 0
+    }
+
+    getTOfPoint(point){
+        // TODO
+        /*
+            parameterize the unrotated conic
+            rotate point to be in live with unrotated conic
+            inverse should then be easy*
+        */
+       let sin = Math.sin(this.angle)
+       let cos = Math.cos(this.angle)
+       // reverse rotation?
+       let x = cos* point.x + sin * point.y
+       let y = cos*point.y - sin * point.x
+        if (this.isOn(point)){
+            let x_ts = this.xi_func(x,y)
+            let y_ts = this.yi_func(x,y)
+            for (let i = 0; i < x_ts.length; i++){
+                for (let j = 0; j < y_ts.length; j++){
+                    if (x_ts[i] === y_ts[j]){
+                        return x_ts[i]
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+}
+
+
 
 /*
 
@@ -405,12 +571,44 @@ function unrotateConic(c){
 }
 
 class ConicSegment {
-    constructor(conic,start,end,bound){
-        this.conic = conic
+    constructor(parameterized_conic,start,end,bound){
+        this.parameterized_conic = parameterized_conic
         this.start = start
         this.end = end
         this.bound = bound
     }
+}
+
+function calculateConicSegmentBounds(parameterized_conic,start,end){   
+    let start_p = parameterized_conic.getPointFromT(start)
+    let end_p = parameterized_conic.getPointFromT(end)
+    
+    let bound = new Bound(Math.max(start_p.y,end_p.y),Math.min(start_p.y,end_p.y),Math.min(start_p.x,end_p.x),Math.max(start_p.x,end_p.x))
+    
+    let d0_x = parameterized_conic.dx_func()
+    
+    for (let i = 0; i < d0_x.length; i++){
+        let t = d0_x[i]
+        if (isBetween(start,end,t)){
+            let p = parameterized_conic.getPointFromT(t)
+            bound.left = Math.min(p.x,bound.left)
+            bound.right = Math.max(p.x,bound.right)
+        }
+    }
+
+    let d0_y = parameterized_conic.dy_func()
+
+    for (let i = 0; i < d0_y.length; i++){
+        let t = d0_y[i]
+        if (isBetween(start,end,t)){
+            let p = parameterized_conic.getPointFromT(t)
+            bound.bottom = Math.min(p.y,bound.bottom)
+            bound.top = Math.max(p.y,bound.top)
+        }
+    }
+    
+    return bound
+
 }
 
 export {Conic, ConicSegment}
