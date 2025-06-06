@@ -141,6 +141,21 @@ function solveQuadratic(a, b, c) {
   }
 }
 
+function createSegmentsFromPoints(points) {
+        let n = points.length;
+        
+        if (n === 0) { return []; } 
+        else {
+            const segments = [];
+            for (let i = 0; i < n; i++) {
+                const start = vertices[i];
+                const end = vertices[(i + 1) % n];
+                segments.push(new Segment(start,end));
+            }
+            return segments;
+        }
+    }
+
 export {euclideanDistance, 
         halfCrossRatio, 
         weakFunk, 
@@ -153,4 +168,6 @@ export {euclideanDistance,
         segmentIntersectsPolygon,
         pointInPolygon,
         isBetween,
-        solveQuadratic}
+        solveQuadratic,
+        createSegmentsFromPoints}
+

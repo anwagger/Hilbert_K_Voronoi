@@ -1,3 +1,5 @@
+import { createSegmentsFromPoints } from "./utils";
+
 class Point {
     constructor(x,y){
         this.x = x;
@@ -11,22 +13,17 @@ class Segment {
     };
 }
 class Polygon {
-    constructor(points) {
+    constructor(points = []) {
         this.points = points;
+        this.segments = createSegmentsFromPoints(this.points);
     }
 
-    createSegmentsFromVertices() {
-        if (points.length == 0) { return []; } 
-        else {
-            const segments = [];
-            for (let i = 0; i < vertices.length; i++) {
-                const start = vertices[i];
-                const end = vertices[(i + 1) % vertices.length];
-                segments.push(new Segment(start,end));
-            }
-            return segments;
-        }
+    addVertex(p) {
+        this.points.push(p);
+        // this.points = convexHull(this.points);
+        if (this.points.length > 1) { this.segments = createSegmentsFromVertices(this.points); }
     }
+
 } 
 
 class Bound {
