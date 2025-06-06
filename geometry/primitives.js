@@ -14,6 +14,19 @@ class Polygon {
     constructor(points) {
         this.points = points;
     }
+
+    createSegmentsFromVertices() {
+        if (points.length == 0) { return []; } 
+        else {
+            const segments = [];
+            for (let i = 0; i < vertices.length; i++) {
+                const start = vertices[i];
+                const end = vertices[(i + 1) % vertices.length];
+                segments.push(new Segment(start,end));
+            }
+            return segments;
+        }
+    }
 } 
 
 class Bound {
