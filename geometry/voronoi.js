@@ -29,5 +29,6 @@ class VoronoiDiagram {
     }
 }
 
-export {VoronoiCell, 
+export {VoronoiCell,
+        calculateVoronoiCellBounds, 
         VoronoiDiagram}

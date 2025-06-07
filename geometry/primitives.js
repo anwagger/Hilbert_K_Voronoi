@@ -18,7 +18,7 @@ class Polygon {
         this.segments = createSegmentsFromPoints(this.points);
     }
 
-    addVertex(p) {
+    addPoint(p) {
         this.points.push(p);
         // this.points = convexHull(this.points);
         if (this.points.length > 1) { this.segments = createSegmentsFromVertices(this.points); }

@@ -12,7 +12,6 @@ export function initEvents(canvas) {
       canvas.setPolygonShowInfo(event);
    });
 
-
    document.getElementById('polygonShowCentroid').addEventListener('change', (event) => {
       canvas.setPolygonShowCentroid(event);
    });
