@@ -64,7 +64,6 @@ function calculateSpokeIntersections(h_p1,h_p2){
     return intersections
 }
 
-
 // dont need???????
 function calculateSectors(boundary,h_p1,h_p2){
 // get E1-4 params of first sector, 
@@ -78,10 +77,21 @@ function calculateBisector(boundary,h_p1,h_p2,sectors){
     // is equal to the number of spokes needed to cross to get between sectors
     // ei neighbors are a distance of 1
     // which edge changes is based on whose spoke is crossed
-    // 
-    // 
-    // for each sector
-    // check if 
+    /*
+    
+    get middle sector
+    
+    NEED TO ESTABLISH A DIRECTION!!!!
+
+    routine:
+        get conic of sector
+        get collisions with sector polygon, keep track of what it collided with
+        if boundary collision, end
+        otherwise a spoke collision:
+            if front of spoke, change pi_exit as the other segment connected to the spoke
+            if back of spoke, change pi_enter as the other segment connected to the spoke
+    */
+
 }
 
 class HilbertSpace {
