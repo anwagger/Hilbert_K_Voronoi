@@ -34,7 +34,6 @@ class Bound {
         this.right=right;
     }
 }
-
 class Spoke {
     constructor(segment,front,back){
         this.segment = segment

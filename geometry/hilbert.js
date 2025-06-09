@@ -228,7 +228,6 @@ function calculateSector(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_enter,p2_exit){
 
 }
 
-// for 
 function calculateBisector(boundary,h_p1,h_p2){
     // The hamming distance between two sector's edge paramterizations
     // is equal to the number of spokes needed to cross to get between sectors
@@ -388,9 +387,16 @@ function traverse_bisector(boundary,h_p1,h_p2,sector,start_point){
         // need to get other side too!
         let start_segments = traverse_bisector(boundary,h_p1,h_p2,start_sector,p_conic.getPointFromT(c_s.start))
         
+        
+        // start will be backwards?
+        // flip both order and parameter bounds
+        start_segments = start_segments.reverse()
+        for (let i = 0; i < start_segments.length; i++){
+            let temp = start_segments.start
+            start_segments.start = start_segments.end
+            start_segments.end = temp
+        }
         start_segments.push(c_s)
-        // end will be backwards?
-        end_segments = end_segments.reverse()
         return start_segments.concat(end_segments)
     }
         

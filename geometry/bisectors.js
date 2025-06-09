@@ -23,10 +23,14 @@ function calculateBisectorSegmentBounds(bisector,start,end){
         let conic_segment = conic_segments[i];
         
         if (i == Math.floor(start)) {
-            let start_point; // calculate end point in first conic segment
+            let range = conic_segment.end - conic_segment.start
+            let mid_t = conic_segment.start + range * (start % 1)
+            let start_point = conic_segment.parameterized_conic.getPointFromT(mid_t); 
             segment_bound = new Bound(start_point.y,start_point.y,start_point.x,start_point.x)
         }else if (i == Math.ceil(end) - 1){
-            let end_point; // calculate end point in first conic segment
+            let range = conic_segment.end - conic_segment.start
+            let mid_t = conic_segment.end - range * (1- (start % 1))
+            let end_point = conic_segment.parameterized_conic.getPointFromT(mid_t); 
             segment_bound = new Bound(end_point.y,end_point.y,end_point.x,end_point.x)
         }else{
             segment_bound = conic_segment.bound

@@ -71,6 +71,34 @@ class Conic {
 }
 
 
+function conicToMatrix(conic){
+    let {A,B,C,D,E,F} = conic.getEquation()
+    return [
+        [A,B/2,D/2]
+        [B/2,C,E/2]
+        [D/2,E/2,F]
+    ]
+}
+/*
+assume 
+
+A B D
+B C E
+D E F
+
+DET(f*C1 + g*C2) = 0
+
+(fA+gA) * det(fC+gC,fE+gE,fE+gE,fF+gF)
+-(fB+gB) * det(fB+gB,fE+gE,fD+gD,fF+gF)
++(fD+gD) * det(fB+gB,fC+gC,fD+gD,fE+gE) = 0
+
+A' * det(C',E',E',F') - B' * det(B',E',D',F') + D' * det(B',C',D',E') = 0
+A'*(C'E'-E'F') - B'(B'D'-E'F') + D'(B'D'-C'E') = 0
+ACE - AEF - BBD + BEF + DBD - BCE = 0
+(f1-g2)(f3-g4)(f5-g6)
+fff*135 +(fgg)*146 +(gfg)*236 + (ggf)*245 - (gff)*235 - (fgf)*145 - (ffg)*136 - (ggg)*246
+fff*135 + (fgg)*(146+236+245)  
+*/
 
 function intersectConics(c1,c2){
     let {A1,B1,C1,D1,E1,F1} = c1.getEquation()
@@ -82,6 +110,44 @@ function intersectConics(c1,c2){
      
      */
     
+}
+
+function approximateConicSegmentIntersection(c_s1,c_s2){
+
+    if (!intersectBounds(c_s1.bound,c_s2.bound)){
+        return false
+    }
+
+    let split = 2
+
+    let range1 = c_s1.end - c_s1.start
+    let range2 = c_s1.end - c_s1.start 
+
+    let sub_cs1 = []
+    let sub_cs2 = []
+
+    for (let i = 0; i < split; i++){
+        let start1 = c_s1.start + range1*i/split
+        let end1 = c_s1.start + range1*(i+1)/split
+        let bound1 = calculateConicSegmentBounds(c_s1.parameterized_conic,start1,end1)
+        sub_cs1.push(new ConicSegment(c_s1.parameterized_conic,start1,end1,bound1))
+        let start2 = c_s2.start + range2*i/split
+        let end2 = c_s2.start + range2*(i+1)/split
+        let bound2 = calculateConicSegmentBounds(c_s2.parameterized_conic,start2,end2)
+        sub_cs1.push(new ConicSegment(c_s2.parameterized_conic,start2,end2,bound2))
+    }
+
+    for (let i = 0; i < split; i++){
+        for (let j = 0; j < split; j++){
+            if (intersectBounds(sub_cs1[i].bound,sub_cs2[j].bound)){
+                let intersection = approximateConicSegmentIntersection(sub_cs1[i],sub_cs2[j])
+                if (intersection){
+
+                }
+            }
+        }
+
+    }
 }
 
 function parameterizeConic(conic){
