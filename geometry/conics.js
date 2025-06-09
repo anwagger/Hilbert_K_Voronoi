@@ -1,5 +1,5 @@
 import { Point, Segment } from "./primitives"
-import { isBetween } from "./utils"
+import { euclideanDistance, isBetween } from "./utils"
 
 class Conic {
     constructor(equation){
@@ -100,16 +100,8 @@ fff*135 +(fgg)*146 +(gfg)*236 + (ggf)*245 - (gff)*235 - (fgf)*145 - (ffg)*136 - 
 fff*135 + (fgg)*(146+236+245)  
 */
 
-function intersectConics(c1,c2){
-    let {A1,B1,C1,D1,E1,F1} = c1.getEquation()
-    let {A2,B2,C2,D2,E2,F2} = c2.getEquation()
-
-    /*
-        ellipses and 
-        ratio = C1/C2
-     
-     */
-    
+function intersectConicSegments(c_s1,c_s2){
+    return approximateConicSegmentIntersection(c_s1,c_s2);
 }
 
 function approximateConicSegmentIntersection(c_s1,c_s2){
@@ -118,10 +110,20 @@ function approximateConicSegmentIntersection(c_s1,c_s2){
         return false
     }
 
+
     let split = 2
 
     let range1 = c_s1.end - c_s1.start
     let range2 = c_s1.end - c_s1.start 
+
+    let mid_point1 = c_s1.parameterized_conic.getPointFromT(c_s1.start+range1/2)
+    let mid_point2 = c_s2.parameterized_conic.getPointFromT(c_s2.start+range2/2)
+
+    let sensitivity = 1e-5
+
+    if (euclideanDistance(mid_point1,mid_point2) <= sensitivity){
+        return mid_point1
+    }
 
     let sub_cs1 = []
     let sub_cs2 = []
@@ -142,12 +144,12 @@ function approximateConicSegmentIntersection(c_s1,c_s2){
             if (intersectBounds(sub_cs1[i].bound,sub_cs2[j].bound)){
                 let intersection = approximateConicSegmentIntersection(sub_cs1[i],sub_cs2[j])
                 if (intersection){
-
+                    return intersection
                 }
             }
         }
-
     }
+    return false
 }
 
 function parameterizeConic(conic){

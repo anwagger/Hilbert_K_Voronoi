@@ -362,13 +362,12 @@ function traverse_bisector(boundary,h_p1,h_p2,sector,start_point){
         if (euclideanDistance(start_point,start_p) > euclideanDistance(start_point,end_p)){
             start_num = 1
             end_num = 0
-        }
-        // if the end hits a wall, return 
-        
+        }        
     }
 
     let c_s = new ConicSegment(p_conic,start_num===0?start_t:end_t,start_num===0?end_t:start_t,bound)
     
+    // if the end hits a wall, return 
     if (sector_hit[end_num].hit_end){
             return [c_s]
     }
@@ -386,7 +385,6 @@ function traverse_bisector(boundary,h_p1,h_p2,sector,start_point){
         // first call
         // need to get other side too!
         let start_segments = traverse_bisector(boundary,h_p1,h_p2,start_sector,p_conic.getPointFromT(c_s.start))
-        
         
         // start will be backwards?
         // flip both order and parameter bounds
