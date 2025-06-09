@@ -1,10 +1,16 @@
-import * as bisector from "geometry/bisector.js"
-import * as conics from "geometry/conics.js"
-import * as hilbert from "geometry/hilbert.js"
-import * as partition_tree from "geomtry/partition_tree.js"
-import * as primitives from "geometry/primitives.js"
-import * as utils from "geometry/utils.js"
-import * as voronoi from "geometry/voronoi.js"
+import {DrawablePoint} from "./drawing/drawable.js"
+import {Canvas} from "./drawing/canvas/canvas.js"
+import {Point} from "./geometry/primitives.js"
 
-import * as drawable from "drawing/drawable.js"
-import * as canvas from "drawing/canvas/canvas.js"
+let canvasElement = document.getElementById('canvas');
+let canvas = new Canvas(canvasElement);
+let ctx = canvas.ctx
+
+
+let point = new Point(100,50);
+let drawable_point = new DrawablePoint(point);
+console.log("point1");
+drawable_point.draw();
+console.log("point2");
+
+

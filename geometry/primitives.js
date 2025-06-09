@@ -1,4 +1,4 @@
-import { createSegmentsFromPoints } from "./utils";
+import { createSegmentsFromPoints } from "./utils.js";
 
 class Point {
     constructor(x,y){

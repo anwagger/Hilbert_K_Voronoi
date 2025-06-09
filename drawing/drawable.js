@@ -1,6 +1,5 @@
-import { createRef, startTransition } from "react";
-import { Polygon } from "../geometry/primitives";
-import { createSegmentsFromPoints, intersectSegments, intersectSegmentsAsLines } from "../geometry/utils";
+import { Polygon } from "../geometry/primitives.js";
+import { createSegmentsFromPoints, intersectSegments, intersectSegmentsAsLines } from "../geometry/utils.js";
 
 class DrawablePolygon {
    constructor(polygon = new Polygon(), color = "blue", stroke_style = "black", show_vertices = true) {
@@ -48,7 +47,13 @@ class DrawableSegment {
   }
 }
 
-class DrawablePoint {
+class DrawableSpoke {
+  constructor(spoke) {
+    this.spoke = spoke;
+  }
+}
+
+export class DrawablePoint {
   constructor(point) {
     this.point = point;
     this.locked = locked;

@@ -1,5 +1,5 @@
 import * as drawable from "../drawable.js"
-class Canvas {
+export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
       this.ctx = this.canvas.getContext('2d');

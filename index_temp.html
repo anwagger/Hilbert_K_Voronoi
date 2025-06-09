@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.css" integrity="sha384-bYdxxUwYipFNohQlHt0bjN/LCpueqWz13HufFEV1SUatKs1cm4L6fFgCi1jT643X" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.js" integrity="sha384-Qsn9KnoKISj6dI8g7p1HBlNpVx0I8p1SvlwOldgi3IorMle61nQy4zEahWYtljaz" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Visualizing the Hilbert Geometry</title>
+</head>
+<body>
+
+<!---------------------------------- STAGE -------------------------------->
+
+<div id="sidebar">
+    <div style="padding: 5px;">
+      <div class="switch-container">
+
+        <label class="switch">
+            <input type="checkbox" id="modeSwitch">
+            <span class="slider">
+                <span class="toggle-text off">Insert Convex</span>
+                <span class="toggle-text on">Insert Funk</span>
+            </span>
+        </label>
+
+        <!-- <div style="padding-top: 2px; display:flex; flex-direction: row;">
+            <button id="downloadButton" class="icon-button"><i class="fa-solid fa-file-arrow-down"></i></button>
+            <button id="openRestoreModalButton" class="icon-button"><i class="fa-solid fa-clock-rotate-left"></i></button>
+        </div> -->
+      </div>
+    </div>
+    
+    <!-- Polygon Settings -->
+    <div class="polygon-setting-card" id="polygonContainer">
+      <div>
+        <label style="margin-bottom: 10px;">Polygon Boundary Color</label>
+        <input type="color" id="polygonColor" value="#000000">
+      </div>
+
+      <div style="display: none; align-items: center; margin-bottom: 10px;">
+        <div style="position: relative; margin-right: 10px;">
+          <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowInfo" class="checkbox-input">
+          <span class="checkbox-background"></span>
+        </div>
+        <label for="polygonShowInfo" class="checkbox-label">Show Info</label>
+      </div>
+
+      <div style="display: flex; align-items: center; margin-bottom: 10px; display: none;">
+        <div style="position: relative; margin-right: 10px;">
+          <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowDiag" class="checkbox-input">
+          <span class="checkbox-background"></span>
+        </div>
+        <label for="polygonShowDiag" class="checkbox-label">Show Diagonals</label>
+      </div>
+
+      <div style="display: flex; align-items: center; margin-bottom: 10px; display: none;">
+        <div style="position: relative; margin-right: 10px;">
+          <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowCentroid" class="checkbox-input">
+          <span class="checkbox-background"></span>
+        </div>
+        <label for="polygonShowCentroid" class="checkbox-label">Show Centroid</label>
+      </div>
+    
+      <div>
+
+        <!-- --------------------------------------------------------------- -->
+        <div class="gon-radio-container">
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="freeDraw" name="polygonType" value="freeDraw" checked>
+            <label class="checkbox-label" for="freeDraw">Free Draw</label>
+          </div>
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="3gon" name="polygonType" value="3">
+            <label class="checkbox-label" for="3gon">3-gon</label>
+          </div>
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="4gon" name="polygonType" value="4">
+            <label class="checkbox-label" for="4gon">4-gon</label>
+          </div>
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="5gon" name="polygonType" value="5">
+            <label class="checkbox-label" for="5gon">5-gon</label>
+          </div>
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="6gon" name="polygonType" value="6">
+            <label class="checkbox-label" for="6gon">6-gon</label>
+          </div>
+          <div style="align-items: center; margin-top: 5px; justify-content: space-between;">
+            
+            <div style="display: flex;">
+              <input class="gonRadioItem" type="radio" id="customNgon" name="polygonType" value="customNgon">
+              <label class="checkbox-label" for="customNgon">n-gon</label>
+            </div>
+          
+            <div style="display:flex; align-items: center; margin-top: 10px; margin-left: 25px;">
+              <input type="number" id="customNgonInput" style="margin-bottom: 10px; width: 60px; text-align: center; display: none; height: 30px;">
+              <button id="createCustomNgon" class="gon-icon-button" style="display: none; margin-bottom: 10px;">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+          <div style="display: flex; flex-direction: column;" >
+            <span style="font-size: 14px; font-weight: 700px; padding-bottom: 2px;" class="text-center">
+              Usage
+            </span>
+            
+            <div class="flex w-full bg-gray-200 h-[1px]"></div>
+
+            <div class="mb-2">
+              <span class="text-[12px] underline"> 
+                Insert Convex Mode
+              </span>
+              <span>
+                <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                  <li>Double click to add polygon vertices in free draw mode (3+ vertices required)</li>
+                </ul>
+              </span>
+            </div>
+
+            
+
+            <div class="mb-2">
+              <span class="text-[12px] underline"> 
+                Insert Funk Mode
+              </span>
+              <span>
+                <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                  <li>Double click to add a site or a funk ball to the polygon</li>
+                  <li>Click and drag to move a site or a funk ball</li>
+                  <li>Shift + click to select multiple sites or funk balls</li>
+                  <li>Press delete/backspace to remove selected sites or funk balls</li>
+                  <li>Select and right click sites or funk balls for menu options</li>
+                </ul>
+              </span>
+            </div>
+            <span class="text-[12px] underline"> 
+              Metric Space Visualization
+            </span>
+            <span>
+              <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                <li>Drag Mode: Click & drag the space inside the polygon</li>
+                <li>Sprite Mode: Use arrow keys to move around the polygon</li>
+              </ul>
+            </span>
+          </div>
+        </div>
+        <!-- --------------------------------------------------------------- -->
+
+        <div id="progressBarContainer">
+          <div id="progressBar"></div>
+        </div>
+
+        <div id="piGradientContainer" style="display: none; margin-top: 20px;">
+          <div style="font-weight: 500; font-size: 15px;">Pi Value Range</div>
+          <div style="display: flex; align-items: center; margin-top: 20px; height: 300px;">
+            <div id="piGradient" style="width: 30px; height: 100%; margin-right: 40px; border-radius: 3px;"></div>
+            <div id="piValues" style="height: 95%; position: relative;"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Polygon Settings -->
+    <div id="hilbertContainer">
+
+      <!-- Program selection -->
+      <label class="select-program">Select Program</label>
+      <div class="dropdown">
+        <div class="select">
+          <span style="font-size: 14px;" class="selected">Site</span>
+          <div class="caret"></div>
+        </div>
+        <ul class="menu">
+          <li class="active">Site</li>
+          <li>Metric Balls</li>
+          <li>Hilbert Distance</li>
+          <li>Bisector</li>
+          <li>Hilbert Metric Space</li>
+        </ul>
+      </div>
+
+      <div id="metricBallSelectionCard" class="card">
+        <h3>Select Metric Balls</h3>
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="hilbertBallCheckbox" checked>
+                Hilbert Ball
+            </label>
+            <label>
+                <input type="checkbox" id="ffunkBallCheckbox">
+                Forward Funk Ball
+            </label>
+            <label>
+                <input type="checkbox" id="rfunkBallCheckbox">
+                Reverse Funk Ball
+            </label>
+            <label>
+                <input type="checkbox" id="thompsonBallCheckbox">
+                Thompson Ball
+            </label>
+        </div>
+    </div>
+
+      <label id="general-settings" class="select-program" style="margin-bottom: 20px; margin-top: 25px; font-size: 16px;">Settings</label>
+
+      <div id="multiBallRadiusContainer" style="display: none;">
+        <div id="multiBallRadiusWrapper">
+            <label for="multiBallRadius">Multi Ball Radius</label>
+            <input type="number" id="multiBallRadiusInput" min="0.001" max="3" step="0.001" value="1">
+        </div>
+        <input type="range" id="multiBallRadius" min="0.001" max="3" step="0.001" value="1">
+      </div>
+      
+      <div class="collapsible" id="siteCollapsible">
+        <div class="collapsible-header">Site<span class="plus-minus-icon"></span></div>
+        <div class="content" style="display: none;">
+
+          <div class="flex justify-between items-center w-full mb-5">
+            <label for="siteColor" class="text-left">Site Color</label>
+            <input type="color" id="siteColor" value="#0000FF" class="flex-shrink-0" />
+          </div>
+
+          <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+            <label for="siteDrawSpokes" class="checkbox-label">Draw Spokes</label>
+            <div style="position: relative;">
+              <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawSpokes" class="checkbox-input">
+              <span class="checkbox-background"></span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+            <label for="siteShowInfo" class="checkbox-label">Show Info</label>
+            <div style="position: relative;">
+              <input style="width: 15px; height: 15px;" type="checkbox" id="siteShowInfo" class="checkbox-input">
+              <span class="checkbox-background"></span>
+            </div>
+          </div>
+
+          <!-- Label and Position -->
+          <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+            <label>Label</label>
+            <input class="labelInput" type="text" id="labelInput" placeholder="-">
+            <button id="saveLabelButton" style="display: none;">Save</button>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <label>Position</label>
+            <div id="sitePosition">N/A</div>
+          </div>
+
+        </div>
+      </div>
+      
+      <div class="collapsible" id="hilbertBallCollapsible">
+          <div class="collapsible-header">Hilbert Ball<span class="plus-minus-icon"></span></div>
+          <div class="content setting-card" style="display: none;">
+              <div style="margin-bottom: 20px;" id="colorContainer">
+                  <label for="color">Ball Boundary Color</label>
+                  <input type="color" id="ballColor" value="#0000FF">
+              </div>
+              <div style="margin-bottom: 0px;" id="radiusContainer">
+                  <label for="radius">Radius</label>
+                  <input style="margin-bottom: 20px;" type="range" id="radius" value="1" min="0.0001" max="3" step="0.01">
+                  <div style="flex-direction: row; justify-content: center;">
+                      <input class="radius-input-style" type="number" id="radiusInput" value="1" min="0.0001" max="3" step="0.01">
+                      <i id="resetRadius" style="margin-left: 10px;" class="fa-solid fa-rotate-left reset-icon"></i>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <div class="collapsible" id="ffunkBallCollapsible">
+        <div class="collapsible-header">Forward Funk Ball<span class="plus-minus-icon"></span></div>
+        <div class="content setting-card" style="display: none;">
+            <div style="margin-bottom: 20px;" id="ffunkColorContainer">
+                <label for="ffunkBallColor">Ball Boundary Color</label>
+                <input type="color" id="ffunkBallColor" value="#0000FF">
+            </div>
+            <div style="margin-bottom: 0px;" id="ffunkRadiusContainer">
+                <label for="ffunkRadius">Radius</label>
+                <input style="margin-bottom: 20px;" type="range" id="ffunkRadius" value="1" min="0.0001" max="3" step="0.01">
+                <div style="flex-direction: row; justify-content: center;">
+                    <input class="radius-input-style" type="number" id="ffunkRadiusInput" value="1" min="0.0001" max="3" step="0.01">
+                    <i id="ffunkResetRadius" style="margin-left: 10px;" class="fa-solid fa-rotate-left reset-icon"></i>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <div class="collapsible" id="rfunkBallCollapsible">
+          <div class="collapsible-header">Reverse Funk Ball<span class="plus-minus-icon"></span></div>
+          <div class="content setting-card" style="display: none;">
+              <div style="margin-bottom: 20px;" id="rfunkColorContainer">
+                  <label for="rfunkBallColor">Ball Boundary Color</label>
+                  <input type="color" id="rfunkBallColor" value="#0000FF">
+              </div>
+              <div style="margin-bottom: 0px;" id="rfunkRadiusContainer">
+                  <label for="rfunkRadius">Radius</label>
+                  <input style="margin-bottom: 20px;" type="range" id="rfunkRadius" value="1" min="0.0001" max="3" step="0.01">
+                  <div style="flex-direction: row; justify-content: center;">
+                      <input class="radius-input-style" type="number" id="rfunkRadiusInput" value="1" min="0.0001" max="3" step="0.01">
+                      <i id="rfunkResetRadius" style="margin-left: 10px;" class="fa-solid fa-rotate-left reset-icon"></i>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+      <div class="collapsible" id="thompsonBallCollapsible">
+          <div class="collapsible-header">Thompson Ball<span class="plus-minus-icon"></span></div>
+          <div class="content setting-card" style="display: none;">
+              <div style="margin-bottom: 20px;" id="thompsonColorContainer">
+                  <label for="thompsonBallColor">Ball Boundary Color</label>
+                  <input type="color" id="thompsonBallColor" value="#0000FF">
+              </div>
+              <div style="margin-bottom: 0px;" id="thompsonRadiusContainer">
+                  <label for="thompsonRadius">Radius</label>
+                  <input style="margin-bottom: 20px;" type="range" id="thompsonRadius" value="1" min="0.0001" max="3" step="0.01">
+                  <div style="flex-direction: row; justify-content: center;">
+                      <input class="radius-input-style" type="number" id="thompsonRadiusInput" value="1" min="0.0001" max="3" step="0.01">
+                      <i id="thompsonResetRadius" style="margin-left: 10px;" class="fa-solid fa-rotate-left reset-icon"></i>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      
+
+      <div style="display: none;" class="polygon-setting-card" id="savedDistancesContainer">
+        <label>Saved Distances</label>
+        <ul id="savedDistancesList"></ul>
+      </div>
+
+      <div style="display: none;" class="polygon-setting-card" id="savedBisectorsContainer">
+        <label>Saved Bisectors</label>
+        <ul id="savedBisectorsList"></ul>
+      </div>
+
+      <div style="display: flex; align-items: center; margin-bottom: 10px;">
+        <button id="calculateIntersectionButton" class="heatMapButton">Calculate Intersection</button>
+      </div>
+
+    </div>
+
+    <div style="padding: 10px; margin-top: auto;">
+      <button id="reset">Clear Canvas</button>
+    </div>
+</div>
+
+<div id="canvasContainer">
+    <canvas id="canvas" width="1500" height="950"></canvas>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Save State</h2>
+        <div class="json-container-download">
+            <div class="download-button-container">
+                <button id="downloadJsonFileButton" class="copy-button"><i class="fa-solid fa-download"></i></button>
+                <button id="copyButton" class="copy-button"><i class="fas fa-copy"></i></button>
+            </div>
+            <pre id="jsonContent" class="json-content">
+{
+    "example": "JSON content",
+    "data": {
+        "key1": "value1",
+        "key2": "value2"
+    }
+}
+            </pre>
+        </div>
+    </div>
+</div>
+
+<!-- File Name Input Modal -->
+<div id="fileNameModal" class="mini-modal">
+    <div class="file-name-modal-content">
+        <span id="fileNameCloseButton" class="file-close-button">&times;</span>
+        <h2>Enter File Name</h2>
+        <input type="text" id="fileNameInput" placeholder="Name">
+        <button id="confirmDownloadButton">Download</button>
+    </div>
+</div>
+
+<!-- Restore Modal -->
+<div id="restoreModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Restore State</h2>
+        <div class="json-container-restore">
+            <textarea id="restoreJsonInput" class="json-input" placeholder="Paste your JSON here..."></textarea>
+            <button id="uploadJsonButton" class="icon-button"><i class="fa-solid fa-upload"></i></button>
+            <input type="file" id="uploadJsonFileInput" style="display: none;">
+        </div>
+        <button id="restoreStateButton" class="restore-button">Restore</button>
+    </div>
+</div>
+
+<div id="distanceCard" class="distance-card" style="display: none;">
+  <span id="distanceText"></span>
+</div>
+
+<div id="perimeterCard" class="distance-card" style="display: none;">
+  <span id="perimeterText"></span>
+</div>
+
+<div id="infoBoxContainer" style="position: relative;"></div>
+
+<div id="contextMenu" class="context-menu">
+  <div class="context-menu-item" id="saveHilbertDistance" style="display:none;">Save Hilbert Distance</div>
+  <div class="context-menu-item" id="calculateHilbertDistance">Calculate Hilbert Distance</div>
+  <div class="context-menu-item" id="drawBisector">Draw Bisector</div>
+  <div class="context-menu-item" id="drawThompsonBisector">Draw Brute Force Thompson Bisector</div>
+</div>
+
+<!-- Snowy Switch -->
+<button id="spriteModeButton">Sprite Mode</button>
+<button id="toggleAsteroidsButton" style="display: none;">Turn On Asteroids</button>
+<button id="toggleBackgroundButton" style="display: none;">Turn Off Background</button>
+
+<!---------------------------------- STAGE -------------------------------->
+<script type="module" src="./candidate-code/scripts/scripts.js" defer></script>
+<script type="module" src="./candidate-code/space/sprite.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.0/math.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf/turf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nerdamer@latest/nerdamer.core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nerdamer@latest/Algebra.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nerdamer@latest/Calculus.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nerdamer@latest/Solve.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nerdamer@latest/Extra.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+      const isEdge = /Edge/.test(navigator.userAgent);
+      if (isEdge) {
+          document.body.classList.add('edge-browser');
+      }
+  });
+</script>
+</body>
+</html>
