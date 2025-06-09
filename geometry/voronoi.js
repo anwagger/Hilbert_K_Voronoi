@@ -1,11 +1,11 @@
-class VoronoiCell {
+export class VoronoiCell {
     constructor(bisector_segments, bound){
         this.bisector_segments = bisector_segments
         this.bound = bound
     }
 }
 
-function calculateVoronoiCellBounds(voronoi_cell){
+export function calculateVoronoiCellBounds(voronoi_cell){
     let bisectors = voronoi_cell.bisector_segments
     // find the extremes of each of the bounds of the conic_segments
     return bisectors.reduce(
@@ -21,14 +21,10 @@ function calculateVoronoiCellBounds(voronoi_cell){
 }
 
 
-class VoronoiDiagram {
+export class VoronoiDiagram {
     constructor(cells,degree,partition_tree){
         this.cells = cells
         this.degree = degree
         this.partition_tree = partition_tree
     }
 }
-
-export {VoronoiCell,
-        calculateVoronoiCellBounds, 
-        VoronoiDiagram}

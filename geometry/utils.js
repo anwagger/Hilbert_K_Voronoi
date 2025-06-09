@@ -1,26 +1,28 @@
-function euclideanDistance(point1,point2){
+import {Point, Segment} from "./primitives.js"
+
+export function euclideanDistance(point1,point2){
     let dx = point1.x - point2.x
     let dy = point1.y - point1.y
     return Math.sqrt(dx * dx + dy * dy)
 }
 
-function halfCrossRatio(point1,point2,edge_point){
+export function halfCrossRatio(point1,point2,edge_point){
     return euclideanDistance(point1,edge_point)/euclideanDistance(point2,edge_point)
 }
 
-function weakFunk(point1, point2, edge_point){
+export function weakFunk(point1, point2, edge_point){
     return Math.log(halfCrossRatio(point1,point2,edge_point))
 }
 
-function crossRatio(edge1, point1, point2, edge2){
+export function crossRatio(edge1, point1, point2, edge2){
     return halfCrossRatio(point1,point2,edge2) * halfCrossRatio(point2,point1,edge1)
 }  
 
-function hilbertMetric(edge1, point1, point2, edge2){
+export function hilbertMetric(edge1, point1, point2, edge2){
     return 0.5 * Math.log(crossRatio(edge1,point1,point2,edge2))
 }
 
-function lineEquation(segment){
+export function lineEquation(segment){
     const p1 = segment.start
     const p2 = segment.end
     const a = p2.y - p1.y
@@ -31,7 +33,7 @@ function lineEquation(segment){
 }
 
 
-function pointSegDistance(point, segment) {
+export function pointSegDistance(point, segment) {
   // projection parameter t of 'point' onto the line AB
   const {x: px, y: py} = point;
   const {start: {x: x1, y: y1}, end: {x: x2, y: y2}} = segment;
@@ -48,7 +50,7 @@ function pointSegDistance(point, segment) {
   return Math.hypot(px - qx, py - qy);                    
 }
 
-function intersectSegmentsAsLines(s1, s2) {
+export function intersectSegmentsAsLines(s1, s2) {
   const {a1, b1, c1} = lineEquation(s1)
   const {a2, b2, c2} = lineEquation(s2)
   const denominator = (a1 * b2) - (a2 * b1)
@@ -57,17 +59,17 @@ function intersectSegmentsAsLines(s1, s2) {
     return null; 
   }
 
-  x = ((b1 * c2) - (b2 * c1)) / denominator
-  y = ((c1 * a2) - (c2 * a1)) / denominator
+  const x = ((b1 * c2) - (b2 * c1)) / denominator
+  const y = ((c1 * a2) - (c2 * a1)) / denominator
   return new Point(x, y)
 }
 
-function isBetween(a, b, c){
+export function isBetween(a, b, c){
   return a <= c && c <= b || b <= c && c <= a;
 }
 
 // copied from nithins code, might need to be changed
-function intersectSegments(s1, s2) {
+export function intersectSegments(s1, s2) {
   let point = intersectSegmentsAsLines(s1, s2)
 
   if (point) {
@@ -84,7 +86,7 @@ function intersectSegments(s1, s2) {
 
 // polygon is made up of a list of points, can use that list of points to define segments 
 // and see if the segment param intersects with any
-function segmentIntersectsPolygon(segment, polygon) {
+export function segmentIntersectsPolygon(segment, polygon) {
     const points = polygon.points;
     const n = points.length;
 
@@ -103,7 +105,7 @@ function segmentIntersectsPolygon(segment, polygon) {
 
 
 // uses ray casting to determine if a point is in a polygon
-function pointInPolygon(point, polygon) {
+export function pointInPolygon(point, polygon) {
     const {x, y} = point;
     const points = polygon.points;
     const n = points.length;
@@ -125,7 +127,7 @@ function pointInPolygon(point, polygon) {
     return true;
 }
 
-function solveQuadratic(a, b, c) {
+export function solveQuadratic(a, b, c) {
   const discriminant = b * b - 4 * a * c;
   
   if (discriminant > 0) {
@@ -141,21 +143,21 @@ function solveQuadratic(a, b, c) {
   }
 }
 
-function createSegmentsFromPoints(points) {
+export function createSegmentsFromPoints(points) {
   let n = points.length;
   if (n === 0) { return []; } 
   else {
       const segments = [];
       for (let i = 0; i < n; i++) {
-        const start = vertices[i];
-        const end = vertices[(i + 1) % n];
+        const start = points[i];
+        const end = points[(i + 1) % n];
         segments.push(new Segment(start,end));
       }
       return segments;
   }
 }
 
-function convexHull(points) {
+export function convexHull(points) {
   if (points.length === 0) {
       console.warn('convexHull called with an empty array.');
       return [];
@@ -201,25 +203,6 @@ function convexHull(points) {
 }
 
 
-function intersectBounds(b1,b2){
+export function intersectBounds(b1,b2){
     return b1.top >= b2.bottom && b1.bottom <= b2.top && b1.left <= b2.right && b1.right >= b2.left
 }
-
-
-
-export {euclideanDistance, 
-        halfCrossRatio, 
-        weakFunk, 
-        crossRatio, 
-        hilbertMetric, 
-        lineEquation, 
-        pointSegDistance, 
-        intersectSegmentsAsLines,
-        intersectSegments,
-        segmentIntersectsPolygon,
-        pointInPolygon,
-        isBetween,
-        solveQuadratic,
-        createSegmentsFromPoints,
-        convexHull}
-

@@ -1,6 +1,6 @@
-import { ConicSegment } from "./conics"
-import { Polygon, Sector, Segment, segment } from "./primitives"
-import { convexHull, euclideanDistance, intersectSegments, pointInPolygon } from "./utils"
+import { ConicSegment } from "./conics.js"
+import { Polygon, Sector, Segment } from "./primitives.js"
+import { convexHull, euclideanDistance, intersectSegments, pointInPolygon } from "./utils.js"
 
 class HilbertPoint {
     constructor(point,spokes){
@@ -9,11 +9,12 @@ class HilbertPoint {
     }
 }
 
-function calculateSpokes(boundary,point){
+export function calculateSpokes(boundary,point){
     // line segments from boundary points to point, 
     // then check if a vertex-point line intersects a segment of the boundary validly
     const points = boundary.points
     let spokes = []
+    let n_points = points.length;
     // each segment of the boundary
     for (let i = 0; i < n_points; i++){
         let partial_spoke = new Segment(points[i],point)
@@ -41,14 +42,14 @@ function calculateSpokes(boundary,point){
     return spokes
 }
 
-class HilbertPair {
+export class HilbertPair {
     constructor(sectors,bisector){
         this.sectors = sectors;
         this.bisector = bisector;
     }
 }
 
-function calculateSpokeIntersections(h_p1,h_p2){
+export function calculateSpokeIntersections(h_p1,h_p2){
     let intersections = []
     for(let i = 0; i < h_p1.spokes.length; i++){
         intersections.push([])
@@ -75,7 +76,7 @@ function calculateSpokeIntersections(h_p1,h_p2){
     check if they're in the polygons of the parts not make out of the intersecting lines
     The collection of points in all the polygons is the sector 
     */
-function calculateSector(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_enter,p2_exit){
+export function calculateSector(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_enter,p2_exit){
 
     /* 
     algorithm:
@@ -228,7 +229,7 @@ function calculateSector(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_enter,p2_exit){
 
 }
 
-function calculateBisector(boundary,h_p1,h_p2){
+export function calculateBisector(boundary,h_p1,h_p2){
     // The hamming distance between two sector's edge paramterizations
     // is equal to the number of spokes needed to cross to get between sectors
     // ei neighbors are a distance of 1
@@ -282,7 +283,7 @@ function calculateBisector(boundary,h_p1,h_p2){
     return new Bisector(conic_segments)
 }
 
-function traverse_bisector(boundary,h_p1,h_p2,sector,start_point){
+export function traverse_bisector(boundary,h_p1,h_p2,sector,start_point){
 
     let conic = bisectorConicFromSector(boundary,sector)
 
@@ -402,14 +403,10 @@ function traverse_bisector(boundary,h_p1,h_p2,sector,start_point){
 }
 
 
-class HilbertSpace {
+export class HilbertSpace {
     constructor(boundary, hilbert_points,hilbert_pairs){
         this.boundary = boundary
         this.hilbert_points = hilbert_points
         this.hilbert_pairs = hilbert_pairs
     }
 }
-
-export {HilbertPoint, 
-        HilbertPair, 
-        HilbertSpace}

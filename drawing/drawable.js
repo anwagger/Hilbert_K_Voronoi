@@ -1,10 +1,21 @@
 import { Polygon } from "../geometry/primitives.js";
 import { createSegmentsFromPoints, intersectSegments, intersectSegmentsAsLines } from "../geometry/utils.js";
 
-class DrawablePolygon {
+export class DrawablePolygon {
    constructor(polygon = new Polygon(), color = "blue", stroke_style = "black", show_vertices = true) {
-      this.points = polygon.points.forEach((p) => new DrawablePoint(p));
-      this.segments = polygon.segments.forEach((s) => new DrawableSegment(s));
+      this.polygon = polygon;
+      this.points = [];
+      for (let i = 0; i < polygon.points.length; i++) {
+        this.points.push(new DrawablePoint(polygon.points[i]));
+      }
+
+      let segs = createSegmentsFromPoints(this.polygon.points);
+
+      this.segments = [];
+      for (let i = 0; i < segs.length; i++) {
+        this.segments.push(new DrawableSegment(segs[i]));
+      }
+      console.log(this.segments);
       this.color = color;
       this.stroke_style = stroke_style;
       this.show_vertices = show_vertices;
@@ -12,22 +23,21 @@ class DrawablePolygon {
 
    // from nithins
    draw(ctx) {
-      if (this.points.length > 0) {
+      if (this.polygon.points.length > 0) {
           this.segments.forEach((segment) => {
-            segment.setPenWidth(this.penWidth);
-            segment.setColor(this.color);
+            //segment.setPenWidth(this.penWidth);
+            //segment.setColor(this.color);
             segment.draw(ctx);
           });
 
           if (this.show_vertices) {
             this.points.forEach((point) => {
-              if (!(point instanceof Site)) point.setColor(this.color);
-              point.setRadius(this.radius);
+              // point.setRadius(this.radius);
               if (this.showInfo) { 
-                point.setShowInfo(true); 
+                //point.setShowInfo(true); 
               }
               else { 
-                point.setShowInfo(false); 
+                //point.setShowInfo(false); 
               }
               point.draw(ctx); 
             });
@@ -38,16 +48,26 @@ class DrawablePolygon {
 
 }
 
-class DrawableSegment {
-  constructor(segment, locked = false, color = "black", stroke_style = "black") {
+export class DrawableSegment {
+  constructor(segment) {
     this.segment = segment;
-    this.locked = locked;
-    this.color = color;
-    this.stroke_style = stroke_style;
+    this.locked = false;
+    this.color = "black";
+    this.width = 3;
+    this.stroke_style = "black";
+  }
+
+  draw(ctx) {
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = this.width;
+    ctx.beginPath();
+    ctx.moveTo(this.segment.start.x, this.segment.start.y);
+    ctx.lineTo(this.segment.end.x, this.segment.end.y);
+    ctx.stroke();
   }
 }
 
-class DrawableSpoke {
+export class DrawableSpoke {
   constructor(spoke) {
     this.spoke = spoke;
   }
@@ -56,9 +76,11 @@ class DrawableSpoke {
 export class DrawablePoint {
   constructor(point) {
     this.point = point;
-    this.locked = locked;
+    this.locked = false;
     this.color = "black";
     this.stroke_style = "black";
+    this.radius = 3;
+    this.drawPoint = true;
   }
 
   setDraw(draw) {
@@ -69,7 +91,7 @@ export class DrawablePoint {
       if (this.drawPoint) {
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+        ctx.arc(this.point.x, this.point.y, this.radius, 0, 2 * Math.PI);
         ctx.fill();
       }
   }
@@ -77,7 +99,7 @@ export class DrawablePoint {
   drawWithRing(ctx, ringColor = "red", ringRadius = 8) {
     // outer ring
     ctx.beginPath();
-    ctx.arc(this.x, this.y, ringRadius, 0, 2 * Math.PI);
+    ctx.arc(this.point.x, this.point.y, ringRadius, 0, 2 * Math.PI);
     ctx.strokeStyle = ringColor;
     ctx.lineWidth = 2;
     ctx.stroke();
@@ -88,7 +110,7 @@ export class DrawablePoint {
 
 }
 
-class DrawableBisector {
+export class DrawableBisector {
   constructor(bisector) {
     this.drawable_point = drawable_point;
     this.drawable_point.color = "blue";
@@ -97,7 +119,7 @@ class DrawableBisector {
 
 }
 
-class DrawableConicSegment {
+export class DrawableConicSegment {
   constructor(conic_segment) {
     this.conic_segment = conic_segment;
   }
@@ -125,7 +147,7 @@ class DrawableConicSegment {
   }
 }
 
-class Site {
+export class Site {
   constructor(drawable_point, radius = 3) {
     this.drawable_point = drawable_point;
     this.drawable_point.color = "blue";

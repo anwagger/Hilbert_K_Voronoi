@@ -1,10 +1,10 @@
-class Bisector {
+export class Bisector {
     constructor(conic_segments){
         this.conic_segments = conic_segments
     }
 }
 
-class BisectorSegment {
+export class BisectorSegment {
     constructor(bisector,start,end,bound){
         this.bisector = bisector
         this.start = start
@@ -13,7 +13,7 @@ class BisectorSegment {
     }
 }
 
-function calculateBisectorSegmentBounds(bisector,start,end){
+export function calculateBisectorSegmentBounds(bisector,start,end){
     let conic_segments = bisector.conic_segments
     // find the extremes of each of the bounds of the conic_segments
     
@@ -43,5 +43,3 @@ function calculateBisectorSegmentBounds(bisector,start,end){
     }
     return bound
 }
-
-export {Bisector, BisectorSegment}

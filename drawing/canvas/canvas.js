@@ -1,4 +1,5 @@
-import * as drawable from "../drawable.js"
+import { DrawablePolygon } from "../drawable.js"
+import { initEvents } from "./canvas-events.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -14,10 +15,10 @@ export class Canvas {
       this.canvas.style.height = `${rect.height}px`;
       this.dpr = dpr;
 
-      this.polygon = new drawable.DrawablePolygon();
+      this.polygon = new DrawablePolygon();
       this.mode = 'Convex';
       this.selectedProgram = 'Site';
-      initEvents(this);
+      //initEvents(this);
       this.activeManager = 'SiteManager';
       this.hilbertDistanceManager = null;
 
@@ -139,8 +140,9 @@ export class Canvas {
    drawAll() {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-      this.polygon.draw(this.ctx);
+      //this.polygon.draw(this.ctx);
 
+      /*
       this.sites.forEach(site => {
          site.computeSpokes();
          site.computeHilbertBall?.();
@@ -164,7 +166,7 @@ export class Canvas {
       }
     
       this.sites.forEach(site => {if (site.showInfo) drawInfoBox(site, this.canvas, this.dpr);});
-    
+    */
       renderAllKaTeX();     
    }
 }

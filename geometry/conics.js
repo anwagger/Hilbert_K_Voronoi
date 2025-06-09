@@ -1,7 +1,7 @@
-import { Point, Segment } from "./primitives"
-import { euclideanDistance, isBetween } from "./utils"
+import { Point, Segment } from "./primitives.js"
+import { euclideanDistance, isBetween } from "./utils.js"
 
-class Conic {
+export class Conic {
     constructor(equation){
         const {A,B,C,D,E,F} = equation
         this.A = A
@@ -71,7 +71,7 @@ class Conic {
 }
 
 
-function conicToMatrix(conic){
+export function conicToMatrix(conic){
     let {A,B,C,D,E,F} = conic.getEquation()
     return [
         [A,B/2,D/2]
@@ -100,11 +100,11 @@ fff*135 +(fgg)*146 +(gfg)*236 + (ggf)*245 - (gff)*235 - (fgf)*145 - (ffg)*136 - 
 fff*135 + (fgg)*(146+236+245)  
 */
 
-function intersectConicSegments(c_s1,c_s2){
+export function intersectConicSegments(c_s1,c_s2){
     return approximateConicSegmentIntersection(c_s1,c_s2);
 }
 
-function approximateConicSegmentIntersection(c_s1,c_s2){
+export function approximateConicSegmentIntersection(c_s1,c_s2){
 
     if (!intersectBounds(c_s1.bound,c_s2.bound)){
         return false
@@ -152,7 +152,7 @@ function approximateConicSegmentIntersection(c_s1,c_s2){
     return false
 }
 
-function parameterizeConic(conic){
+export function parameterizeConic(conic){
     let {straight_conic, angle} = unrotateConic(conic)
 
 
@@ -235,7 +235,7 @@ function parameterizeConic(conic){
 }
 
 // still figuring this out
-class ParameterizedConic {
+export class ParameterizedConic {
     constructor(type,orientation,angle,conic,straight_conic,parameterization){
         this.type = type
         this.orientation = orientation
@@ -575,7 +575,7 @@ const Conic_Orientation = {
     NONE: 0
 }
 
-function getConicType(conic){
+export function getConicType(conic){
     const c = conic
     const d = c.B*c.B - 4*c.A*c.C
     if (d === 0){
@@ -591,7 +591,7 @@ function getConicType(conic){
     }
 }
 
-function bisectorConicFromSector(boundary,sector){
+export function bisectorConicFromSector(boundary,sector){
     let points = boundary.points
     const [a1,a2,a3] = lineEquation(new Segment(points[sector.p1_enter],points[(sector.p1_enter+1) % points.length]))
     const [b1,b2,b3] = lineEquation(new Segment(points[sector.p1_exit],points[(sector.p1_exit+1) % points.length]))
@@ -618,7 +618,7 @@ function bisectorConicFromSector(boundary,sector){
     return conic
 }
 
-function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
+export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
     let intersections = parameterized_conic.conic.intersectPolygon(polygon)
 
     let ts = []
@@ -643,7 +643,7 @@ function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
     return start[0],start[1],end[0],end[1]
 }
 
-function unrotateConic(c){
+export function unrotateConic(c){
     
     let conic_p = new Conic(0,0,0,0,0,0);
 
@@ -662,7 +662,7 @@ function unrotateConic(c){
     return {conic_p,theta}
 }
 
-class ConicSegment {
+export class ConicSegment {
     constructor(parameterized_conic,start,end,bound){
         this.parameterized_conic = parameterized_conic
         this.start = start
@@ -671,7 +671,7 @@ class ConicSegment {
     }
 }
 
-function calculateConicSegmentBounds(parameterized_conic,start,end){   
+export function calculateConicSegmentBounds(parameterized_conic,start,end){   
     let start_p = parameterized_conic.getPointFromT(start)
     let end_p = parameterized_conic.getPointFromT(end)
     
@@ -702,5 +702,3 @@ function calculateConicSegmentBounds(parameterized_conic,start,end){
     return bound
 
 }
-
-export {Conic, ConicSegment}

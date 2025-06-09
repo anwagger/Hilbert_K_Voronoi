@@ -1,18 +1,18 @@
 import { createSegmentsFromPoints } from "./utils.js";
 
-class Point {
+export class Point {
     constructor(x,y){
         this.x = x;
         this.y = y;
     };
 }
-class Segment {
+export class Segment {
     constructor(start,end){
         this.start = start;
         this.end = end;
     };
 }
-class Polygon {
+export class Polygon {
     constructor(points = []) {
         this.points = points;
         this.segments = createSegmentsFromPoints(this.points);
@@ -26,7 +26,7 @@ class Polygon {
 
 } 
 
-class Bound {
+export class Bound {
     constructor(top,bottom,left,right){
         this.top = top;
         this.bottom = bottom;
@@ -34,7 +34,7 @@ class Bound {
         this.right=right;
     }
 }
-class Spoke {
+export class Spoke {
     constructor(segment,front,back){
         this.segment = segment
         this.front = front // point
@@ -43,7 +43,7 @@ class Spoke {
 }
 
 
-class Sector {
+export class Sector {
     constructor(polygon, p1,p2,p1_enter,p1_exit,p2_enter,p2_exit,edge_spokes){
         this.polygon = polygon
         // points
@@ -63,10 +63,3 @@ class Sector {
         this.edge_spokes = edge_spokes
     }
 }
-
-export {Point, 
-        Segment, 
-        Polygon, 
-        Bound, 
-        Spoke, 
-        Sector}
