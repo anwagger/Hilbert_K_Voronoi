@@ -45,14 +45,23 @@ class Spoke {
 
 
 class Sector {
-    constructor(polygon, p1,p2,p1_exit,p1_end,p2_exit,p2_end){
+    constructor(polygon, p1,p2,p1_enter,p1_exit,p2_enter,p2_exit,edge_spokes){
         this.polygon = polygon
+        // points
         this.p1 = p1
         this.p2 = p2
-        this.p1_exit = p1_exit
-        this.p1_end = p1_end
-        this.p2_exit = p2_exit
-        this.p2_end = p2_end
+        // numbers indexing
+        this.p1_exit = p1_enter
+        this.p1_end = p1_exit
+        this.p2_exit = p2_enter
+        this.p2_end = p2_exit
+        /*
+            {
+                p1_spoke,p2_spoke: number
+                p1_front,p2_front: bool: which part of the spoke is it
+                }
+        */
+        this.edge_spokes = edge_spokes
     }
 }
 

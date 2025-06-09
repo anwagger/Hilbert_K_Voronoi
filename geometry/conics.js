@@ -522,25 +522,13 @@ function getConicType(conic){
         return Conic_Type.ELLIPSE
     }
 }
-/*
-Aside about conics!
-
-can unrotate a conic, then keep the angle
-
-parameterize the conic, then multiply it by the rotation matrix for the negative angle!
-
-this is how we'll parameterize them?
-
-more complex, but...
-
-*/
-
 
 function bisectorConicFromSector(boundary,sector){
-    const [a1,a2,a3] = lineEquation(sector.p1_enter)
-    const [b1,b2,b3] = lineEquation(sector.p1_exit)
-    const [c1,c2,c3] = lineEquation(sector.p2_enter)
-    const [d1,d2,d3] = lineEquation(sector.p2_exit)
+    let points = boundary.points
+    const [a1,a2,a3] = lineEquation(new Segment(points[sector.p1_enter],points[(sector.p1_enter+1) % points.length]))
+    const [b1,b2,b3] = lineEquation(new Segment(points[sector.p1_exit],points[(sector.p1_exit+1) % points.length]))
+    const [c1,c2,c3] = lineEquation(new Segment(points[sector.p2_enter],points[(sector.p2_enter+1) % points.length]))
+    const [d1,d2,d3] = lineEquation(new Segment(points[sector.p2_exit],points[(sector.p2_exit+1) % points.length]))
 
     const p1 = sector.p1
     const p2 = sector.p2
@@ -585,12 +573,6 @@ function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
     }
     // return boundign t's and their associated segments
     return start[0],start[1],end[0],end[1]
-}
-
-function conicSegmentFromSector(boundary,sector){  
-    let conic = bisectorConicFromSector(boundary,sector)
-    let p_conic = parameterizeConic(conic)
-
 }
 
 function unrotateConic(c){

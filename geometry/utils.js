@@ -129,11 +129,11 @@ function solveQuadratic(a, b, c) {
   const discriminant = b * b - 4 * a * c;
   
   if (discriminant > 0) {
-      const sqrtDiscriminant = Math.sqrt(discriminant);
-      return [
-          (-b + sqrtDiscriminant) / (2 * a),
-          (-b - sqrtDiscriminant) / (2 * a)
-      ];
+    const sqrtDiscriminant = Math.sqrt(discriminant);
+    return [
+      (-b + sqrtDiscriminant) / (2 * a),
+      (-b - sqrtDiscriminant) / (2 * a)
+    ];
   } else if (discriminant === 0) {
       return [-b / (2 * a)];
   } else {
@@ -142,19 +142,64 @@ function solveQuadratic(a, b, c) {
 }
 
 function createSegmentsFromPoints(points) {
-        let n = points.length;
-        
-        if (n === 0) { return []; } 
-        else {
-            const segments = [];
-            for (let i = 0; i < n; i++) {
-                const start = vertices[i];
-                const end = vertices[(i + 1) % n];
-                segments.push(new Segment(start,end));
-            }
-            return segments;
-        }
-    }
+  let n = points.length;
+  if (n === 0) { return []; } 
+  else {
+      const segments = [];
+      for (let i = 0; i < n; i++) {
+        const start = vertices[i];
+        const end = vertices[(i + 1) % n];
+        segments.push(new Segment(start,end));
+      }
+      return segments;
+  }
+}
+
+function convexHull(points) {
+  if (points.length === 0) {
+      console.warn('convexHull called with an empty array.');
+      return [];
+  }
+  if (points.length === 1) {
+      return [points[0]];
+  }
+  if (points.length === 2) {
+      return points;
+  }
+
+  // Clone and sort the points
+  let sortedPoints = points.slice().sort((a, b) => {
+      if (a.x !== b.x) return a.x - b.x;
+      return a.y - b.y;
+  });
+
+  const cross = (o, a, b) => {
+      return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  };
+
+  let lower = [];
+  for (let p of sortedPoints) {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) {
+          lower.pop();
+      }
+      lower.push(p);
+  }
+
+  let upper = [];
+  for (let i = sortedPoints.length - 1; i >= 0; i--) {
+      let p = sortedPoints[i];
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) {
+          upper.pop();
+      }
+      upper.push(p);
+  }
+
+  // Concatenate lower and upper to get full hull, excluding last point of each (duplicates)
+  lower.pop();
+  upper.pop();
+  return lower.concat(upper);
+}
+
 
 export {euclideanDistance, 
         halfCrossRatio, 
@@ -169,5 +214,6 @@ export {euclideanDistance,
         pointInPolygon,
         isBetween,
         solveQuadratic,
-        createSegmentsFromPoints}
+        createSegmentsFromPoints,
+        convexHull}
 
