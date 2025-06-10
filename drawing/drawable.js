@@ -1,4 +1,4 @@
-import { Polygon } from "../geometry/primitives.js";
+import { Polygon, Segment } from "../geometry/primitives.js";
 import { createSegmentsFromPoints, intersectSegments, intersectSegmentsAsLines } from "../geometry/utils.js";
 
 export class DrawablePolygon {
@@ -15,7 +15,6 @@ export class DrawablePolygon {
       for (let i = 0; i < segs.length; i++) {
         this.segments.push(new DrawableSegment(segs[i]));
       }
-      console.log(this.segments);
       this.color = color;
       this.stroke_style = stroke_style;
       this.show_vertices = show_vertices;
@@ -26,7 +25,7 @@ export class DrawablePolygon {
       if (this.polygon.points.length > 0) {
           this.segments.forEach((segment) => {
             //segment.setPenWidth(this.penWidth);
-            //segment.setColor(this.color);
+            segment.color = this.color
             segment.draw(ctx);
           });
 
@@ -53,7 +52,7 @@ export class DrawableSegment {
     this.segment = segment;
     this.locked = false;
     this.color = "black";
-    this.width = 3;
+    this.width = 2;
     this.stroke_style = "black";
   }
 
@@ -135,12 +134,15 @@ export class DrawableConicSegment {
     let dt = (this.conic_segment.end - this.conic_segment.start) / num_of_points;
     let segments = [];
 
-    for (let i = 0; i < num_of_points - 1; i++) {
+    let start = this.conic_segment.start
+
+    for (let i = 0; i <= num_of_points - 1; i++) {
       let t1 = start + dt * i;
-      let t2 = start + dt * (i + 1);
-      let p1 = this.conic_segment.paramaterized_conic.getPointFromT(t1);
-      let p2 = this.conic_segment.paramaterized_conic.getPointFromT(t2);
-      segments.push(createSegmentsFromPoints([p1, p2]));
+      let t2 = start + dt * ((i + 1)%num_of_points);
+      let p1 = this.conic_segment.parameterized_conic.getPointFromT(t1);
+      let p2 = this.conic_segment.parameterized_conic.getPointFromT(t2);
+      console.log(p1,p2)
+      segments.push(new DrawableSegment(new Segment(p1, p2)));
     }
 
     segments.forEach((s) => s.draw(ctx));

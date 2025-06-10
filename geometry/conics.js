@@ -1,5 +1,5 @@
 import { Point, Segment } from "./primitives.js"
-import { euclideanDistance, isBetween } from "./utils.js"
+import { euclideanDistance, isBetween,lineEquation,solveQuadratic } from "./utils.js"
 
 export class Conic {
     constructor(equation){
@@ -13,7 +13,7 @@ export class Conic {
     }
 
     getEquation(){
-        return this.A,this.B,this.C,this.D,this.E,this.F,this.G
+        return {A:this.A,B:this.B,C:this.C,D:this.D,E:this.E,F:this.F}
     }
 
     intersectLine(segment){
@@ -24,6 +24,8 @@ export class Conic {
         let y2 = segment.end.y;
         let x_diff = x2 - x1;
         let y_diff = y2 - y1;
+
+        let {A:A,B:B,C:C,D:D,E:E,F:F} = this.getEquation()
 
         // Coefficients of the quadratic equation
         let a = A * x_diff * x_diff + B * x_diff * y_diff + C * y_diff * y_diff;
@@ -153,7 +155,7 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
 }
 
 export function parameterizeConic(conic){
-    let {straight_conic, angle} = unrotateConic(conic)
+    let {conic_p:straight_conic, theta:angle} = unrotateConic(conic)
 
 
     let type = getConicType(straight_conic)
@@ -163,7 +165,7 @@ export function parameterizeConic(conic){
         y_mult: 0, y_const: 0
     }
 
-    let {A,B,C,D,E,F} = straight_conic.getEquation()
+    let {A:A,B:B,C:C,D:D,E:E,F:F} = straight_conic.getEquation()
 
     // A,C = 0
     // For this, the edge case is if the line is fully vertical or horizontal
@@ -186,7 +188,8 @@ export function parameterizeConic(conic){
         }
 
     }else if (type == Conic_Type.PARABOLA){
-        if (A === 0){
+        // was A, switched
+        if (C === 0){
             orientation = Conic_Orientation.VERTICAL
             //X(t) = E/(-2A)t - D/(2A)
             parameterization.x_mult = E/(-2*A)
@@ -194,7 +197,7 @@ export function parameterizeConic(conic){
             //Y(t) = E/(-4A)t^2 - (F/E - D^2/(4AE))
             parameterization.y_mult = E/(-4*A)
             parameterization.y_const = -(F/E - D*D/(4*A*E))
-        }else if (C === 0){
+        }else if (A === 0){
             orientation = Conic_Orientation.HORIZONTAL
             //X(t) = D/(-4C)t^2 - (F/D - E^2/(4CD))
             parameterization.x_mult = D/(-4*C)
@@ -212,23 +215,35 @@ export function parameterizeConic(conic){
         parameterization.y_mult = Math.sqrt(E*E/(4*C*C) + D*D/(4*A*C)-F/C)
         parameterization.y_const = -E/(2*C)
     }else if (type == Conic_Type.HYPERBOLA){
+        // was (A < 0 && C > 0) 
         if (A < 0 && C > 0){
             orientation = Conic_Orientation.HORIZONTAL
             //X(t) = sqrt(D^2/(4A^2) - E^2/(4AC) + F/A)sec(t)+D/(2A)
             parameterization.x_mult = Math.sqrt(D*D/(4*A*A) - E*E/(4*A*C) + F/A)
             parameterization.x_const = D/(2*A)
             //Y(t) = sqrt(-E^2/(4C^2) + D^2/(4AC) + F/C)tan(t)+E/(2C)
+
             parameterization.y_mult = Math.sqrt(-E*E/(4*C*C) + D*D/(4*A*C) + F/C)
             parameterization.y_const = E/(2*C)
+
         }else if (A > 0 && C < 0){
             orientation = Conic_Orientation.VERTICAL
             //X(t) = sqrt(-D^2/(4A^2) + E^2/(4AC) + F/A)tan(t)+D/(2A)
             parameterization.x_mult = Math.sqrt(-D*D/(4*A*A) + E*E/(4*A*C) + F/A)
+            
             parameterization.x_const = D/(2*A)
             //Y(t) = sqrt(E^2/(4C^2) - D^2/(4AC) + F/C)sec(t)+E/(2C)
             parameterization.y_mult = Math.sqrt(E*E/(4*C*C) - D*D/(4*A*C) + F/C)
             parameterization.y_const = E/(2*C)
         }
+    }
+
+    // NaN fixes?
+    if (parameterization.y_mult != parameterization.y_mult){
+        parameterization.y_mult = 0
+    }
+        if (parameterization.x_mult != parameterization.x_mult){
+        parameterization.x_mult = 0
     }
 
     return new ParameterizedConic(type,orientation,angle,conic,straight_conic,parameterization)
@@ -352,8 +367,8 @@ export class ParameterizedConic {
                 }
             break;
             case Conic_Type.ELLIPSE:
-                x_func = (t) => this.x_mult*cos(t) + x_off
-                y_func = (t) => this.y_mult*sin(t) + y_off
+                x_func = (t) => this.x_mult*Math.cos(t) + x_off
+                y_func = (t) => this.y_mult*Math.sin(t) + y_off
 
                 xi_func = (x) => {
                     let t = Math.acos((x - x_off)/this.x_mult)
@@ -391,7 +406,8 @@ export class ParameterizedConic {
                         y_func = (t) => this.y_mult * Math.tan(t) + y_off
 
                         xi_func = (x) => {
-                            let t = Math.acos(this.x_mult/(x - x_off))
+                            // was Math.acos(this.x_mult/(x - x_off)
+                            let t = 1/Math.acos((x - x_off)/this.x_mult)
                             return [t,-t]
                         }
                         yi_func = (y) => {
@@ -411,11 +427,13 @@ export class ParameterizedConic {
                             x = acsc(-cos*this.y_mult/(sin*this.x_mult))
                         */
                         dx_func = () => {
-                            let t = Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
+                            //Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
+                            let t = 1/Math.asin((-cos*this.y_mult)/(sin*this.x_mult))
                             [t,-t + Math.PI]
                         }
                         dy_func = () => {
-                            let t = Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
+                            //Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
+                            let t = 1/Math.asin((-cos*this.y_mult)/(sin*this.x_mult))
                             [t,-t + Math.PI]
                         }
                     break;
@@ -428,7 +446,8 @@ export class ParameterizedConic {
                             return [t, t + Math.PI] 
                         }
                         yi_func = (y) => {
-                            let t = Math.acos(this.y_mult/(y - y_off))
+                            //Math.acos(this.y_mult/(y - y_off))
+                            let t = 1/Math.acos((y - y_off)/this.y_mult)
                             return [t,-t]
                         }
                         /*
@@ -443,11 +462,13 @@ export class ParameterizedConic {
                             t = asin(-sin*this.x_mult/(cos*this.y_mult))
                         */
                        dx_func = () => {
-                            let t = Math.asin((cos*this.x_mult)/(sin*this.y_mult))
+                        //Math.asin((cos*this.x_mult)/(sin*this.y_mult))
+                            let t = 1/Math.asin((sin*this.y_mult)/(cos*this.x_mult))
                             return [t,-t + Math.PI]
                        }
                        dy_func = () => {
-                            let t = Math.asin((-sin*this.x_mult)/(cos*this.y_mult))
+                        //Math.asin((-sin*this.x_mult)/(cos*this.y_mult))
+                            let t = 1/Math.asin((cos*this.y_mult)/(-sin*this.x_mult))
                             return [t,-t + Math.PI]
                        }
                     break;
@@ -466,7 +487,7 @@ export class ParameterizedConic {
         return (t)=> {
             let x_t = this.x_func(t)
             let y_t = this.y_func(t)
-            new Point(cos*x_t - sin*y_t,cos*y_t + sin*x_t)
+            return new Point(cos*x_t - sin*y_t,cos*y_t + sin*x_t)
         }  
     }
     // gets the function that gets the point of a given t on the straight conic
@@ -479,8 +500,8 @@ export class ParameterizedConic {
     isOn(point){
         let x = point.x
         let y = point.y
-        let {A,B,C,D,E,F} = this.conic.getEquation()
-        return A *x*x + B *x*y + C *y*y + D *x  + E *y + F === 0
+        let {A:A,B:B,C:C,D:D,E:E,F:F} = this.conic.getEquation()
+        return A *x*x + B *x*y + C *y*y + D *x  + E *y + F <= 1e-10
     }
 
     getTOfPoint(point){
@@ -495,11 +516,17 @@ export class ParameterizedConic {
        // reverse rotation?
        let x = cos* point.x + sin * point.y
        let y = cos*point.y - sin * point.x
+
+       //console.log("check point:",point,x,y)
         if (this.isOn(point)){
-            let x_ts = this.xi_func(x,y)
-            let y_ts = this.yi_func(x,y)
+
+            let x_ts = this.xi_func(x)
+            let y_ts = this.yi_func(y)
+            //console.log("touching",x_ts,y_ts)
             for (let i = 0; i < x_ts.length; i++){
+                //console.log("x:",x_ts[i],this.getPointFromT(x_ts[i]))
                 for (let j = 0; j < y_ts.length; j++){
+                    //console.log("y:",y_ts[j],this.getPointFromT(y_ts[j]))
                     if (x_ts[i] === y_ts[j]){
                         return x_ts[i]
                     }
@@ -563,16 +590,16 @@ Y0(t) = cos(theta)*Y(t)+sin(theta)*X(t)
 
 
 const Conic_Type = {
-    DEGENERATE: 0,
-    PARABOLA: 1,
-    ELLIPSE: 2,
-    HYPERBOLA: 3,
+    DEGENERATE: "D",
+    PARABOLA: "P",
+    ELLIPSE: "E",
+    HYPERBOLA: "H",
 }
 
 const Conic_Orientation = {
-    HORIZONTAL: 1,
-    VERTICAL: 2,
-    NONE: 0
+    HORIZONTAL: "H",
+    VERTICAL: "V",
+    NONE: "N"
 }
 
 export function getConicType(conic){
@@ -593,10 +620,12 @@ export function getConicType(conic){
 
 export function bisectorConicFromSector(boundary,sector){
     let points = boundary.points
-    const [a1,a2,a3] = lineEquation(new Segment(points[sector.p1_enter],points[(sector.p1_enter+1) % points.length]))
-    const [b1,b2,b3] = lineEquation(new Segment(points[sector.p1_exit],points[(sector.p1_exit+1) % points.length]))
-    const [c1,c2,c3] = lineEquation(new Segment(points[sector.p2_enter],points[(sector.p2_enter+1) % points.length]))
-    const [d1,d2,d3] = lineEquation(new Segment(points[sector.p2_exit],points[(sector.p2_exit+1) % points.length]))
+
+    let seg = new Segment(points[sector.p1_enter],points[(sector.p1_enter+1) % points.length])
+    const {a:a1,b:a2,c:a3} = lineEquation(new Segment(points[sector.p1_enter],points[(sector.p1_enter+1) % points.length]))
+    const {a:b1,b:b2,c:b3} = lineEquation(new Segment(points[sector.p1_exit],points[(sector.p1_exit+1) % points.length]))
+    const {a:c1,b:c2,c:c3} = lineEquation(new Segment(points[sector.p2_enter],points[(sector.p2_enter+1) % points.length]))
+    const {a:d1,b:d2,c:d3} = lineEquation(new Segment(points[sector.p2_exit],points[(sector.p2_exit+1) % points.length]))
 
     const p1 = sector.p1
     const p2 = sector.p2
@@ -619,15 +648,20 @@ export function bisectorConicFromSector(boundary,sector){
 }
 
 export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
+
     let intersections = parameterized_conic.conic.intersectPolygon(polygon)
 
+
     let ts = []
-    for (let segment_num = 0; segment_num < intersections; segment_num++){
-        for (let point in intersections[segment_num]) {
+    for (let segment_num = 0; segment_num < intersections.length; segment_num++){
+        for (let i = 0; i < intersections[segment_num].length; i++) {
+            let point = intersections[segment_num][i]
             // keep track of t and which segment it collided with
             ts.push([parameterized_conic.getTOfPoint(point),segment_num])
         }
     }
+        console.log("ts",ts)
+
     let start = [Infinity,-1]
     let end = [-Infinity,-1]
     for (let t in ts){
@@ -639,8 +673,9 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
         }
         
     }
+
     // return boundign t's and their associated segments
-    return start[0],start[1],end[0],end[1]
+    return {start_t: start[0],start_segment:start[1],end_t:end[0],end_segment:end[1]}
 }
 
 export function unrotateConic(c){
@@ -655,11 +690,11 @@ export function unrotateConic(c){
     conic_p.A = c.A*(c_t*c_t) + c.B*s_t + c.C*(s_t*s_t)
     conic_p.B = 0
     conic_p.C = c.A * (s_t*s_t) - c.B * c_t * s_t + c.C*(c_t*c_t)
-    conic_p.D = c.D * c_t + E * s_t
+    conic_p.D = c.D * c_t + c.E * s_t
     conic_p.E = -c.D*s_t + c.E * c_t
     conic_p.F = c.F
 
-    return {conic_p,theta}
+    return {conic_p:conic_p,theta:theta}
 }
 
 export class ConicSegment {

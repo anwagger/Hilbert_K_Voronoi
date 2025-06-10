@@ -50,10 +50,10 @@ export class Sector {
         this.p1 = p1
         this.p2 = p2
         // numbers indexing
-        this.p1_exit = p1_enter
-        this.p1_end = p1_exit
-        this.p2_exit = p2_enter
-        this.p2_end = p2_exit
+        this.p1_enter = p1_enter
+        this.p1_exit = p1_exit
+        this.p2_enter = p2_enter
+        this.p2_exit = p2_exit
         /*
             {
                 p1_spoke,p2_spoke: number

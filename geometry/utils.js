@@ -29,7 +29,7 @@ export function lineEquation(segment){
     const b = p1.x - p2.x
     const c = p2.x * p1.y - p1.x * p2.y
 
-    return {a, b, c}
+    return {a:a, b:b, c:c}
 }
 
 
@@ -51,8 +51,9 @@ export function pointSegDistance(point, segment) {
 }
 
 export function intersectSegmentsAsLines(s1, s2) {
-  const {a1, b1, c1} = lineEquation(s1)
-  const {a2, b2, c2} = lineEquation(s2)
+  const {a:a1, b:b1, c:c1} = lineEquation(s1)
+  const {a:a2, b:b2, c:c2} = lineEquation(s2)
+
   const denominator = (a1 * b2) - (a2 * b1)
 
   if (Math.abs(denominator) < 1e-10) {
@@ -65,18 +66,22 @@ export function intersectSegmentsAsLines(s1, s2) {
 }
 
 export function isBetween(a, b, c){
-  return a <= c && c <= b || b <= c && c <= a;
+  return (a <= c && c <= b) || (b <= c && c <= a);
 }
 
 // copied from nithins code, might need to be changed
 export function intersectSegments(s1, s2) {
   let point = intersectSegmentsAsLines(s1, s2)
 
+  
   if (point) {
-    const is_on_seg1 = isBetween(s1.start.x, s1.end.x, point.x) && isBetween(s1.start.y, s1.end.y, point.y);
+
+
+    // only want to make sure it lands on seg_2
+    //const is_on_seg1 = isBetween(s1.start.x, s1.end.x, point.x) && isBetween(s1.start.y, s1.end.y, point.y);
     const is_on_seg2 = isBetween(s2.start.x, s2.end.x, point.x) && isBetween(s2.start.y, s2.end.y, point.y);
 
-    if (is_on_seg1 && is_on_seg2) {
+    if (is_on_seg2) {
       return point;
     }    
   }
@@ -105,6 +110,7 @@ export function segmentIntersectsPolygon(segment, polygon) {
 
 
 // uses ray casting to determine if a point is in a polygon
+// not correct?
 export function pointInPolygon(point, polygon) {
     const {x, y} = point;
     const points = polygon.points;
@@ -114,6 +120,12 @@ export function pointInPolygon(point, polygon) {
     for (let i = 0; i < n; i++) {
         const p1 = points[i];
         const p2 = points[(i + 1) % n];
+
+        // added later...
+        if (pointSegDistance(point,new Segment(p1,p2)) <= 1e-10){
+          return true
+        }
+
         if (Math.min(p1.y, p2.y) < y && y <= Math.max(p1.y, p2.y) &&
             x < (p2.x - p1.x) * (y - p1.y) / (p2.y - p1.y) + p1.x){
                 intersections += 1
