@@ -1,6 +1,30 @@
 import { Polygon, Segment } from "../geometry/primitives.js";
 import { createSegmentsFromPoints, intersectSegments, intersectSegmentsAsLines } from "../geometry/utils.js";
 
+export let CAMERA =  {
+  move_lock: true,
+  offset: {
+    x:0,y:0
+  },
+  scale: {
+    x:1,y:1
+  },
+  x: function(x){
+    return this.scale.x * (x - this.offset.x)
+  },
+  y: function(y){
+    return this.scale.y * (y - this.offset.y)
+  },
+  changeOffset: function (dx,dy){
+    this.offset.x -= dx/this.scale.x
+    this.offset.y -= dy/this.scale.y
+  },
+  changeScale: function (d){
+    this.scale.x -= this.scale.x * d/10
+    this.scale.y -= this.scale.y * d/10
+  },
+}
+
 export class DrawablePolygon {
    constructor(polygon = new Polygon(), color = "blue", stroke_style = "black", show_vertices = true) {
       this.polygon = polygon;
@@ -60,8 +84,8 @@ export class DrawableSegment {
     ctx.strokeStyle = this.color;
     ctx.lineWidth = this.width;
     ctx.beginPath();
-    ctx.moveTo(this.segment.start.x, this.segment.start.y);
-    ctx.lineTo(this.segment.end.x, this.segment.end.y);
+    ctx.moveTo(CAMERA.x(this.segment.start.x), CAMERA.y(this.segment.start.y));
+    ctx.lineTo(CAMERA.x(this.segment.end.x), CAMERA.y(this.segment.end.y));
     ctx.stroke();
   }
 }
@@ -90,7 +114,7 @@ export class DrawablePoint {
       if (this.drawPoint) {
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this.point.x, this.point.y, this.radius, 0, 2 * Math.PI);
+        ctx.arc(CAMERA.x(this.point.x), CAMERA.y(this.point.y), this.radius, 0, 2 * Math.PI);
         ctx.fill();
       }
   }
@@ -98,7 +122,7 @@ export class DrawablePoint {
   drawWithRing(ctx, ringColor = "red", ringRadius = 8) {
     // outer ring
     ctx.beginPath();
-    ctx.arc(this.point.x, this.point.y, ringRadius, 0, 2 * Math.PI);
+    ctx.arc(CAMERA.x(this.point.x), CAMERA.y(this.point.y), ringRadius, 0, 2 * Math.PI);
     ctx.strokeStyle = ringColor;
     ctx.lineWidth = 2;
     ctx.stroke();
@@ -121,6 +145,7 @@ export class DrawableBisector {
 export class DrawableConicSegment {
   constructor(conic_segment) {
     this.conic_segment = conic_segment;
+    this.color = "black"
   }
 
   draw(ctx,num_of_points) {
@@ -136,16 +161,46 @@ export class DrawableConicSegment {
 
     let start = this.conic_segment.start
 
-    for (let i = 0; i <= num_of_points - 1; i++) {
+
+    for (let i = 0; i < num_of_points - 1; i++) {
       let t1 = start + dt * i;
       let t2 = start + dt * ((i + 1)%num_of_points);
       let p1 = this.conic_segment.parameterized_conic.getPointFromT(t1);
       let p2 = this.conic_segment.parameterized_conic.getPointFromT(t2);
-      console.log(p1,p2)
       segments.push(new DrawableSegment(new Segment(p1, p2)));
     }
 
-    segments.forEach((s) => s.draw(ctx));
+    segments.forEach((s) => {
+      s.color = this.color 
+      s.draw(ctx)
+    });
+  }
+  drawStraight(ctx,num_of_points) {
+    // we do a for loop from start to end
+    // end - start / num_of_points is our dt (dt could be negative)
+    // for i from 0 to number of points, start + dt * i = t
+    // this.paramaterizedConic.getPointFromT(t) gets us the point
+    // then we can draw a line between the points
+    // yay
+
+    let dt = Math.abs(this.conic_segment.end - this.conic_segment.start) / num_of_points;
+    let segments = [];
+
+    let start = this.conic_segment.start
+
+
+    for (let i = 0; i < num_of_points - 1; i++) {
+      let t1 = (start + dt * i);
+      let t2 = start + dt * ((i + 1)%num_of_points);
+      let p1 = this.conic_segment.parameterized_conic.getPointFromTStraight(t1);
+      let p2 = this.conic_segment.parameterized_conic.getPointFromTStraight(t2);
+      segments.push(new DrawableSegment(new Segment(p1, p2)));
+    }
+
+    segments.forEach((s) => {
+      s.color = this.color 
+      s.draw(ctx)
+    });
   }
 }
 

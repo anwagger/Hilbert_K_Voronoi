@@ -1,4 +1,4 @@
-import { ConicSegment,bisectorConicFromSector,parameterizeConic,getConicParameterBoundsInPolygon} from "./conics.js"
+import { ConicSegment,bisectorConicFromSector,parameterizeConic,getConicParameterBoundsInPolygon,calculateConicSegmentBounds } from "./conics.js"
 import { Polygon, Sector, Segment,Spoke } from "./primitives.js"
 import { convexHull, euclideanDistance, intersectSegments, pointInPolygon,isBetween, intersectSegmentsAsLines } from "./utils.js"
 
@@ -341,6 +341,8 @@ export function calculateBisector(boundary,h_p1,h_p2){
 
     let sector = calculateSector(boundary,h_p1,h_p2,enter,exit,exit,enter)
 
+    //return {mid:sector}
+
     console.log("MID-SECTOR:",sector)
 
     let conic_segments = traverseBisector(boundary,h_p1,h_p2,sector,null)
@@ -419,7 +421,7 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
     let conic_segment = null
     // this is true if this isn't the first call
 
-    let bound = calculateConicSegmentBounds(parameterized_conic,start_t,end_t)
+    let bound = calculateConicSegmentBounds(p_conic,start_t,end_t)
 
     let start_num = 0
     let end_num = 1
