@@ -318,8 +318,9 @@ export class ParameterizedConic {
                         }
                         xi_func = (x) => [x]
                         yi_func = (y) => {
-                           let t = Math.sqrt((y - y_off)*(y - y_off)/this.y_mult) 
-                            return [t + x_off,-t + x_off]
+                           let t1 = Math.sqrt((y - y_off)*(y - y_off)/this.y_mult) 
+                           let t2 = Math.sqrt((-y - y_off)*(-y - y_off)/this.y_mult) 
+                            return [t1 + x_off,t2 + x_off]
                         }
                     break;
                     case Conic_Orientation.NONE:
@@ -687,13 +688,13 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
         for (let i = 0; i < intersections[segment_num].length; i++) {
             let point = intersections[segment_num][i]
             points.push(point)
-            //console.log("p",point,parameterized_conic.getTOfPoint(point),parameterized_conic.getPointFromT(parameterized_conic.getTOfPoint(point)))
+            console.log("p",point,parameterized_conic.getTOfPoint(point),parameterized_conic.getPointFromT(parameterized_conic.getTOfPoint(point)))
             // keep track of t and which segment it collided with
             ts.push([parameterized_conic.getTOfPoint(point),segment_num])
         }
     }
 
-    //console.log("TS",ts)
+    console.log("TS",ts)
 
 
     let start = [Infinity,-1]

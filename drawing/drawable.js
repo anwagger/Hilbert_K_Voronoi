@@ -1,5 +1,5 @@
 import { Polygon, Segment } from "../geometry/primitives.js";
-import { createSegmentsFromPoints, intersectSegments, intersectSegmentsAsLines } from "../geometry/utils.js";
+import { createSegmentsFromPoints,convexHull, intersectSegments, intersectSegmentsAsLines } from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -12,8 +12,14 @@ export let CAMERA =  {
   x: function(x){
     return this.scale.x * (x - this.offset.x)
   },
+  ix: function(x){
+    return x/this.scale.x + this.offset.x
+  },
   y: function(y){
     return this.scale.y * (y - this.offset.y)
+  },
+  iy: function(y){
+    return y/this.scale.y + this.offset.y
   },
   changeOffset: function (dx,dy){
     this.offset.x -= dx/this.scale.x
@@ -44,29 +50,40 @@ export class DrawablePolygon {
       this.show_vertices = show_vertices;
    }
 
-   // from nithins
-   draw(ctx) {
-      if (this.polygon.points.length > 0) {
-          this.segments.forEach((segment) => {
-            //segment.setPenWidth(this.penWidth);
-            segment.color = this.color
-            segment.draw(ctx);
-          });
-
-          if (this.show_vertices) {
-            this.points.forEach((point) => {
-              // point.setRadius(this.radius);
-              if (this.showInfo) { 
-                //point.setShowInfo(true); 
-              }
-              else { 
-                //point.setShowInfo(false); 
-              }
-              point.draw(ctx); 
-            });
-          }
+   addPoint(point){
+    this.polygon.addPoint(point)
+    this.points = []
+    this.segments = []
+    for(let i = 0; i < this.polygon.points.length; i++){
+      let p = this.polygon.points[i]
+      this.points.push(new DrawablePoint(p))
+      let s = this.polygon.segments[i]
+      if (s){
+        this.segments.push(new DrawableSegment(s))
       }
     }
+   }
+
+   // from nithins
+  draw(ctx) {
+    this.segments.forEach((segment) => {
+      //segment.setPenWidth(this.penWidth);
+      segment.color = this.color
+      segment.draw(ctx);
+    });
+    if (this.show_vertices) {
+      this.points.forEach((point) => {
+        // point.setRadius(this.radius);
+        if (this.showInfo) { 
+          //point.setShowInfo(true); 
+        }
+        else { 
+          //point.setShowInfo(false); 
+        }
+        point.draw(ctx); 
+      });
+    }
+  }
 
 
 }
@@ -93,6 +110,12 @@ export class DrawableSegment {
 export class DrawableSpoke {
   constructor(spoke) {
     this.spoke = spoke;
+    this.segment = new DrawableSegment(spoke.segment)
+    this.color = "blue"
+  }
+  draw(ctx){
+    this.segment.color = this.color
+    this.segment.draw(ctx)
   }
 }
 
@@ -162,9 +185,9 @@ export class DrawableConicSegment {
     let start = this.conic_segment.start
 
 
-    for (let i = 0; i < num_of_points - 1; i++) {
+    for (let i = 0; i <= num_of_points - 1; i++) {
       let t1 = start + dt * i;
-      let t2 = start + dt * ((i + 1)%num_of_points);
+      let t2 = start + dt * ((i + 1));
       let p1 = this.conic_segment.parameterized_conic.getPointFromT(t1);
       let p2 = this.conic_segment.parameterized_conic.getPointFromT(t2);
       segments.push(new DrawableSegment(new Segment(p1, p2)));
@@ -205,18 +228,22 @@ export class DrawableConicSegment {
 }
 
 export class Site {
-  constructor(drawable_point, radius = 3) {
+  constructor(drawable_point, drawable_spokes, radius = 3) {
+    this.draw_spokes = false
     this.drawable_point = drawable_point;
     this.drawable_point.color = "blue";
+    this.color = "blue";
+    this.drawable_spokes = drawable_spokes
     this.radius = radius;
 
   }
 
+  setColor(color){
+    this.color = color
+    this.drawable_point.color = color
+  }
+
   draw(ctx) {
-        if (this.drawSpokes) { this.spokes.forEach((spoke) => {
-          spoke.setColor(this.color);
-          spoke.draw(ctx);
-        }); }
         if (this.selected) {
           this.drawSelectionRing(ctx);
         }

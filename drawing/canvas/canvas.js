@@ -1,5 +1,8 @@
-import { DrawablePolygon } from "../drawable.js"
+import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke } from "../drawable.js"
+import { calculateSpokes, HilbertSpace} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
+import { Polygon,Point } from "../../geometry/primitives.js";
+import {pointInPolygon} from "../../geometry/utils.js"
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -15,14 +18,17 @@ export class Canvas {
       this.canvas.style.height = `${rect.height}px`;
       this.dpr = dpr;
 
-      this.polygon = new DrawablePolygon();
-      this.mode = 'Convex';
-      this.selectedProgram = 'Site';
-      //initEvents(this);
-      this.activeManager = 'SiteManager';
-      this.hilbertDistanceManager = null;
+      this.boundary = new DrawablePolygon(new Polygon([]),"black");
+      this.mode = 'boundary';
+      
+      initEvents(this);
+      
+      // for collapsible menus
+      this.activeManager = '';
+      
+      //this.hilbertDistanceManager = null;
 
-      this.polygonType = 'freeDraw';
+      this.boundaryType = 'freeDraw';
       this.canvasWidth = 1500;
       this.canvasHeight = 850;
 
@@ -34,13 +40,18 @@ export class Canvas {
       this.globalScale = 1.0;
 
       this.showCentroid = false;
-      this.polygonLocked = false;
+      this.boundaryLocked = false;
+
+      this.colorPool = [
+         "red","orange","yellow","green","blue","purple",
+         "pink","brown","black","gray","cyan","lime"
+      ]
    }
 
    setPolygonType(type) {
-        this.polygonType = type;
+        this.boundaryType = type;
         if (type === 'customNgon') {
-            const n = parseInt(this.customNgonInput.value);
+            const n = parseInt(this.customNgonInput);
             if (n >= 3) {
                 this.createNgon(n);
             } else {
@@ -52,18 +63,19 @@ export class Canvas {
         } else {
             this.resetCanvas();
         }
-        this.sites = this.sites.filter(site => this.polygon.contains(site));
-        this.sites.forEach(site => {
-            site.setPolygon(this.polygon);
-            site.computeSpokes();
-            site.computeHilbertBall?.();
-        });
+        this.sites = this.sites.filter(site => this.boundary.polygon.contains(site));
+        
         this.drawAll();
     }
     
    drawSegments() {
-        this.segments.forEach(segment => {
-            segment.draw(this.ctx);
+         this.sites.forEach(site => {
+            if (true || site.draw_spokes){
+               site.drawable_spokes.forEach((d_s) => {
+                  d_s.draw(this.ctx)
+               })
+            }
+            
         });
    }
 
@@ -73,7 +85,7 @@ export class Canvas {
         
       const radius = Math.min(this.canvas.width, this.canvas.height) / (2.5 * this.dpr);
         
-      this.polygon = new drawable.DrawablePolygon();
+      this.boundary = new DrawablePolygon(new Polygon([]),"black");
         
       const tempVertices = [];
       for (let i = 0; i < n; i++) {
@@ -87,9 +99,10 @@ export class Canvas {
       const centroidY = tempVertices.reduce((sum, v) => sum + v.y, 0) / n;
         
       for (const vertex of tempVertices) {
+         console.log("ngon",vertex)
          const adjustedX = canvasCenterX + (vertex.x - centroidX);
          const adjustedY = canvasCenterY + (vertex.y - centroidY);
-         this.polygon.addPoint(new Point(adjustedX, adjustedY));
+         this.boundary.addPoint(new Point(adjustedX, adjustedY));
       }
    }
 
@@ -98,7 +111,6 @@ export class Canvas {
       const rawX = event.clientX - rect.left;
       const rawY = event.clientY - rect.top;
       
-
       let sceneX = rawX;
       let sceneY = rawY;
     
@@ -108,22 +120,53 @@ export class Canvas {
       return { x: sceneX, y: sceneY };
    }
 
+   getNewColor(list){
+      let colors = [...this.colorPool]
+      colors.filter((c) => {list.find((s) => s.color === c)})
+      if (colors.length === 0){
+         colors = [...this.colorPool]
+      }
+      let i = Math.floor(colors.length * Math.random())
+      return colors[i]
+   }
+
+   addSite(event){
+      const {x, y} = this.getMousePos(event);
+      
+      let point = new Point(CAMERA.ix(x), CAMERA.iy(y))
+
+      if (pointInPolygon(point,this.boundary.polygon)){
+         let site = new Site(new DrawablePoint(point))
+         this.sites.push(site);
+         site.setColor(this.getNewColor(this.sites))
+         // calculate the new point
+         this.recalculateSite(this.sites.length-1)
+         this.drawAll()
+      }
+
+      
+
+      
+   }
+
    addPolygonPoint(event) {
-      if (this.polygonType === 'freeDraw') {
+      if (this.boundaryType === 'freeDraw') {
+
          const {x, y} = this.getMousePos(event);
-         this.polygon.addPoint(new Point(x, y));
-         this.polygon.showInfo = document.getElementById('polygonShowInfo').checked;
-         this.drawAll();
+         this.boundary.addPoint(new Point(CAMERA.ix(x), CAMERA.iy(y)));
+         this.boundary.showInfo = document.getElementById('polygonShowInfo').checked;
+         this.recalculateAll()
+         this.drawAll()
       }
    }
 
    setPolygonColor(event) {
-        this.polygon.setColor(event.target.value);
+        this.boundary.color = event.target.value;
         this.drawAll();
    }
 
    setPolygonShowInfo(event) {
-        this.polygon.setShowInfo(event.target.checked);
+        this.boundary.showInfo = event.target.checked;
         this.drawAll();
    }
 
@@ -137,36 +180,66 @@ export class Canvas {
         this.drawAll();
    }
 
+
+   recalculateSite(index){
+      let boundary = this.boundary.polygon
+
+      let site = this.sites[index]
+
+      site.drawable_spokes = [] 
+      let point = site.drawable_point.point
+      calculateSpokes(boundary,point).forEach((spoke) => {
+         site.drawable_spokes.push(new DrawableSpoke(spoke))
+         site.drawable_spokes[site.drawable_spokes.length-1].color = site.color
+      })
+
+   }
+
+   recalculateAll(){
+
+      let boundary = this.boundary.polygon
+      // calculate points and spokes!
+      for(let i = 0; i < this.sites.length; i++){
+         this.recalculateSite(i)
+      }
+
+      // might not want to auto-do
+      /**
+      let bisectors = []
+
+      // pairs
+      for(let i = 0; i < points.length-1; i++){
+         for(let j = i + 1; j < points.length; j++){
+            
+         }
+      }
+      */
+   }
+
    drawAll() {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-      //this.polygon.draw(this.ctx);
+      this.boundary.draw(this.ctx);
 
-      /*
-      this.sites.forEach(site => {
-         site.computeSpokes();
-         site.computeHilbertBall?.();
-         site.computeMultiBall?.();
-         site.draw(this.ctx);
-      });
-    
-      this.bisectors.forEach(bisector => {
-         bisector.computeBisector(bisector.s1, bisector.s2);
-         bisector.draw(this.ctx);
-      }); 
-    
-      this.drawSegments();
-    
-      clearInfoBoxes();
-    
-      if (this.polygon.showInfo) {
-            this.polygon.vertices.forEach(vertex => {
-               if (vertex.showInfo) drawInfoBox(vertex, this.canvas, this.dpr);
-            });
-      }
-    
-      this.sites.forEach(site => {if (site.showInfo) drawInfoBox(site, this.canvas, this.dpr);});
-    */
-      renderAllKaTeX();     
+      this.drawSegments()
+
+      this.sites.forEach((site) => {
+         site.draw(this.ctx)
+      })
+ 
    }
+
+   resetSites() {
+      this.sites = [];
+   }
+   resetCanvas() {
+        this.resetSites()
+        
+        this.boundary = new DrawablePolygon(new Polygon([]), this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.showVertices, this.boundary.vertexRadius);
+
+        this.boundaryType = 'freeDraw';
+        document.querySelector('input[name="polygonType"][value="freeDraw"]').checked = true;
+
+        this.drawAll();
+    }
 }

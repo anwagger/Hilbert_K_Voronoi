@@ -33,6 +33,7 @@ canvasElement.onmousemove = (event) => {
 
         }
         test_render()
+        canvas.drawAll()
     }
 }
 

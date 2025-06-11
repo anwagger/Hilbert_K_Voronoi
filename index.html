@@ -4,14 +4,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizing the Hilbert</title>
+    <title>Visualizing K-Voronoi in the Hilbert Space</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <p>test</p>
-   <canvas id="canvas" width="500" height="500" style="
-   border-color: black; border-style: solid; overflow: scroll; 
-   "></canvas>
+    <div id="sidebar">
+        <form id="modeCollapsible">
+            <div class="collapsible-header">Select Mode: <span>
+                <select id="mode-select" name="mode-select">
+                    <option value="boundary">Set Boundary</option>
+                    <option value="site">Insert Sites</option>
+                    <option value="view">Zoom</option>
+                </select>
+
+            </span>
+        </div>
+                
+        </form>
+
+    <!-- Polygon Settings -->
+    <div class="polygon-setting-card" id="polygonContainer">
+      <div>
+        <label style="margin-bottom: 10px;">Polygon Boundary Color</label>
+        <input type="color" id="polygonColor" value="#000000">
+      </div>
+
+      <div style="display: none; align-items: center; margin-bottom: 10px;">
+        <div style="position: relative; margin-right: 10px;">
+          <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowInfo" class="checkbox-input">
+          <span class="checkbox-background"></span>
+        </div>
+        <label for="polygonShowInfo" class="checkbox-label">Show Info</label>
+      </div>
+
+      <div style="display: flex; align-items: center; margin-bottom: 10px; display: none;">
+        <div style="position: relative; margin-right: 10px;">
+          <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowDiag" class="checkbox-input">
+          <span class="checkbox-background"></span>
+        </div>
+        <label for="polygonShowDiag" class="checkbox-label">Show Diagonals</label>
+      </div>
+
+      <div style="display: flex; align-items: center; margin-bottom: 10px; display: none;">
+        <div style="position: relative; margin-right: 10px;">
+          <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowCentroid" class="checkbox-input">
+          <span class="checkbox-background"></span>
+        </div>
+        <label for="polygonShowCentroid" class="checkbox-label">Show Centroid</label>
+      </div>
+    
+      <div>
+
+        <!-- --------------------------------------------------------------- -->
+        <div class="gon-radio-container">
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="freeDraw" name="polygonType" value="freeDraw" checked>
+            <label class="checkbox-label" for="freeDraw">Free Draw</label>
+          </div>
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="3gon" name="polygonType" value="3">
+            <label class="checkbox-label" for="3gon">3-gon</label>
+          </div>
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="4gon" name="polygonType" value="4">
+            <label class="checkbox-label" for="4gon">4-gon</label>
+          </div>
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="5gon" name="polygonType" value="5">
+            <label class="checkbox-label" for="5gon">5-gon</label>
+          </div>
+          <div style="display: flex; align-items: center;" class="gonRadio">
+            <input class="gonRadioItem" type="radio" id="6gon" name="polygonType" value="6">
+            <label class="checkbox-label" for="6gon">6-gon</label>
+          </div>
+          <div style="align-items: center; margin-top: 5px; justify-content: space-between;">
+            
+            <div style="display: flex;">
+              <input class="gonRadioItem" type="radio" id="customNgon" name="polygonType" value="customNgon">
+              <label class="checkbox-label" for="customNgon">n-gon</label>
+            </div>
+          
+            <div style="display:flex; align-items: center; margin-top: 10px; margin-left: 25px;">
+              <input type="number" id="customNgonInput" style="margin-bottom: 10px; width: 60px; text-align: center; display: none; height: 30px;">
+              <button id="createCustomNgon" class="gon-icon-button" style="display: none; margin-bottom: 10px;">
+                <b class="">
+                  Set
+                </b>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+          <div style="display: flex; flex-direction: column;" >
+            <span style="font-size: 14px; font-weight: 700px; padding-bottom: 2px;" class="text-center">
+              Usage
+            </span>
+            
+            <div class="flex w-full bg-gray-200 h-[1px]"></div>
+
+            <div class="mb-2">
+              <span class="text-[12px] underline"> 
+                Insert Convex Mode
+              </span>
+              <span>
+                <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                  <li>Double click to add polygon vertices in free draw mode (3+ vertices required)</li>
+                </ul>
+              </span>
+            </div>
+
+            
+
+            <div class="mb-2">
+              <span class="text-[12px] underline"> 
+                Insert Funk Mode
+              </span>
+              <span>
+                <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                  <li>Double click to add a site or a funk ball to the polygon</li>
+                  <li>Click and drag to move a site or a funk ball</li>
+                  <li>Shift + click to select multiple sites or funk balls</li>
+                  <li>Press delete/backspace to remove selected sites or funk balls</li>
+                  <li>Select and right click sites or funk balls for menu options</li>
+                </ul>
+              </span>
+            </div>
+            <span class="text-[12px] underline"> 
+              Metric Space Visualization
+            </span>
+            <span>
+              <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                <li>Drag Mode: Click & drag the space inside the polygon</li>
+                <li>Sprite Mode: Use arrow keys to move around the polygon</li>
+              </ul>
+            </span>
+          </div>
+        </div>
+        <!-- --------------------------------------------------------------- -->
+
+        <div id="progressBarContainer">
+          <div id="progressBar"></div>
+        </div>
+
+        <div id="piGradientContainer" style="display: none; margin-top: 20px;">
+          <div style="font-weight: 500; font-size: 15px;">Pi Value Range</div>
+          <div style="display: flex; align-items: center; margin-top: 20px; height: 300px;">
+            <div id="piGradient" style="width: 30px; height: 100%; margin-right: 40px; border-radius: 3px;"></div>
+            <div id="piValues" style="height: 95%; position: relative;"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+        <div id="siteContainer">
+            <!-- SITE -->
+            <div class="collapsible" id="siteCollapsible">
+                <div id= "siteHeader" class="collapsible-header">Site<span class="plus-minus-icon"></span></div>
+                  <div class="content" style="display: none;">
+
+                  <div class="flex justify-between items-center w-full mb-5">
+                      <label for="siteColor" class="text-left">Site Color</label>
+                      <input type="color" id="siteColor" value="#0000FF" class="flex-shrink-0" />
+                  </div>
+
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label for="siteDrawSpokes" class="checkbox-label">Draw Spokes</label>
+                      <div style="position: relative;">
+                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawSpokes" class="checkbox-input">
+                        <span class="checkbox-background"></span>
+                      </div>
+                  </div>
+
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label for="siteShowInfo" class="checkbox-label">Show Info</label>
+                      <div style="position: relative;">
+                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteShowInfo" class="checkbox-input">
+                        <span class="checkbox-background"></span>
+                      </div>
+                  </div>
+
+                  <!-- Label and Position -->
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label>Label</label>
+                      <input class="labelInput" type="text" id="labelInput" placeholder="-">
+                      <button id="saveLabelButton" style="display: none;">Save</button>
+                  </div>
+
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <label>Position</label>
+                      <div id="sitePosition">N/A</div>
+                  </div>
+
+                </div>
+            </div>
+            
+            <!-- PAIR -->
+            <div class="collapsible" id="pairCollapsible">
+                <div id="pairHeader"class="collapsible-header">Pairs<span class="plus-minus-icon"></span></div>
+                    <div class="content" style="display: none;">
+
+                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                        <label for="siteDrawBisector" class="checkbox-label">Draw Bisector</label>
+                        <div style="position: relative;">
+                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawBisector" class="checkbox-input">
+                        <span class="checkbox-background"></span>
+                        </div>
+                    </div>
+
+
+                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                        <label for="siteDrawSegment" class="checkbox-label">Draw Segment</label>
+                        <div style="position: relative;">
+                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawSegment" class="checkbox-input">
+                        <span class="checkbox-background"></span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <label>Distance</label>
+                        <div id="pairDistance">N/A</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="allinfo">
+
+            </div>
+        </div>
+
+    </div>
+    <div id="canvasContainer">
+        <canvas id="canvas" style="
+        width: 100%; height: 100%; 
+        "></canvas>
+    </div>
+   
 
    <script type="module" src="index.js"></script>
 

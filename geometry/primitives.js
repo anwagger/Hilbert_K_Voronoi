@@ -1,4 +1,4 @@
-import { createSegmentsFromPoints } from "./utils.js";
+import { createSegmentsFromPoints,convexHull } from "./utils.js";
 
 export class Point {
     constructor(x,y){
@@ -20,8 +20,11 @@ export class Polygon {
 
     addPoint(p) {
         this.points.push(p);
-        // this.points = convexHull(this.points);
-        if (this.points.length > 1) { this.segments = createSegmentsFromVertices(this.points); }
+        this.points = convexHull(this.points);
+        if (this.points.length > 1) { 
+            this.segments = createSegmentsFromPoints(this.points); 
+        }
+        console.log("polygonL",this.points)
     }
 
 } 

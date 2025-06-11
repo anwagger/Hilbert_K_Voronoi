@@ -732,13 +732,15 @@
         height: 100vh;
         font-family:  'Inter';
         font-weight: 400;
-        color: #444;
+        color:#444;
         display: flex;
         background-color: white;
         overflow-x: hidden;
     }
 
     #sidebar {
+        
+        min-width: 310px;
         width: 310px;
         background-color: rgba(255, 255, 255, 0.9);
         padding: 20px;
@@ -774,12 +776,9 @@
         flex-grow: 1;
         position: relative;
         flex-direction: column;
-        overflow-y: auto;
-        overflow-x: hidden;
-        border: 1px solid #444;
         border-radius: 20px;
+        border: 1px solid #444;
         margin: 10px;
-        margin-right: 20px;
     }
 
     canvas {
