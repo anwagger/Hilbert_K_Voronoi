@@ -218,3 +218,17 @@ export function convexHull(points) {
 export function intersectBounds(b1,b2){
     return b1.top >= b2.bottom && b1.bottom <= b2.top && b1.left <= b2.right && b1.right >= b2.left
 }
+
+export function computeBoundingBox(polygon) {
+        let min_x = Infinity;
+        let max_x = -Infinity;
+        let min_y = Infinity;
+        let max_y = -Infinity;
+        for (p in polygon.points) {
+            min_x = Math.min(min_x,p.x);
+            max_x = Math.max(max_x, p.x);
+            min_y = Math.min(min_y, p.y);
+            max_y = Math.max(max_y, p.y);
+        }
+        return Bound(min_x,max_x,min_y,max_y);
+    }
