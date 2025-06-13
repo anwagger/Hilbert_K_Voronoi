@@ -16,14 +16,14 @@ export class PartitionTreeNode {
         switch (type) {
             case Partition_Node_Type.X:
                 this.x = data.x;
-                this.left = data.left;
-                this.right = data.right;
+                this.left = null;
+                this.right = null;
                 this.type = Partition_Node_Type.X;
             break;
             case Partition_Node_Type.Y:
                 this.y = data.y;
-                this.above = data.above;
-                this.below = data.below;
+                this.above = null;
+                this.below = null;
                 this.type = Partition_Node_Type.Y;
             break;
             case Partition_Node_Type.CELL:
@@ -79,11 +79,13 @@ export class PartitionTree {
 
     createTree(type,voronoi_bounds,bound) {
         if (type === Partition_Node_Type.X) {
+            // see what bisector has the most median x in the current bound
             let middle_x = Math.floor((bound.left + bound.right) / 2);
             let x = computeClosestBound(voronoi_bounds, middle_x);
-            // see what bisector has the most median x in the current bound
 
             let node = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
+
+            // splits bounding box up into a left and right
             let left_bound = new Bound(bound.left,x,bound.top,bound.bottom);
             let right_bound = new Bound(x,bound.right,bound.top,bound.bottom);
            
@@ -103,7 +105,7 @@ export class PartitionTree {
                 }
             }
 
-            // we now know there are only 3 cells a point can be in if it passes the left decision
+            // we now know there are only 3 or less cells a point can be in if its left to the median
             if (left_voronoi_bounds.size() <= 3) {
                 node.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
             } else {
@@ -117,10 +119,10 @@ export class PartitionTree {
                 node.left = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
             }
 
+            // nearly identical to the x case, just shrinks the bound vertically instead of horizontally
         } else if (type === Partition_Node_Type.Y) {
             let middle_y = Math.floor((bound.top + bound.bottom) / 2);
             let y = computeClosestBound(voronoi_bounds, middle_y);
-            // see what bisector has the most median x in the current bound
 
             let node = new PartitionTreeNode(Partition_Node_Type.Y, {y: y});
             let top_bound = new Bound(bound.left,bound.right,y,bound.bottom);
@@ -142,7 +144,7 @@ export class PartitionTree {
                 }
             }
 
-            // we now know there are only 3 cells a point can be in if it passes the left decision
+            // we now know there are only 3 cells a point can be in if its above our current median
             if (top_voronoi_bounds.size() <= 3) {
                 node.above = this.createTree(Partition_Node_Type.CELL, top_voronoi_bounds, top_bound);
             } else {
@@ -199,11 +201,10 @@ export class PartitionTree {
         // effectively pseudocode because we dont have an exact .contains function
         // if this is also just checking the bounding box of that cell then
 
-        while (curr.outside != null) {
-            if (voronoi.cells[curr.index].calculateVoronoiCellBounds.contains(point)) {
-                return curr.index;
+        for (i in curr.outside) {
+            if (voronoi.cells[i].calculateVoronoiCellBounds.contains(point)) {
+                return i;
             }
-            curr = curr.outside;
         }
 
         // for the case where curr.outside is null, meaning the only possible cell we can be in is the current
