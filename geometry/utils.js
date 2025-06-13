@@ -232,3 +232,13 @@ export function computeBoundingBox(polygon) {
         }
         return Bound(min_x,max_x,min_y,max_y);
     }
+
+export function computeClosestBound(bounds, point) {
+    curr = 0;
+    
+    for (b in bounds) {
+      curr = Math.min(Math.abs(curr - point), Math.abs(b.left - point), Math.abs(b.right - point));
+    }
+
+    return curr;
+}
