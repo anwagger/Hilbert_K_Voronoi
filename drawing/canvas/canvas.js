@@ -1,8 +1,8 @@
-import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke } from "../drawable.js"
-import { calculateSpokes, HilbertSpace} from "../../geometry/hilbert.js"
+import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector } from "../drawable.js"
+import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point } from "../../geometry/primitives.js";
-import {pointInPolygon} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance} from "../../geometry/utils.js"
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -33,9 +33,10 @@ export class Canvas {
       this.canvasHeight = 850;
 
       this.sites = [];
-      this.selectionOrder = [];
       this.segments = [];
       this.bisectors = [];
+
+      this.draggingPoint = null;
 
       this.globalScale = 1.0;
 
@@ -43,9 +44,14 @@ export class Canvas {
       this.boundaryLocked = false;
 
       this.colorPool = [
-         "red","orange","yellow","green","blue","purple",
+         "red","orange","gold","green","blue","purple",
          "pink","brown","black","gray","cyan","lime"
-      ]
+      ];
+
+      this.selectionAnchor = new Point(0,0);
+      this.selectionPointer = new Point(0,0);
+      this.selecting = false
+
    }
 
    setPolygonType(type) {
@@ -63,18 +69,25 @@ export class Canvas {
         } else {
             this.resetCanvas();
         }
-        this.sites = this.sites.filter(site => this.boundary.polygon.contains(site));
+        this.sites = this.sites.filter(site => !pointInPolygon(site,this.boundary.polygon));
         
+        this.recalculateAll()
         this.drawAll();
     }
     
    drawSegments() {
          this.sites.forEach(site => {
-            if (true || site.draw_spokes){
+            if (site.draw_spokes){
                site.drawable_spokes.forEach((d_s) => {
                   d_s.draw(this.ctx)
                })
             }
+            
+        });
+   }
+   drawBisectors() {
+         this.bisectors.forEach((bisector) => {
+            bisector.draw(this.ctx)
             
         });
    }
@@ -99,7 +112,6 @@ export class Canvas {
       const centroidY = tempVertices.reduce((sum, v) => sum + v.y, 0) / n;
         
       for (const vertex of tempVertices) {
-         console.log("ngon",vertex)
          const adjustedX = canvasCenterX + (vertex.x - centroidX);
          const adjustedY = canvasCenterY + (vertex.y - centroidY);
          this.boundary.addPoint(new Point(adjustedX, adjustedY));
@@ -121,8 +133,9 @@ export class Canvas {
    }
 
    getNewColor(list){
-      let colors = [...this.colorPool]
-      colors.filter((c) => {list.find((s) => s.color === c)})
+      let colors = this.colorPool.filter((c) => {
+         return list.filter((s) => s.color === c).length == 0
+      })
       if (colors.length === 0){
          colors = [...this.colorPool]
       }
@@ -165,6 +178,27 @@ export class Canvas {
         this.drawAll();
    }
 
+   setSiteColor(event) {
+      this.sites.forEach((site) =>{
+         if (site.selected){
+            site.setColor(event.target.value)
+         }
+      })
+      this.drawAll();
+   }
+
+   setSiteSpokes(event) {
+      this.sites.forEach((site) =>{
+         if (site.selected){
+
+            site.draw_spokes = event.target.checked
+         }
+      })
+      this.drawAll();
+   }
+
+
+
    setPolygonShowInfo(event) {
         this.boundary.showInfo = event.target.checked;
         this.drawAll();
@@ -175,9 +209,125 @@ export class Canvas {
         this.drawAll();
    }
 
-   addBisector(bisector) {
-        this.bisectors.push(bisector);
+   addBisector(bisector,p1,p2) {
+         let d_b = new DrawableBisector(bisector,p1,p2)
+        this.bisectors.push(d_b);
         this.drawAll();
+   }
+
+   setBisectors() {
+      let selectedSites = []
+      this.sites.forEach((site) =>{
+         if (site.selected){
+
+            selectedSites.push(site)
+         }
+      })
+      for(let i = 0; i < selectedSites.length; i++){
+         for(let j = i+1; j < selectedSites.length; j++){
+            let needNew = true
+            this.bisectors.forEach((bisector) => {
+               if (bisector.p1 === i && bisector.p2 === j || bisector.p1 === j && bisector.p2 === i){
+                  needNew = false
+               }
+            })
+            if(needNew){
+               let boundary = this.boundary.polygon
+               let point1 = selectedSites[i].drawable_point.point
+               let point2 = selectedSites[j].drawable_point.point
+               let h_p1 = calculateHilbertPoint(boundary,point1)
+               let h_p2 = calculateHilbertPoint(boundary,point2)
+               console.log(h_p1,h_p2)
+               let bisector = calculateBisector(boundary,h_p1,h_p2)
+               this.addBisector(bisector)
+            }
+         }
+      }
+      this.drawAll();
+   }
+
+
+   deselectSites(){
+      this.draggingPoint = null
+      for(let s = 0; s < this.sites.length; s++){
+         let site = this.sites[s]
+         site.selected = false
+      }
+   }
+
+   selectSingleSite(event){
+      const {x, y} = this.getMousePos(event);
+      const mouse = new Point(CAMERA.ix(x),CAMERA.iy(y))
+      this.sites.forEach((site) =>{
+               if (euclideanDistance(mouse,site.drawable_point.point) <= site.radius){
+                  site.selected = !site.selected
+
+               }
+
+      })
+   }
+
+   selectSites(){
+      for(let s = 0; s < this.sites.length; s++){
+         let site = this.sites[s]
+         if(isBetween(this.selectionAnchor.x,this.selectionPointer.x,site.drawable_point.point.x)
+            &&
+         isBetween(this.selectionAnchor.y,this.selectionPointer.y,site.drawable_point.point.y)
+         ){
+            site.selected = true
+         }
+      }
+   }
+
+   selectDragSite(event){
+      const {x, y} = this.getMousePos(event);
+      const mouse = new Point(CAMERA.ix(x),CAMERA.iy(y))
+      this.draggingPoint = null
+      for(let s = 0; s < this.sites.length; s++){
+         let site = this.sites[s]
+         if (euclideanDistance(mouse,site.drawable_point.point) <= site.radius){
+            this.draggingPoint = s
+         }
+      }
+      if(this.draggingPoint != null){
+         this.sites[this.draggingPoint].selected = true
+      }
+   }
+
+   dragSite(event){
+      const {x, y} = this.getMousePos(event);
+      const mouse = new Point(CAMERA.ix(x),CAMERA.iy(y))
+      if(this.draggingPoint != null){
+         if(pointInPolygon(mouse,this.boundary.polygon)){
+            let site = this.sites[this.draggingPoint]
+            site.drawable_point.point.x = mouse.x
+            site.drawable_point.point.y = mouse.y
+            this.recalculateSite(this.draggingPoint);
+         }
+         
+      }
+
+      
+
+   }
+
+   drawSelectBox(){
+      if(this.selecting){
+         this.ctx.beginPath();
+         this.ctx.strokeStyle = "black"
+         this.ctx.setLineDash([5, 3]);
+         let anchor_x = CAMERA.x(this.selectionAnchor.x)
+         let anchor_y = CAMERA.y(this.selectionAnchor.y)
+         let pointer_x = CAMERA.x(this.selectionPointer.x)
+         let pointer_y = CAMERA.y(this.selectionPointer.y)
+         let w = (pointer_x-anchor_x)
+         let h = (pointer_y-anchor_y)
+
+         this.ctx.rect(anchor_x, anchor_y, w, h);
+         this.ctx.stroke();
+         this.ctx.setLineDash([]);
+
+      }
    }
 
 
@@ -223,9 +373,14 @@ export class Canvas {
 
       this.drawSegments()
 
+      this.drawBisectors()
+
+
       this.sites.forEach((site) => {
          site.draw(this.ctx)
       })
+
+      this.drawSelectBox()
  
    }
 

@@ -1,3 +1,5 @@
+import { CAMERA } from "../drawable.js";
+
 // from nithins
 export function initEvents(canvas) {
 
@@ -40,6 +42,17 @@ export function initEvents(canvas) {
       canvas.setPolygonColor(event);
     });
 
+   document.getElementById('siteColor').addEventListener('input', (event) => {
+      canvas.setSiteColor(event);
+    });
+   document.getElementById('siteDrawSpokes').addEventListener('input', (event) => {
+      canvas.setSiteSpokes(event);
+    });
+
+   document.getElementById('siteDrawBisector').addEventListener('input', (event) => {
+      canvas.setBisectors(event);
+    });
+
    document.getElementById('polygonShowInfo').addEventListener('change', (event) => {
       canvas.setPolygonShowInfo(event);
    });
@@ -62,7 +75,9 @@ export function initEvents(canvas) {
       if (canvas.mode === 'boundary' && canvas.boundaryType === 'freeDraw'){
             canvas.addPolygonPoint(event);
       }else if(canvas.mode === 'site'){
+         if(!event.shiftKey){
             canvas.addSite(event)
+         }
       } 
    });
 
@@ -77,7 +92,93 @@ export function initEvents(canvas) {
         alert('Please enter a number greater than or equal to 3.');
       }
    });
-  
+
+
+   let canvasElement = canvas.canvas
+   
+   canvasElement.onmousedown = (event) => {
+       CAMERA.move_lock = false
+
+       if (canvas.mode === "site"){
+         if (event.shiftKey){
+            canvas.selecting = true;
+            const {x,y} = canvas.getMousePos(event)
+            canvas.selectionAnchor.x = CAMERA.ix(x)
+            canvas.selectionAnchor.y = CAMERA.iy(y)
+            canvas.selectionPointer.x = CAMERA.ix(x)
+            canvas.selectionPointer.y = CAMERA.iy(y)
+
+            canvas.drawAll()
+         }else{
+            canvas.selectDragSite(event)
+         }
+         
+
+       }
+   }
+   canvasElement.onmouseup = (event) => {
+       CAMERA.move_lock = true
+
+       if (canvas.mode === "site"){
+         if (event.shiftKey){
+            canvas.selectSites()
+         }else{
+            canvas.deselectSites()
+         }
+         canvas.selectSingleSite(event)
+         canvas.selecting = false;
+         canvas.drawAll()
+       }
+   }
+
+   
+   canvasElement.onscroll = (event) => {
+       CAMERA.changeScale(event.movementY)
+   
+   }
+   
+   canvasElement.onmousemove = (event) => {
+
+      if (canvas.mode === "site"){
+         if(event.shiftKey){
+            if (canvas.selecting){
+            const {x, y} = canvas.getMousePos(event);
+            canvas.selectionPointer.x = CAMERA.ix(x)
+            canvas.selectionPointer.y = CAMERA.iy(y)
+            }
+         }else{
+            canvas.dragSite(event)
+            canvas.selecting = false;
+            canvas.drawAll()
+         }
+         
+      }
+
+      if(canvas.mode === "view"){
+         if (!CAMERA.move_lock){
+
+            if (event.shiftKey){
+                  CAMERA.changeScale(event.movementY)
+            }else{
+               CAMERA.changeOffset(event.movementX,event.movementY)
+            }
+         }
+      }else{
+         if (!CAMERA.move_lock){
+            if (!event.shiftKey && (canvas.draggingPoint == null)){
+               CAMERA.changeOffset(event.movementX,event.movementY)
+            }
+         }
+      } 
+
+      //test_render()
+      canvas.drawAll()
+   }
+   
+   canvasElement.onscroll = (event) => {
+       CAMERA.changeOffset(event.movementX,event.movementY)
+   }
+   
   
    /**
    document.getElementById('reset').addEventListener('click', () => {

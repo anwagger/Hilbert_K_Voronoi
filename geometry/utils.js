@@ -66,7 +66,7 @@ export function intersectSegmentsAsLines(s1, s2) {
 }
 
 export function isBetween(a, b, c){
-  return (a <= c && c <= b) || (b <= c && c <= a);
+  return ((a-c) <= 1e-10 && (c-b) <= 1e-10) || ((b-c) <= 1e-10 && (c-a) <= 1e-10);
 }
 
 // copied from nithins code, might need to be changed
@@ -77,11 +77,11 @@ export function intersectSegments(s1, s2) {
   if (point) {
 
 
-    // only want to make sure it lands on seg_2
-    //const is_on_seg1 = isBetween(s1.start.x, s1.end.x, point.x) && isBetween(s1.start.y, s1.end.y, point.y);
+    // only want to make sure it lands on seg_2?
+    const is_on_seg1 = isBetween(s1.start.x, s1.end.x, point.x) && isBetween(s1.start.y, s1.end.y, point.y);
     const is_on_seg2 = isBetween(s2.start.x, s2.end.x, point.x) && isBetween(s2.start.y, s2.end.y, point.y);
 
-    if (is_on_seg2) {
+    if (is_on_seg2 && is_on_seg1) {
       return point;
     }    
   }

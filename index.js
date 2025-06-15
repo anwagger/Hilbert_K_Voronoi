@@ -1,4 +1,4 @@
-import {CAMERA,DrawableConicSegment, DrawablePoint, DrawablePolygon, DrawableSegment} from "./drawing/drawable.js"
+import {CAMERA,DrawableBisector,DrawableConicSegment, DrawablePoint, DrawablePolygon, DrawableSegment} from "./drawing/drawable.js"
 import {Canvas} from "./drawing/canvas/canvas.js"
 import {Point, Polygon, Segment, Spoke} from "./geometry/primitives.js"
 import { calculateBisector, calculateSector,calculateSectorTesting, calculateSpokes, HilbertPoint } from "./geometry/hilbert.js";
@@ -10,6 +10,7 @@ let canvas = new Canvas(canvasElement);
 let ctx = canvas.ctx;
 console.log(canvas);  
 
+/*
 canvasElement.onmousedown = (event) => {
     CAMERA.move_lock = false
 }
@@ -33,21 +34,21 @@ canvasElement.onmousemove = (event) => {
 
         }
         test_render()
-        canvas.drawAll()
+        //canvas.drawAll()
     }
 }
 
 canvasElement.onscroll = (event) => {
     CAMERA.changeOffset(event.movementX,event.movementY)
 }
-console.log(canvasElement)
+*/
+
 
 let point1 = new Point(30,50);
 let drawable_point1 = new DrawablePoint(point1);
 
 let point2 = new Point(80,90)
 let drawable_point2 = new DrawablePoint(point2);
-
 
 let boundary = new Polygon(convexHull([new Point(10,10), new Point(100,10),new Point(100,100), new Point(10, 100)]));
 let spokes1 = calculateSpokes(boundary, point1);
@@ -59,22 +60,24 @@ let drawable_boundary = new DrawablePolygon(boundary,"red");
 let h_p1 = new HilbertPoint(point1,spokes1)
 let h_p2 = new HilbertPoint(point2,spokes2)
 
-let {sector:sector, gons:gons} = calculateSectorTesting(boundary,h_p1,h_p2,3,2,1,2)
+//let {sector:sector, gons:gons} = calculateSectorTesting(boundary,h_p1,h_p2,3,2,1,2)
 
 //let {sector:sector, gons:gons} = calculateSectorTesting(boundary,h_p1,h_p2,3,2,2,3)
 
-console.log("SECTOR",sector)
+//console.log("SECTOR",sector)
 let colors = ["green","purple","yellow","orange"]
 
+//let drawable_sector = new DrawablePolygon(sector.polygon,"blue","blue",false);
 
-let drawable_sector = new DrawablePolygon(sector.polygon,"blue","blue",false);
+let bisector = calculateBisector(boundary,h_p1,h_p2)
+console.log("bisector",bisector)
+let draw_bisector = new DrawableBisector(bisector)
 
-//let bisector = calculateBisector(boundary,h_p1,h_p2)
-//console.log("bisector",bisector)
+
 let draw_conics = []
 let draw_sectors = []
 let sector_params = [[3,1,2,3],[3,1,2,0],[3,2,1,3],[0,2,1,3],[3,2,2,3]]//
-let conic_colors = ["blue","green","red","purple","orange"]
+let conic_colors = ["blue","green","red","purple","orange","pink"]
 let int_points = []
 for (let i = 0; i < sector_params.length; i++){
     let p = sector_params[i]
@@ -85,13 +88,13 @@ for (let i = 0; i < sector_params.length; i++){
 
     let {start_t:start,end_t:end,points:i_points} = getConicParameterBoundsInPolygon(mid_p,mid.polygon)
 
-    console.log("t bounds",start,end)
+    //console.log("t bounds",start,end)
     int_points = int_points.concat(i_points)
     let draw_mid_conic = new DrawableConicSegment(new ConicSegment(mid_p,start,end,null))
-    console.log("draw:",start,end,Math.abs(draw_mid_conic.conic_segment.end - draw_mid_conic.conic_segment.start)/ 50,Math.abs(draw_mid_conic.conic_segment.end - draw_mid_conic.conic_segment.start)) 
+    //console.log("draw:",start,end,Math.abs(draw_mid_conic.conic_segment.end - draw_mid_conic.conic_segment.start)/ 50,Math.abs(draw_mid_conic.conic_segment.end - draw_mid_conic.conic_segment.start)) 
 
     draw_mid_conic.color = conic_colors[i]
-    console.log("midector:",mid,draw_mid_conic)
+    //console.log("sector:",p,mid)
     let draw_mid = new DrawablePolygon(mid.polygon,"gray","gray",false);
     draw_sectors.push(draw_mid)
     draw_conics.push(draw_mid_conic)
@@ -170,6 +173,9 @@ drawable_sector.draw(ctx);
         d_p.color = "yellow"
         d_p.draw(ctx)
     }
+         
+
+    draw_bisector.draw(ctx)
 
 }
 

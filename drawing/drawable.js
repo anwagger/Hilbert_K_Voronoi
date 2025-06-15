@@ -157,10 +157,23 @@ export class DrawablePoint {
 }
 
 export class DrawableBisector {
-  constructor(bisector) {
-    this.drawable_point = drawable_point;
-    this.drawable_point.color = "blue";
-    this.radius = radius;
+  constructor(bisector,p1_index,p2_index) {
+    this.p1 = p1_index
+    this.p2 = p2_index
+    this.bisector = bisector;
+    this.drawable_conic_segments = [];
+    this.color = "blue"
+    bisector.conic_segments.forEach((c_s) => {
+      let d_c_s = new DrawableConicSegment(c_s)
+      d_c_s.color = this.color
+      this.drawable_conic_segments.push(d_c_s)
+    })
+  }
+
+  draw(ctx){
+    this.drawable_conic_segments.forEach((d_c_s) => {
+      d_c_s.draw(ctx,50)
+    })
   }
 
 }
@@ -228,19 +241,26 @@ export class DrawableConicSegment {
 }
 
 export class Site {
-  constructor(drawable_point, drawable_spokes, radius = 3) {
+  constructor(drawable_point, drawable_spokes, radius = 8) {
     this.draw_spokes = false
     this.drawable_point = drawable_point;
     this.drawable_point.color = "blue";
     this.color = "blue";
     this.drawable_spokes = drawable_spokes
     this.radius = radius;
+    this.selected = false
 
   }
 
   setColor(color){
     this.color = color
     this.drawable_point.color = color
+    if(this.drawable_spokes){
+    this.drawable_spokes.forEach((spoke) => {
+      spoke.color = color
+    })
+    }
+
   }
 
   draw(ctx) {
@@ -249,4 +269,11 @@ export class Site {
         }
         this.drawable_point.draw(ctx);
     }
+
+  drawSelectionRing(ctx){
+    ctx.strokeStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(CAMERA.x(this.drawable_point.point.x), CAMERA.y(this.drawable_point.point.y), this.radius, 0, 2 * Math.PI);
+    ctx.stroke();
+}
 }

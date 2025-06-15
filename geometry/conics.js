@@ -50,6 +50,7 @@ export class Conic {
         let intersections = this.intersectLine(segment)
         let valid_intersections = []
         for (let p of intersections){
+            
             if (isBetween(segment.start.x,segment.end.x,p.x) 
                 && 
                 isBetween(segment.start.y,segment.end.y,p.y)
@@ -406,7 +407,7 @@ export class ParameterizedConic {
                     t = atan(cos*this.y_mult/(sin*this.x_mult))
                 */
                 dx_func = () => {
-                    let t = Math.atan(-sin*y_mult/(cos*x_mult))
+                    let t = Math.atan(-sin*this.y_mult/(cos*this.x_mult))
                     return [t, t + Math.PI]
                 }
                 dy_func = () => {
@@ -444,12 +445,12 @@ export class ParameterizedConic {
                         dx_func = () => {
                             //Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
                             let t = 1/Math.asin((-cos*this.y_mult)/(sin*this.x_mult))
-                            [t,-t + Math.PI]
+                            return [t,-t + Math.PI]
                         }
                         dy_func = () => {
                             //Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
                             let t = 1/Math.asin((-cos*this.y_mult)/(sin*this.x_mult))
-                            [t,-t + Math.PI]
+                            return [t,-t + Math.PI]
                         }
                     break;
                     case Conic_Orientation.VERTICAL:
@@ -629,8 +630,23 @@ export function getConicType(conic){
     
     const beta =  (A*C-B*B/4)*F + (B*E*D-C*D*D-A*E*E)/4
 
+    // there's an issue here!
+    // percision!
     // non-degen
-    if (Math.abs(beta) > 1e-10){
+    
+    /**
+     assume B=0
+     If no Y or no X, parallel
+
+     can get in form (x-a)^2-(y-b)^2=0
+     */
+
+     let parallel = (A== 0 && D == 0) || (C == 0 && E == 0)
+     let crossed = Math.abs((D*D/(4*A)) + (E*E/(4*C)) - F) <= 1e-5
+
+    if (Math.abs(beta) <= 1e-5 || parallel || crossed){
+        return Conic_Type.DEGENERATE
+    }else{
         const d = B*B - 4*A*C
         if (d === 0){            
             return Conic_Type.PARABOLA
@@ -639,8 +655,6 @@ export function getConicType(conic){
         }else{
             return Conic_Type.ELLIPSE
         }
-    }else{
-        return Conic_Type.DEGENERATE
     }
     
     
@@ -688,13 +702,13 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
         for (let i = 0; i < intersections[segment_num].length; i++) {
             let point = intersections[segment_num][i]
             points.push(point)
-            console.log("p",point,parameterized_conic.getTOfPoint(point),parameterized_conic.getPointFromT(parameterized_conic.getTOfPoint(point)))
+            //console.log("p",point,parameterized_conic.getTOfPoint(point),parameterized_conic.getPointFromT(parameterized_conic.getTOfPoint(point)))
             // keep track of t and which segment it collided with
             ts.push([parameterized_conic.getTOfPoint(point),segment_num])
         }
     }
 
-    console.log("TS",ts)
+    //console.log("TS",ts)
 
 
     let start = [Infinity,-1]

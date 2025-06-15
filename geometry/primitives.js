@@ -24,7 +24,6 @@ export class Polygon {
         if (this.points.length > 1) { 
             this.segments = createSegmentsFromPoints(this.points); 
         }
-        console.log("polygonL",this.points)
     }
 
 } 

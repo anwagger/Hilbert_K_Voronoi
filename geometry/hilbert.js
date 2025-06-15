@@ -1,12 +1,18 @@
+import {Bisector} from "./bisectors.js"
 import { ConicSegment,bisectorConicFromSector,parameterizeConic,getConicParameterBoundsInPolygon,calculateConicSegmentBounds } from "./conics.js"
 import { Polygon, Sector, Segment,Spoke } from "./primitives.js"
-import { convexHull, euclideanDistance, intersectSegments, pointInPolygon,isBetween, intersectSegmentsAsLines } from "./utils.js"
+import { convexHull, euclideanDistance, intersectSegments, pointInPolygon,isBetween, intersectSegmentsAsLines, pointSegDistance } from "./utils.js"
 
 export class HilbertPoint {
     constructor(point,spokes){
         this.point = point
         this.spokes = spokes
     }
+}
+
+export function calculateHilbertPoint(boundary,point){
+    let spokes = calculateSpokes(boundary,point)
+    return new HilbertPoint(point,spokes)
 }
 
 export function calculateSpokes(boundary,point){
@@ -22,10 +28,12 @@ export function calculateSpokes(boundary,point){
         // for each segment not adjacent to the vertex
         for (let j = 1; j < n_points-1; j++){
             let i2 = (i + j)%n_points
+
             let boundary_segment = new Segment(points[i2],points[(i2+1)%n_points])
             
+            let intersection = intersectSegmentsAsLines(partial_spoke,boundary_segment); 
             
-            let intersection = intersectSegments(partial_spoke,boundary_segment); 
+            
             if (intersection){
                 // valid intersection
                 if (
@@ -40,6 +48,9 @@ export function calculateSpokes(boundary,point){
             // check for valid intersection , 
             // add proper spoke if so, then break!
         }
+    }
+    if(spokes.length != n_points){
+        console.log("ISSUE")
     }
     return spokes
 }
@@ -111,7 +122,7 @@ export function makeBoundingCone(boundary,h_p,face_num,is_front){
     */
 
 export function calculateSector(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_enter,p2_exit){
-    let {sector:sector,gons:gons} = calculateSectorTesting(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_enter,p2_exit)
+    let {sector:sector} = calculateSectorTesting(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_enter,p2_exit)
     return sector
 }
 export function calculateSectorTesting(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_enter,p2_exit){
@@ -128,6 +139,8 @@ export function calculateSectorTesting(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_en
     we then calculate some metadata for the sector for later calculations to use
 
     */
+
+    console.log(p1_enter,p1_exit,p2_enter,p2_exit,h_p1.spokes[p1_enter])
     let p1_lines = [
         new Segment(h_p1.point,h_p1.spokes[p1_enter].segment.end),
         new Segment(h_p1.point,h_p1.spokes[(p1_enter+1) % boundary.points.length].segment.end),
@@ -240,16 +253,25 @@ export function calculateSectorTesting(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_en
 
     let spoke_data = []
 
+    let line_map = [
+        [p1_enter,(p1_enter+1) % boundary.points.length,p1_exit,(p1_exit+1) % boundary.points.length],
+        [p2_enter,(p2_enter+1) % boundary.points.length,p2_exit,(p2_exit+1) % boundary.points.length],
+    ]
+
     let line_id_to_spoke_id= (point_id,line_id) => {
         // returns spoke id, and if the spoke-part is the front
-        let spoke_id = (line_id < 2)?(point_id == 1?p1_enter:p2_enter):(point_id == 1?p1_exit:p2_exit)
+        //let spoke_id = (line_id < 2)?(point_id == 1?p1_enter:p2_enter):(point_id == 1?p1_exit:p2_exit)
+        let spoke_id = null
         if (line_id < 0){
             spoke_id = null
+        }else{
+            spoke_id = line_map[point_id-1][line_id]
         }
         return {
             spoke_id: spoke_id, 
             front: (line_id >= 2)}
     }
+
 
     for (let i = 0; i < sector_polygon.points.length; i++){
         let data = sector_face_data.get(sector_polygon.points[i])
@@ -257,7 +279,7 @@ export function calculateSectorTesting(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_en
         let p1 = null
         let p1_side = false
         // this means its the point itself, so need next data
-        if (!data.p1){
+        if (data.p1 == null){
             // if the first point is the point, the next one's p1 should be "valid"
             let ids = line_id_to_spoke_id(1,next_data.p1)
             p1 = ids.spoke_id
@@ -291,6 +313,49 @@ export function calculateSectorTesting(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_en
 
 }
 
+export function calculateMidsector(boundary,h_p1,h_p2){
+    let mid_segment = new Segment(h_p1.point,h_p2.point)
+
+    let x_diff = h_p1.point.x - h_p2.point.x
+
+    let y_diff = h_p1.point.y - h_p2.point.y
+
+    let points = boundary.points
+
+    let enter = -1
+    let exit = -1
+
+    for (let i = 0; i < points.length; i++){
+        let i2 = (i+1) % points.length
+        let s = new Segment(points[i],points[i2])
+        let line_intersection = intersectSegmentsAsLines(mid_segment,s)
+
+        let intersection = null
+
+
+        if(line_intersection){
+            const is_on = isBetween(s.start.x, s.end.x, line_intersection.x) && isBetween(s.start.y, s.end.y, line_intersection.y);
+            if (is_on){
+                intersection = line_intersection
+            }
+        }
+
+        if (intersection){
+            let ix_diff = intersection.x - h_p1.point.x
+            let iy_diff = intersection.y - h_p1.point.y
+            // intersect before or after
+            if (Math.sign(x_diff) === Math.sign(ix_diff) && Math.sign(y_diff) === Math.sign(iy_diff)){
+                enter = i
+            }else{
+                exit = i
+            }
+        }
+    }
+
+    return calculateSector(boundary,h_p1,h_p2,enter,exit,exit,enter)
+
+}
+
 export function calculateBisector(boundary,h_p1,h_p2){
     // The hamming distance between two sector's edge paramterizations
     // is equal to the number of spokes needed to cross to get between sectors
@@ -311,46 +376,23 @@ export function calculateBisector(boundary,h_p1,h_p2){
             if back of spoke, change pi_enter as the other segment connected to the spoke
     */
 
-    let mid_segment = new Segment(h_p1.point,h_p2.point)
-
-    let x_diff = h_p1.point.x - h_p2.point.x
-
-    let y_diff = h_p1.point.y - h_p2.point.y
-
-    let points = boundary.points
-
-    let enter = -1
-    let exit = -1
-
-    for (let i = 0; i < points.length; i++){
-        let i2 = (i+1) % points.length
-        let s = new Segment(points[i],points[i2])
-        let intersection = intersectSegments(mid_segment,s)
-
-        if (intersection){
-            let ix_diff = intersection.x - h_p1.point.x
-            let iy_diff = intersection.y - h_p1.point.y
-            // intersect before or after
-            if (Math.sign(x_diff) === Math.sign(ix_diff) && Math.sign(y_diff) === Math.sign(iy_diff)){
-                enter = i
-            }else{
-                exit = i
-            }
-        }
-    }
-
-    let sector = calculateSector(boundary,h_p1,h_p2,enter,exit,exit,enter)
-
+    let sector = calculateMidsector(boundary,h_p1,h_p2)
     //return {mid:sector}
 
     console.log("MID-SECTOR:",sector)
 
+    console.log("TRAVERSING")
+
     let conic_segments = traverseBisector(boundary,h_p1,h_p2,sector,null)
+
+    console.log("DONE")
 
     return new Bisector(conic_segments)
 }
 
 export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
+
+    console.log("recurse:",sector.p1_enter,sector.p1_exit,sector.p2_enter,sector.p2_exit)
 
     let conic = bisectorConicFromSector(boundary,sector)
 
@@ -358,7 +400,6 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
 
     let {start_t:start_t, start_segment:start_segment, end_t:end_t, end_segment:end_segment} = getConicParameterBoundsInPolygon(p_conic,sector.polygon)
     
-    console.log("segments:",start_segment,end_segment)
 
     let start_data1 = sector.edge_spokes[start_segment]
     let start_data2 = sector.edge_spokes[(start_segment+1) % sector.edge_spokes.length]
@@ -367,10 +408,13 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
     let end_data2 = sector.edge_spokes[(end_segment+1) % sector.edge_spokes.length]
 
 
+    console.log("intersections",start_t,start_segment,end_t,end_segment,p_conic)
     let data = [
         [start_data1,start_data2],
         [end_data1,end_data2]
     ]
+
+    console.log("SECTOR",start_segment,end_segment,sector)
 
     // parameters for the neighboring sector that was intersected with
     // hit_end is for a boundary hit
@@ -380,14 +424,14 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
             p1_exit: sector.p1_exit,
             p2_enter: sector.p2_enter,
             p2_exit: sector.p2_exit,
-            hit_end: false
+            hit_end: (start_t === end_t)
         },
         {
             p1_enter: sector.p1_enter,
             p1_exit: sector.p1_exit,
             p2_enter: sector.p2_enter,
             p2_exit: sector.p2_exit,
-            hit_end: false
+            hit_end: (start_t === end_t)
         }
     ]
 
@@ -398,16 +442,24 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
         let data2 = data[i][1]
         
 
+        if(!data1){
+            data1 = {}
+        }
+        if(!data2){
+            data2 = {}
+        }
         let point_num = data1.p1_spoke == data2.p1_spoke?"1":"2"
         let spoke1 = data1["p" + point_num + "_spoke"]
         let front1 = data1["p" + point_num + "_front"]
-        let change = front1?"_exit":"_enter"
+        let change = ("p" + point_num ) + (front1?"_exit":"_enter")
 
         // what this is doing is checking which spoke was hit,
         // whether it was the front or back,
         // and determines which parameters to change to what when passing over
-        if (spoke1){
-            if (hit_data[change] == data1.p1_spoke){
+
+        //this is wrongish!
+        if (spoke1 != null){
+            if (hit_data[change] == spoke1){
                 hit_data[change] = ((sector.edge_spokes.length + spoke1-1)%sector.edge_spokes.length)
             }else{
                 hit_data[change] = spoke1
@@ -416,10 +468,7 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
             hit_data.hit_end = true
         }
     }
-    
-    let conic_segments = []
-    let conic_segment = null
-    // this is true if this isn't the first call
+    console.log("RESULT\n","end\n",sector_hit[0],"start\n",sector_hit[1])
 
     let bound = calculateConicSegmentBounds(p_conic,start_t,end_t)
 
@@ -429,6 +478,7 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
     let start_p = p_conic.getPointFromT(start_t)
     let end_p = p_conic.getPointFromT(end_t)
 
+    // this is true if this isn't the first call
     if (start_point){
         if (euclideanDistance(start_point,start_p) > euclideanDistance(start_point,end_p)){
             start_num = 1
@@ -440,7 +490,11 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
     
     // if the end hits a wall, return 
     if (sector_hit[end_num].hit_end){
-            return [c_s]
+            if(c_s.start > -Infinity && c_s.end < Infinity){
+                return [c_s]
+            }else{
+                return []
+            }
     }
 
     // calculate the neighboring sectors
@@ -466,10 +520,14 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
             start_segments.end = temp
         }
         start_segments.push(c_s)
-        return start_segments.concat(end_segments)
+        let final_bisector = start_segments.concat(end_segments)
+        console.log("FINAL:",final_bisector)
+        return final_bisector
     }
+
+    
+        return [c_s].concat(end_segments)
         
-    return [c_s].concat(end_segments)
 }
 
 
