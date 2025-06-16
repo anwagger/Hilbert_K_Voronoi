@@ -704,7 +704,7 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
             points.push(point)
             //console.log("p",point,parameterized_conic.getTOfPoint(point),parameterized_conic.getPointFromT(parameterized_conic.getTOfPoint(point)))
             // keep track of t and which segment it collided with
-            ts.push([parameterized_conic.getTOfPoint(point),segment_num])
+            ts.push([parameterized_conic.getTOfPoint(point),segment_num,point])
         }
     }
 
@@ -739,7 +739,7 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
     }
 
     // return boundign t's and their associated segments
-    return {start_t: start[0],start_segment:start[1],end_t:end[0],end_segment:end[1],points:points}
+    return {start_t: start[0],start_segment:start[1],start_point:start[2],end_t:end[0],end_segment:end[1],end_point:end[2],points:points}
 }
 
 export function unrotateConic(c){
