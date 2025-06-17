@@ -2,7 +2,7 @@ import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSp
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point } from "../../geometry/primitives.js";
-import {pointInPolygon,isBetween, euclideanDistance} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray} from "../../geometry/utils.js"
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -155,11 +155,7 @@ export class Canvas {
          // calculate the new point
          this.recalculateSite(this.sites.length-1)
          this.drawAll()
-      }
-
-      
-
-      
+      }      
    }
 
    addPolygonPoint(event) {
@@ -242,13 +238,23 @@ export class Canvas {
                let point2 = selectedSites[j].drawable_point.point
                let h_p1 = calculateHilbertPoint(boundary,point1)
                let h_p2 = calculateHilbertPoint(boundary,point2)
-               console.log(h_p1,h_p2)
                let bisector = calculateBisector(boundary,h_p1,h_p2)
-               this.addBisector(bisector)
+               this.addBisector(bisector,i,j)
             }
          }
       }
       this.drawAll();
+   }
+
+   recalculateBisector(b){
+      let draw_bisector = this.bisectors[b]
+      let boundary = this.boundary.polygon
+      let point1 = selectedSites[draw_bisector.p1].drawable_point.point
+      let point2 = selectedSites[draw_bisector.p2].drawable_point.point
+      let h_p1 = calculateHilbertPoint(boundary,point1)
+      let h_p2 = calculateHilbertPoint(boundary,point2)
+      let bisector = calculateBisector(boundary,h_p1,h_p2)
+      draw_bisector.bisector = bisector
    }
 
 
@@ -311,9 +317,6 @@ export class Canvas {
          }
          
       }
-
-      
-
    }
 
    drawSelectBox(){
@@ -331,8 +334,23 @@ export class Canvas {
          this.ctx.rect(anchor_x, anchor_y, w, h);
          this.ctx.stroke();
          this.ctx.setLineDash([]);
-
       }
+   }
+   deleteSelectedSites(){
+      this.sites.forEach((s,idx) => {
+      if (s.selected) {
+         for(let b = 0; b < this.bisectors.length; b++ ){
+            if(bisector.p1 == index || bisector.p2 == index){
+               this.bisectors[b] = null
+            }
+         }
+         this.bisectors = cleanArray(this.bisectors)
+         s.drawable_point.deleteInfoBox();
+         this.sites[idx] = null;
+      }
+   });
+      this.sites = cleanArray(this.sites) // removes any null elts from array
+      this.drawAll();
    }
 
 
@@ -348,6 +366,12 @@ export class Canvas {
          site.drawable_spokes[site.drawable_spokes.length-1].color = site.color
       })
 
+      for(let b = 0; b < this.bisectors.length; b++){
+         let bisector = this.bisectors[b]
+         if(bisector.p1 == index || bisector.p2 == index){
+            this.recalculateBisector(b)
+         }
+      }
    }
 
    recalculateAll(){
@@ -359,17 +383,71 @@ export class Canvas {
       }
 
       // might not want to auto-do
-      /**
-      let bisectors = []
-
-      // pairs
-      for(let i = 0; i < points.length-1; i++){
-         for(let j = i + 1; j < points.length; j++){
-            
-         }
+      
+      for(let b = 0; b < this.bisectors.length; b++){
+         this.recalculateBisector(b)
       }
-      */
+
+      
+      
    }
+
+   
+makeDraggableAroundPoint(element, drawable_point, canvasRect) {
+  let isDragging = false;
+  const point = drawable_point.point;
+  let startX, startY;
+  const maxDistance = 50; // Maximum distance from the point
+  const dpr = window.devicePixelRatio;
+
+  // Calculate initial top and bottom bounds
+  const scale = canvasRect.width / this.canvas.width;
+  const pointX = point.x * scale * dpr + canvasRect.left;
+  const pointY = point.y * scale * dpr + canvasRect.top;
+  const initialTop = drawable_point.defaultInfoBoxPosition.top;
+  const initialBottom = initialTop + maxDistance;
+
+  element.addEventListener('mousedown', startDragging);
+  document.addEventListener('mousemove', drag);
+  document.addEventListener('mouseup', stopDragging);
+
+  function startDragging(e) {
+    isDragging = true;
+    startX = e.clientX - parseInt(element.style.left);
+    startY = e.clientY - parseInt(element.style.top);
+    e.preventDefault();
+  }
+
+  function drag(e) {
+    if (!isDragging) return;
+
+    let newX = e.clientX - startX;
+    let newY = e.clientY - startY;
+
+    const dx = newX - pointX;
+    const dy = newY - pointY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > maxDistance) {
+      const angle = Math.atan2(dy, dx);
+      newX = pointX + maxDistance * Math.cos(angle);
+      newY = pointY + maxDistance * Math.sin(angle);
+    }
+    
+    newY = Math.max(initialTop, Math.min(newY, initialBottom));
+
+    element.style.left = `${newX}px`;
+    element.style.top = `${newY}px`;
+  }
+
+  function stopDragging() {
+    isDragging = false;
+    drawable_point.infoBoxPosition = {
+      left: parseInt(element.style.left),
+      top: parseInt(element.style.top)
+    };
+  }
+}
 
    drawAll() {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -383,22 +461,11 @@ export class Canvas {
 
       this.sites.forEach((site) => {
          site.draw(this.ctx)
-         if (site.drawable_point.showInfo) site.drawable_point.drawInfoBox(this.canvas, this.dpr); 
+         if (site.drawable_point.showInfo) site.drawable_point.drawInfoBox(this, this.dpr); 
       })
 
       this.drawSelectBox()
  
-   }
-
-   // gets rid of null sites in the array
-   cleanSitesArray() {
-      let new_sites = [];
-      for (let i = 0; i < this.sites.length; i++) {
-         if (this.sites[i] != null) {
-            new_sites.push(this.sites[i]);
-         }
-      }
-      this.sites = new_sites;
    }
 
    resetSites() {

@@ -708,23 +708,19 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
         }
     }
 
-    //console.log("TS",ts)
 
 
     let start = [Infinity,-1]
-    let end = [-Infinity,-1]
+    let end = [-Infinity,-1] 
     for (let i = 0; i < ts.length; i++){
         let t = ts[i]
         if (t[0] < start[0]){
             start = t
-        }
-        if(t[0] > end[0]){
+        // used to be just if
+        }else if(t[0] > end[0]){
             end = t
         }
-        
     }
-
-
 
     // take shortest way around
     let direction = Math.abs(end[0]-start[0])>2*Math.PI-Math.abs(end[0]-start[0])

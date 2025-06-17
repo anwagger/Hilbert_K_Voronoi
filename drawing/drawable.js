@@ -2,8 +2,7 @@ import { Polygon, Segment } from "../geometry/primitives.js";
 import { createSegmentsFromPoints,
   convexHull, 
   intersectSegments, 
-  intersectSegmentsAsLines, 
-  makeDraggableAroundPoint } from "../geometry/utils.js";
+  intersectSegmentsAsLines } from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -163,8 +162,9 @@ export class DrawablePoint {
   }
 
   drawInfoBox(canvas, dpr) {
+    let canvasElement = canvas.canvas
     const container = document.getElementById('infoBoxContainer');
-    const rect = canvas.getBoundingClientRect();
+    const rect = canvasElement.getBoundingClientRect();
 
     // Create the infoBox element only if it doesn't already exist
     if (!this.infoBox) {
@@ -188,8 +188,8 @@ export class DrawablePoint {
     this.infoBox.style.borderColor = this.color;
     this.infoBox.style.zIndex = 999;
 
-    const canvasX = CAMERA.x(this.point.x) * (rect.width / canvas.width) * dpr;
-    const canvasY = CAMERA.y(this.point.y) * (rect.height / canvas.height) * dpr;
+    const canvasX = CAMERA.x(this.point.x) * (rect.width / canvasElement.width) * dpr;
+    const canvasY = CAMERA.y(this.point.y) * (rect.height / canvasElement.height) * dpr;
 
     const newLeft = rect.left + canvasX;
     const newTop = rect.top + canvasY - 10;
@@ -197,7 +197,7 @@ export class DrawablePoint {
     this.infoBox.style.left = `${newLeft}px`;
     this.infoBox.style.top = `${newTop}px`;
 
-    makeDraggableAroundPoint(this.infoBox, this, canvas, rect);
+    canvas.makeDraggableAroundPoint(this.infoBox, this, rect);
   }
 
   deleteInfoBox() {
