@@ -196,10 +196,17 @@
                       <button id="saveLabelButton" style="display: none;">Save</button>
                   </div>
 
-                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div id="positionDiv" style="display: flex; align-items: center; justify-content: space-between;">
                       <label>Position</label>
-                      <div id="sitePosition">N/A</div>
+                      <div id="sitePosition">
+                        <input type="text" id="sitePos" name="sitePos" size="10">
                   </div>
+                  <button id="insertPosition" class="gon-icon-button" style="display: block;">
+                        <b class="">
+                          Set
+                        </b>
+                      </button>
+                </div>
 
                 </div>
             </div>
@@ -245,6 +252,7 @@
         width: 100%; height: 100%; 
         "></canvas>
     </div>
+    <div id="infoBoxContainer" style="position: relative;"></div>
    
 
    <script type="module" src="index.js"></script>

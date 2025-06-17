@@ -242,3 +242,60 @@ export function computeClosestBound(bounds, point) {
 
     return curr;
 }
+
+
+export function makeDraggableAroundPoint(element, drawable_point, canvas, canvasRect) {
+  let isDragging = false;
+  const point = drawable_point.point;
+  let startX, startY;
+  const maxDistance = 50; // Maximum distance from the point
+  const dpr = window.devicePixelRatio;
+
+  // Calculate initial top and bottom bounds
+  const scale = canvasRect.width / canvas.width;
+  const pointX = point.x * scale * dpr + canvasRect.left;
+  const pointY = point.y * scale * dpr + canvasRect.top;
+  const initialTop = drawable_point.defaultInfoBoxPosition.top;
+  const initialBottom = initialTop + maxDistance;
+
+  element.addEventListener('mousedown', startDragging);
+  document.addEventListener('mousemove', drag);
+  document.addEventListener('mouseup', stopDragging);
+
+  function startDragging(e) {
+    isDragging = true;
+    startX = e.clientX - parseInt(element.style.left);
+    startY = e.clientY - parseInt(element.style.top);
+    e.preventDefault();
+  }
+
+  function drag(e) {
+    if (!isDragging) return;
+
+    let newX = e.clientX - startX;
+    let newY = e.clientY - startY;
+
+    const dx = newX - pointX;
+    const dy = newY - pointY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > maxDistance) {
+      const angle = Math.atan2(dy, dx);
+      newX = pointX + maxDistance * Math.cos(angle);
+      newY = pointY + maxDistance * Math.sin(angle);
+    }
+    
+    newY = Math.max(initialTop, Math.min(newY, initialBottom));
+
+    element.style.left = `${newX}px`;
+    element.style.top = `${newY}px`;
+  }
+
+  function stopDragging() {
+    isDragging = false;
+    drawable_point.infoBoxPosition = {
+      left: parseInt(element.style.left),
+      top: parseInt(element.style.top)
+    };
+  }
+}

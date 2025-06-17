@@ -1,3 +1,5 @@
+import { Point } from "../../geometry/primitives.js";
+import { pointInPolygon } from "../../geometry/utils.js";
 import { CAMERA } from "../drawable.js";
 
 // from nithins
@@ -57,6 +59,14 @@ export function initEvents(canvas) {
       canvas.setPolygonShowInfo(event);
    });
 
+   document.getElementById('siteShowInfo').addEventListener('change', (event) => {
+      canvas.sites.forEach((site, idx) =>{
+               if (site.selected) {
+                  canvas.setSiteShowInfo(event, idx);
+               }
+            });
+   });
+
    document.querySelectorAll('input[name="polygonType"]').forEach(radio => {
       radio.addEventListener('change', (event) => {
          if (event.target.value === 'customNgon') {
@@ -81,6 +91,36 @@ export function initEvents(canvas) {
       } 
    });
 
+   // changes position of all selected sites
+   // regex not working rn i think :(
+   document.getElementById('insertPosition').addEventListener('click', () => {
+      const input = document.getElementById('sitePos');
+      const re = /^\s*\(?\s*([0-9]+)\s*,\s*([0-9]+)\s*\)?\s*$/;      
+      const matches = input.value.match(re);
+      if (matches != null) {
+         const p = new Point( matches[1],matches[2]);
+         console.log(p)
+         console.log(pointInPolygon(p, canvas.boundary.polygon))
+
+         if (pointInPolygon(p, canvas.boundary.polygon)) {
+            canvas.sites.forEach((site, idx) =>{
+               if (site.selected) {
+                  site.drawable_point.point.x = parseInt(p.x);
+                  site.drawable_point.point.y = parseInt(p.y);
+                  console.log(idx);
+                  canvas.recalculateSite(idx);
+               }
+            });
+            canvas.drawAll();
+         } else {
+            alert('Input is not in polygon, please input coordinates within the polygon.');
+         }
+      } else {
+          alert('Invalid input. Please follow format (x,y) or x,y');
+      }
+      
+   });
+
    document.getElementById('createCustomNgon').addEventListener('click', () => {
       const input = document.getElementById('customNgonInput');
       const n = parseInt(input.value);
@@ -93,6 +133,19 @@ export function initEvents(canvas) {
       }
    });
 
+   document.addEventListener('keydown', (event) => {
+         if (event.key === 'Delete') {
+            canvas.sites.forEach((s,idx) => {
+               if (s.selected) {
+                  s.drawable_point.deleteInfoBox();
+                  canvas.sites[idx] = null;
+               }
+            });
+         canvas.cleanSitesArray(); // removes any null elts from array
+         canvas.drawAll();
+         } 
+   });
+   
 
    let canvasElement = canvas.canvas
    
@@ -196,7 +249,7 @@ export function initEvents(canvas) {
 
    
 
-
+   
   
    document.addEventListener('keydown', (event) => {
       if (!isAnyModalOpen()) {

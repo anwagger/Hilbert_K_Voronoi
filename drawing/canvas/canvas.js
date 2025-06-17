@@ -204,6 +204,11 @@ export class Canvas {
         this.drawAll();
    }
 
+   setSiteShowInfo(event, idx) {
+        this.sites[idx].drawable_point.showInfo = event.target.checked;
+        this.drawAll();
+   }
+
    setPolygonShowCentroid() {
         this.showCentroid = true;
         this.drawAll();
@@ -378,10 +383,22 @@ export class Canvas {
 
       this.sites.forEach((site) => {
          site.draw(this.ctx)
+         if (site.drawable_point.showInfo) site.drawable_point.drawInfoBox(this.canvas, this.dpr); 
       })
 
       this.drawSelectBox()
  
+   }
+
+   // gets rid of null sites in the array
+   cleanSitesArray() {
+      let new_sites = [];
+      for (let i = 0; i < this.sites.length; i++) {
+         if (this.sites[i] != null) {
+            new_sites.push(this.sites[i]);
+         }
+      }
+      this.sites = new_sites;
    }
 
    resetSites() {

@@ -1,5 +1,9 @@
 import { Polygon, Segment } from "../geometry/primitives.js";
-import { createSegmentsFromPoints,convexHull, intersectSegments, intersectSegmentsAsLines } from "../geometry/utils.js";
+import { createSegmentsFromPoints,
+  convexHull, 
+  intersectSegments, 
+  intersectSegmentsAsLines, 
+  makeDraggableAroundPoint } from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -125,8 +129,12 @@ export class DrawablePoint {
     this.locked = false;
     this.color = "black";
     this.stroke_style = "black";
+    this.label = "";
     this.radius = 3;
     this.drawPoint = true;
+    this.defaultInfoBoxPosition = false;
+    this.infoBoxPosition = false;
+    this.infoBox = null;
   }
 
   setDraw(draw) {
@@ -152,6 +160,51 @@ export class DrawablePoint {
 
     // inner ring
     this.draw(ctx);
+  }
+
+  drawInfoBox(canvas, dpr) {
+    const container = document.getElementById('infoBoxContainer');
+    const rect = canvas.getBoundingClientRect();
+
+    // Create the infoBox element only if it doesn't already exist
+    if (!this.infoBox) {
+        this.infoBox = document.createElement('div');
+        this.infoBox.className = 'infoBox';
+        container.appendChild(this.infoBox);
+        
+    }
+
+    const mathExpression = 
+      this.label 
+      ? `\\textcolor{${this.color}}{${this.label}: (${this.point.x.toFixed(0)}, ${this.point.y.toFixed(0)})}` 
+      : `\\textcolor{${this.color}}{(${this.point.x.toFixed(0)}, ${this.point.y.toFixed(0)})}`;
+    
+    this.infoBox.dataset.math = mathExpression;
+    this.infoBox.textContent = 
+      this.label 
+      ? `${this.label}: (${this.point.x.toFixed(0)}, ${this.point.y.toFixed(0)})` 
+      : `(${this.point.x.toFixed(0)}, ${this.point.y.toFixed(0)})`;
+
+    this.infoBox.style.borderColor = this.color;
+    this.infoBox.style.zIndex = 999;
+
+    const canvasX = CAMERA.x(this.point.x) * (rect.width / canvas.width) * dpr;
+    const canvasY = CAMERA.y(this.point.y) * (rect.height / canvas.height) * dpr;
+
+    const newLeft = rect.left + canvasX;
+    const newTop = rect.top + canvasY - 10;
+    
+    this.infoBox.style.left = `${newLeft}px`;
+    this.infoBox.style.top = `${newTop}px`;
+
+    makeDraggableAroundPoint(this.infoBox, this, canvas, rect);
+  }
+
+  deleteInfoBox() {
+      if (this.infoBox) {
+          this.infoBox.remove();
+          this.infoBox = null;
+      }
   }
 
 }

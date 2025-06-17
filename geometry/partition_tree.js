@@ -70,8 +70,18 @@ export class PartitionTree {
         }
 
 
-        this.root.left = this.createTree(Partition_Node_Type.X, left_voronoi_bounds, left_bound);
-        this.root.right = this.createTree(Partition_Node_Type.X, right_voronoi_bounds, right_bound);
+        if (left_voronoi_bounds.size() <= 3) {
+                node.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
+            } else {
+                node.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
+            }
+
+            // same with right
+        if (right_voronoi_bounds.size() <= 3) {
+            node.left = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
+        } else {
+            node.left = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
+        }
     }
 
     // right now im writing it in a non random order, so i dont know how balanced the tree will be
