@@ -1,5 +1,5 @@
 import { Point } from "../../geometry/primitives.js";
-import { pointInPolygon } from "../../geometry/utils.js";
+import { cleanArray, pointInPolygon } from "../../geometry/utils.js";
 import { CAMERA } from "../drawable.js";
 
 // from nithins
@@ -60,11 +60,20 @@ export function initEvents(canvas) {
    });
 
    document.getElementById('siteShowInfo').addEventListener('change', (event) => {
-      canvas.sites.forEach((site, idx) =>{
-               if (site.selected) {
-                  canvas.setSiteShowInfo(event, idx);
-               }
-            });
+      if (event.target.checked){
+         canvas.sites.forEach((site, idx) =>{
+            if (site.selected) {
+               canvas.setSiteShowInfo(event, idx);
+            }
+         });
+      }else{
+         canvas.sites.forEach((site) =>{
+            if (site.selected) {
+               site.drawable_point.deleteInfoBox();
+            }
+         });
+      }
+      
    });
 
    document.querySelectorAll('input[name="polygonType"]').forEach(radio => {
@@ -141,8 +150,8 @@ export function initEvents(canvas) {
                   canvas.sites[idx] = null;
                }
             });
-         canvas.cleanSitesArray(); // removes any null elts from array
-         canvas.drawAll();
+            cleanArray(this.sites); // removes any null elts from array
+            canvas.drawAll();
          } 
    });
    

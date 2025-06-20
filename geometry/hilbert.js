@@ -447,7 +447,6 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
     for(let i = 0; i < data.length; i++){
         sector_hit.push(calculateNeighboringSector(boundary,sector,data[i]))
     }
-    console.log("RESULT\n","end\n",sector_hit[0],"start\n",sector_hit[1])
 
     let bound = calculateConicSegmentBounds(p_conic,start_t,end_t)
 
@@ -464,6 +463,10 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
             end_num = 0
         }        
     }
+
+    console.log("RESULT\n","end\n",sector_hit[end_num],"start\n",sector_hit[start_num])
+
+    console.log("ENTER:",start_point,"START",start_p,"END",end_p)
 
     let c_s = new ConicSegment(p_conic,start_num===0?start_t:end_t,start_num===0?end_t:start_t,bound)
     

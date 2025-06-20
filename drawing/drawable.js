@@ -174,6 +174,8 @@ export class DrawablePoint {
         
     }
 
+    this.infoBox.style.display = "block"
+
     const mathExpression = 
       this.label 
       ? `\\textcolor{${this.color}}{${this.label}: (${this.point.x.toFixed(0)}, ${this.point.y.toFixed(0)})}` 
@@ -202,9 +204,9 @@ export class DrawablePoint {
 
   deleteInfoBox() {
       if (this.infoBox) {
-          this.infoBox.remove();
-          this.infoBox = null;
-      }
+          this.infoBox.remove()
+          this.infoBox = null
+        }
   }
 
 }
