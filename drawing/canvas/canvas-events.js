@@ -157,7 +157,6 @@ export function initEvents(canvas) {
    });
 
    document.getElementById('zoomRange').addEventListener('change', (event) => {
-      console.log(event.target.value);
       CAMERA.setScale(event.target.value);
       canvas.drawAll();
    })
@@ -184,7 +183,7 @@ export function initEvents(canvas) {
             canvas.selectionPointer.x = CAMERA.ix(x)
             canvas.selectionPointer.y = CAMERA.iy(y)
 
-            canvas.drawAll()
+            //canvas.drawAll()
          }else{
             canvas.selectDragSite(event)
          }
@@ -237,6 +236,7 @@ export function initEvents(canvas) {
                const {x, y} = canvas.getMousePos(event);
                canvas.selectionPointer.x = CAMERA.ix(x)
                canvas.selectionPointer.y = CAMERA.iy(y)
+               canvas.drawAll()
             }
          }else{
             canvas.dragSite(event)
@@ -250,20 +250,23 @@ export function initEvents(canvas) {
 
             if (event.shiftKey){
                   CAMERA.changeScale(event.movementY)
+                  canvas.drawAll()
             }else{
                CAMERA.changeOffset(event.movementX,event.movementY)
+               canvas.drawAll()
             }
          }
       }else{
          if (!CAMERA.move_lock){
             if (!event.shiftKey && (canvas.draggingPoint == null)){
                CAMERA.changeOffset(event.movementX,event.movementY)
+               canvas.drawAll()
             }
          }
       } 
 
       //test_render()
-      canvas.drawAll()
+      //canvas.drawAll()
    }
    
    canvasElement.onscroll = (event) => {
