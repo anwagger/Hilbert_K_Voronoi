@@ -163,7 +163,6 @@ export class Canvas {
 
          const {x, y} = this.getMousePos(event);
          this.boundary.addPoint(new Point(CAMERA.ix(x), CAMERA.iy(y)));
-         this.boundary.showInfo = document.getElementById('polygonShowInfo').checked;
          this.recalculateAll()
          this.drawAll()
       }
@@ -452,6 +451,11 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
    drawAll() {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+      this.boundary.points.forEach((point) => {
+         if (this.boundary.showInfo){
+            point.drawInfoBox(this, this.dpr); 
+         }
+      })
       this.boundary.draw(this.ctx);
 
       this.drawSegments()
@@ -474,7 +478,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
    resetCanvas() {
         this.resetSites()
         
-        this.boundary = new DrawablePolygon(new Polygon([]), this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.showVertices, this.boundary.vertexRadius);
+        this.boundary = new DrawablePolygon(new Polygon([]), this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
 
         this.boundaryType = 'freeDraw';
         document.querySelector('input[name="polygonType"][value="freeDraw"]').checked = true;

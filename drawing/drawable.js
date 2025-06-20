@@ -78,10 +78,11 @@ export class DrawablePolygon {
       this.points.forEach((point) => {
         // point.setRadius(this.radius);
         if (this.showInfo) { 
-          //point.setShowInfo(true); 
+          point.showInfo = true; 
         }
         else { 
-          //point.setShowInfo(false); 
+          point.showInfo = false; 
+          point.deleteInfoBox()
         }
         point.draw(ctx); 
       });
