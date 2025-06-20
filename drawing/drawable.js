@@ -32,6 +32,10 @@ export let CAMERA =  {
     this.scale.x -= this.scale.x * d/10
     this.scale.y -= this.scale.y * d/10
   },
+  setScale: function(v) {
+    this.scale.x = v;
+    this.scale.y = v;
+  }
 }
 
 export class DrawablePolygon {

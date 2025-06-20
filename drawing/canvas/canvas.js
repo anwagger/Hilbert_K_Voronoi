@@ -326,6 +326,25 @@ export class Canvas {
       }
    }
 
+/*
+   for if we want to implement reshaping the boundary through dragging its points, need to change the object design slightly
+   by adding a selected field to points 
+   selectDragPoint(event) {
+      const {x, y} = this.getMousePos(event);
+      const mouse = new Point(CAMERA.ix(x),CAMERA.iy(y))
+      this.draggingPoint = null
+      for(let p = 0; p < this.boundary.points.length; p++){
+         let point = this.boundary.points[p];
+         if (euclideanDistance(mouse,point) <= 3){ // radius of a site by default is 3, just using that value here since points dont have a radius field 
+            this.draggingPoint = p
+         }
+      }
+   }
+
+   dragPoint(event) {
+
+   }
+*/
    drawSelectBox(){
       if(this.selecting){
          this.ctx.beginPath();

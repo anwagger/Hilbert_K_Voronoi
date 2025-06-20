@@ -14,6 +14,7 @@ export function initEvents(canvas) {
       
       document.getElementById('polygonContainer').style.display = (canvas.mode === "boundary") ? 'block' : 'none';
       document.getElementById('siteContainer').style.display = canvas.mode === "site" ? 'block' : 'none';
+      document.getElementById('zoomContainer').style.display = canvas.mode === "view" ? 'block' : 'none';
    }
 
 
@@ -154,6 +155,19 @@ export function initEvents(canvas) {
             canvas.drawAll();
          } 
    });
+
+   document.getElementById('zoomRange').addEventListener('change', (event) => {
+      console.log(event.target.value);
+      CAMERA.setScale(event.target.value);
+      canvas.drawAll();
+   })
+
+   document.getElementById('resetZoom').addEventListener('click', (event) => {
+      CAMERA.setScale(1);
+      CAMERA.offset.x = 0;
+      CAMERA.offset.y = 0;
+      canvas.drawAll();
+   })
    
 
    let canvasElement = canvas.canvas
@@ -175,8 +189,24 @@ export function initEvents(canvas) {
             canvas.selectDragSite(event)
          }
          
-
+         
        }
+       /* 
+       else if (canvas.mode === "boundary") {
+         if (event.shiftKey){
+            canvas.selecting = true;
+            const {x,y} = canvas.getMousePos(event)
+            canvas.selectionAnchor.x = CAMERA.ix(x)
+            canvas.selectionAnchor.y = CAMERA.iy(y)
+            canvas.selectionPointer.x = CAMERA.ix(x)
+            canvas.selectionPointer.y = CAMERA.iy(y)
+
+            canvas.drawAll()
+         }else{
+            canvas.selectDragPoint(event)
+         }
+       }
+      */
    }
    canvasElement.onmouseup = (event) => {
        CAMERA.move_lock = true

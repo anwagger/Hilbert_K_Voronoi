@@ -76,7 +76,6 @@ export class PartitionTree {
                 node.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
             }
 
-            // same with right
         if (right_voronoi_bounds.size() <= 3) {
             node.left = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
         } else {
