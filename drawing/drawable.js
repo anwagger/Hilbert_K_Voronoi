@@ -253,12 +253,13 @@ export class DrawableConicSegment {
 
     let start = this.conic_segment.start
 
+    let c_s = this.conic_segment
 
     for (let i = 0; i <= num_of_points - 1; i++) {
       let t1 = start + dt * i;
       let t2 = start + dt * ((i + 1));
-      let p1 = this.conic_segment.parameterized_conic.getPointFromT(t1);
-      let p2 = this.conic_segment.parameterized_conic.getPointFromT(t2);
+      let p1 = c_s.parameterized_conic.getPointFromT(t1);
+      let p2 = c_s.parameterized_conic.getPointFromT(t2);
       segments.push(new DrawableSegment(new Segment(p1, p2)));
     }
 
@@ -266,6 +267,14 @@ export class DrawableConicSegment {
       s.color = this.color 
       s.draw(ctx)
     });
+    /*
+    ctx.beginPath();
+    ctx.setLineDash([3, 3]); 
+    ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
+    ctx.stroke(); 
+    ctx.setLineDash([]); 
+    */
+
   }
   drawStraight(ctx,num_of_points) {
     // we do a for loop from start to end

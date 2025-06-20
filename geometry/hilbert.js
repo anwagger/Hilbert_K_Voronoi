@@ -421,7 +421,7 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
 
     let {start_t:start_t, start_segment:start_segment,start_point:s_point, end_t:end_t, end_segment:end_segment,end_point:e_point} = getConicParameterBoundsInPolygon(p_conic,sector.polygon)
     
-    console.log("intersections",start_t,start_segment,s_point,end_t,end_segment,e_point,p_conic)
+    console.log("intersections","start:",start_t,start_segment,s_point,"end:",end_t,end_segment,e_point,"conic:",p_conic)
 
     let data = []
 
@@ -461,6 +461,9 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
         if (euclideanDistance(start_point,start_p) > euclideanDistance(start_point,end_p)){
             start_num = 1
             end_num = 0
+
+            start_p = e_point
+            end_p = s_point
         }        
     }
 
@@ -491,12 +494,14 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
     let end_sector = calculateSector(boundary,h_p1,h_p2,end_data.p1_enter,end_data.p1_exit,end_data.p2_enter,end_data.p2_exit)
 
     // get recursivly calculated segments
-    let end_segments = traverseBisector(boundary,h_p1,h_p2,end_sector,p_conic.getPointFromT(c_s.end))
+    // end_p used to be p_conic.getPointFromT(c_s.end)
+    let end_segments = traverseBisector(boundary,h_p1,h_p2,end_sector,end_p)
 
     if(!start_point){
         // first call
         // need to get other side too!
-        let start_segments = traverseBisector(boundary,h_p1,h_p2,start_sector,p_conic.getPointFromT(c_s.start))
+        // start_p used to be p_conic.getPointFromT(c_s.start)
+        let start_segments = traverseBisector(boundary,h_p1,h_p2,start_sector,start_p)
         
         // start will be backwards?
         // flip both order and parameter bounds

@@ -17,7 +17,7 @@ export class Canvas {
       this.canvas.style.width = `${rect.width}px`;
       this.canvas.style.height = `${rect.height}px`;
       this.dpr = dpr;
-
+      this.deleteBoundaryPoints()
       this.boundary = new DrawablePolygon(new Polygon([]),"black");
       this.mode = 'boundary';
       
@@ -97,8 +97,9 @@ export class Canvas {
       const canvasCenterY = this.canvas.height / (2 * this.dpr);
         
       const radius = Math.min(this.canvas.width, this.canvas.height) / (2.5 * this.dpr);
-        
-      this.boundary = new DrawablePolygon(new Polygon([]),"black");
+      
+      this.deleteBoundaryPoints()
+      this.boundary = new DrawablePolygon(new Polygon([]),this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
         
       const tempVertices = [];
       for (let i = 0; i < n; i++) {
@@ -165,6 +166,13 @@ export class Canvas {
          this.boundary.addPoint(new Point(CAMERA.ix(x), CAMERA.iy(y)));
          this.recalculateAll()
          this.drawAll()
+      }
+   }
+   deleteBoundaryPoints(){
+      if (this.boundary && this.boundary.points){
+         this.boundary.points.forEach((point) => {
+            point.deleteInfoBox()
+         })
       }
    }
 
@@ -314,7 +322,7 @@ export class Canvas {
             site.drawable_point.point.y = mouse.y
             this.recalculateSite(this.draggingPoint);
          }
-         
+         this.drawAll()
       }
    }
 
@@ -477,7 +485,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
    }
    resetCanvas() {
         this.resetSites()
-        
+        this.deleteBoundaryPoints()
         this.boundary = new DrawablePolygon(new Polygon([]), this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
 
         this.boundaryType = 'freeDraw';

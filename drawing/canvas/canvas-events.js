@@ -204,14 +204,13 @@ export function initEvents(canvas) {
       if (canvas.mode === "site"){
          if(event.shiftKey){
             if (canvas.selecting){
-            const {x, y} = canvas.getMousePos(event);
-            canvas.selectionPointer.x = CAMERA.ix(x)
-            canvas.selectionPointer.y = CAMERA.iy(y)
+               const {x, y} = canvas.getMousePos(event);
+               canvas.selectionPointer.x = CAMERA.ix(x)
+               canvas.selectionPointer.y = CAMERA.iy(y)
             }
          }else{
             canvas.dragSite(event)
             canvas.selecting = false;
-            canvas.drawAll()
          }
          
       }
