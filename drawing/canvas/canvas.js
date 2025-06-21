@@ -234,9 +234,10 @@ export class Canvas {
       for(let i = 0; i < selectedSites.length; i++){
          for(let j = i+1; j < selectedSites.length; j++){
             let needNew = true
-            this.bisectors.forEach((bisector) => {
+            this.bisectors.forEach((bisector,b) => {
                if (bisector.p1 === i && bisector.p2 === j || bisector.p1 === j && bisector.p2 === i){
                   needNew = false
+                  this.recalculateBisector(b)
                }
             })
             if(needNew){
@@ -256,12 +257,12 @@ export class Canvas {
    recalculateBisector(b){
       let draw_bisector = this.bisectors[b]
       let boundary = this.boundary.polygon
-      let point1 = selectedSites[draw_bisector.p1].drawable_point.point
-      let point2 = selectedSites[draw_bisector.p2].drawable_point.point
+      let point1 = this.sites[draw_bisector.p1].drawable_point.point
+      let point2 = this.sites[draw_bisector.p2].drawable_point.point
       let h_p1 = calculateHilbertPoint(boundary,point1)
       let h_p2 = calculateHilbertPoint(boundary,point2)
-      let bisector = calculateBisector(boundary,h_p1,h_p2)
-      draw_bisector.bisector = bisector
+      let new_bisector = new DrawableBisector(calculateBisector(boundary,h_p1,h_p2),draw_bisector.p1,draw_bisector.p2)
+      this.bisectors[b] = new_bisector
    }
 
 
@@ -366,7 +367,8 @@ export class Canvas {
       this.sites.forEach((s,idx) => {
       if (s.selected) {
          for(let b = 0; b < this.bisectors.length; b++ ){
-            if(bisector.p1 == index || bisector.p2 == index){
+            let bisector = this.bisectors[b]
+            if(bisector.p1 == idx || bisector.p2 == idx){
                this.bisectors[b] = null
             }
          }

@@ -256,6 +256,11 @@ export class DrawableConicSegment {
     let segments = [];
 
     let start = this.conic_segment.start
+    /*
+    // for debugging!
+    start = 0
+    dt = 2*Math.PI/num_of_points
+* */
 
     let c_s = this.conic_segment
 
@@ -280,6 +285,7 @@ export class DrawableConicSegment {
     */
 
   }
+  /*
   drawStraight(ctx,num_of_points) {
     // we do a for loop from start to end
     // end - start / num_of_points is our dt (dt could be negative)
@@ -289,10 +295,11 @@ export class DrawableConicSegment {
     // yay
 
     let dt = Math.abs(this.conic_segment.end - this.conic_segment.start) / num_of_points;
+    
+
     let segments = [];
 
     let start = this.conic_segment.start
-
 
     for (let i = 0; i < num_of_points - 1; i++) {
       let t1 = (start + dt * i);
@@ -301,13 +308,16 @@ export class DrawableConicSegment {
       let p2 = this.conic_segment.parameterized_conic.getPointFromTStraight(t2);
       segments.push(new DrawableSegment(new Segment(p1, p2)));
     }
+      
 
     segments.forEach((s) => {
       s.color = this.color 
       s.draw(ctx)
     });
   }
+     **/
 }
+ 
 
 export class Site {
   constructor(drawable_point, drawable_spokes, radius = 8) {

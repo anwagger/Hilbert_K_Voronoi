@@ -145,14 +145,7 @@ export function initEvents(canvas) {
 
    document.addEventListener('keydown', (event) => {
          if (event.key === 'Delete') {
-            canvas.sites.forEach((s,idx) => {
-               if (s.selected) {
-                  s.drawable_point.deleteInfoBox();
-                  canvas.sites[idx] = null;
-               }
-            });
-            cleanArray(this.sites); // removes any null elts from array
-            canvas.drawAll();
+            canvas.deleteSelectedSites()
          } 
    });
 

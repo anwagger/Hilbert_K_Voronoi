@@ -259,7 +259,7 @@ export function computeClosestBound(bounds, point) {
 export function cleanArray(arr){
   let new_arr = []
   for(let i = 0; i < arr.length; i++){
-    if(arr[i] != 0){
+    if(arr[i] != null){
       new_arr.push(arr[i])
     }
   }

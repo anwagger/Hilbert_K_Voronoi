@@ -214,7 +214,7 @@ export function parameterizeConic(conic){
         }
     }else if (type == Conic_Type.ELLIPSE){
         //X(t) = sqrt(D^2/(4A^2) + E^2/(4CA)-F/(A))cos(t) - D/(2A)
-        parameterization.x_mult = Math.sqrt(D*D/(4*A*A) + E*E/(4*C*A))
+        parameterization.x_mult = Math.sqrt(D*D/(4*A*A) + E*E/(4*C*A)-F/A) // didnt have F/A?
         parameterization.x_const = -D/(2*A)
         
         //Y(t) = sqrt(E^2/(4C^2) + D^2/(4CA)-F/(C))sin(t) - E/(2C)
@@ -223,7 +223,8 @@ export function parameterizeConic(conic){
     }else if (type == Conic_Type.HYPERBOLA){
         // was (A < 0 && C > 0) 
         // all hyperbolas are horizontal?
-        if (D*D/(4*A*A) - E*E/(4*A*C) + F/A >0){
+        // NOOOOOO
+        if (D*D/(4*A*A) + E*E/(4*A*C) - F/A >0){
             orientation = Conic_Orientation.HORIZONTAL
             //X(t) = sqrt(D^2/(4A^2) - E^2/(4AC) + F/A)sec(t)+D/(2A)
             // varified?
@@ -547,9 +548,16 @@ export class ParameterizedConic {
                     //if (Math.abs(x_ts[i]- y_ts[j]) <= 1e-10){
                     if (euclideanDistance(p_x,p_y) <= 1e-5){
                         return x_ts[i]
+                    }else{
+                        if ((euclideanDistance(p_x,p_y) <= 10)){
+                            console.log("NOT CLOSE ENOUGH","X",x,x_ts[i],p_x,"Y",y,y_ts[j],p_y)
+                        }
+                        
                     }
                 }
             }
+        }else{
+            console.log("INVALID POINT",point,this)
         }
         return null
     }
@@ -712,6 +720,9 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
 
     let start = [Infinity,-1]
     let end = [-Infinity,-1] 
+
+
+    /**
     for (let i = 0; i < ts.length; i++){
         let t = ts[i]
         if (t[0] < start[0]){
@@ -721,6 +732,17 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
             end = t
         }
     }
+    */
+
+    let t_sort = (a,b) =>{
+        return a[0] - b[0]
+    }
+    ts.sort(t_sort)
+
+    console.log("SORTED?",ts)
+
+    start = ts[0]
+    end = ts[ts.length-1]
 
     // take shortest way around
     let direction = Math.abs(end[0]-start[0])>2*Math.PI-Math.abs(end[0]-start[0])
@@ -732,6 +754,12 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
 
     if(start[0] > end[0]){
         end[0] += 2*Math.PI
+    }
+
+    if (start[0] === Infinity || start[0] === -Infinity || end[0] === Infinity || end[0] === -Infinity){
+        console.log("MISS")
+        console.log("TS",ts)
+        console.log("INTERSECTIONS",intersections)
     }
 
     // return boundign t's and their associated segments
