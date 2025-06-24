@@ -50,7 +50,7 @@ export function calculateSpokes(boundary,point){
         }
     }
     if(spokes.length != n_points){
-        console.log("ISSUE")
+        console.log("ISSUE",spokes.length,n_points)
     }
     return spokes
 }
@@ -400,7 +400,7 @@ export function calculateBisector(boundary,h_p1,h_p2){
     let sector = calculateMidsector(boundary,h_p1,h_p2)
     //return {mid:sector}
 
-    console.log("MID-SECTOR:",sector)
+    //console.log("MID-SECTOR:",sector)
 
     console.log("TRAVERSING")
 
@@ -421,7 +421,11 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
 
     let {start_t:start_t, start_segment:start_segment,start_point:s_point, end_t:end_t, end_segment:end_segment,end_point:e_point} = getConicParameterBoundsInPolygon(p_conic,sector.polygon)
     
-    console.log("intersections","start:",start_t,start_segment,s_point,"end:",end_t,end_segment,e_point,"conic:",p_conic)
+    if (start_t === null || end_t === null){
+        console.log("BAD T")
+        console.log("intersections","start:",start_t,start_segment,s_point,"end:",end_t,end_segment,e_point,"conic:",p_conic)
+    }
+    //
 
     let data = []
 
@@ -437,8 +441,8 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
         }
     }
 
-    console.log("DATA",data)
-    console.log("SECTOR",start_segment,end_segment,sector)
+    //console.log("DATA",data)
+    //console.log("SECTOR",start_segment,end_segment,sector)
 
     // parameters for the neighboring sector that was intersected with
     // hit_end is for a boundary hit
@@ -467,9 +471,9 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
         }        
     }
 
-    console.log("RESULT\n","end\n",sector_hit[end_num],"start\n",sector_hit[start_num])
+    //console.log("RESULT\n","end\n",sector_hit[end_num],"start\n",sector_hit[start_num])
 
-    console.log("ENTER:",start_point,"START",start_p,"END",end_p)
+    //console.log("ENTER:",start_point,"START",start_p,"END",end_p)
 
     let c_s = new ConicSegment(p_conic,start_num===0?start_t:end_t,start_num===0?end_t:start_t,bound)
     

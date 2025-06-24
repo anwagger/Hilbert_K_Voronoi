@@ -1,5 +1,5 @@
 import { Point, Segment,Bound } from "./primitives.js"
-import { euclideanDistance, isBetween,lineEquation,solveQuadratic } from "./utils.js"
+import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic } from "./utils.js"
 
 export class Conic {
     constructor(equation){
@@ -171,25 +171,34 @@ export function parameterizeConic(conic){
     // A,C = 0
     // For this, the edge case is if the line is fully vertical or horizontal
     if (type == Conic_Type.DEGENERATE){
+        
+     let ver_parallel = (isZero(C) && isZero(E))
+     let hor_parallel = (isZero(A) && isZero(D))
+     let crossed = isZero((D*D/(4*A)) + (E*E/(4*C)) - F)
         let d = B*B-4*A*C
-        if (d > 0){ // intersecting lines
-            //y = sqrt(-A/C*(t + D/(2A))^2)-E/2C
-            //x=t
-            orientation = Conic_Orientation.VERTICAL
+        if (crossed){ // intersecting lines
+            
+            orientation = Conic_Orientation.NONE
+            // has a gap near the cross, but HOPEFULLY, shouldn't be an issue, otherwise I will cry (or more likely guarentee it works for positive X)
             parameterization.x_mult = 1
             parameterization.x_const = -D/(2*A)
-
-            parameterization.y_mult = -A/C
+            parameterization.y_mult = Math.sqrt(A/-C)
             parameterization.y_const = -E/(2*C)
-        }else if ( d == 0){ //parallel lines
+        }else if (hor_parallel){ //parallel lines
             orientation = Conic_Orientation.HORIZONTAL
-
-            parameterization.x_mult = E
-            parameterization.x_const = 0
-
-            parameterization.y_mult = -D
-            parameterization.y_const = -F/E
-        }else{ // point
+            // makes the lower-number ts much more reasonably compact, negative values are non-existant though...
+            parameterization.x_mult = 100
+            parameterization.x_const = 1
+            parameterization.y_mult = Math.sqrt((-F+(E*E)/(4*C))/C)
+            parameterization.y_const = -E/(2*C)
+        }else if(ver_parallel){ 
+            orientation = Conic_Orientation.VERTICAL
+            // makes the lower-number ts much more reasonably compact, negative values are non-existant though...
+            parameterization.y_mult = 100
+            parameterization.y_const = 1
+            parameterization.x_mult = Math.sqrt((-F+(D*D)/(4*A))/A)
+            parameterization.x_const = -D/(2*A)
+        }else{// point
 
         }
 
@@ -311,21 +320,102 @@ export class ParameterizedConic {
             case Conic_Type.DEGENERATE:
                 switch (this.orientation){
                     case Conic_Orientation.HORIZONTAL:
+                        // t/2 to turn 2*PI to PI
+                        x_func = (t) => {
+                            t = t/2
+                            if (isLeZero(Math.abs(t) - Math.PI/2)){
+                                return this.x_mult*((1/Math.sin(t))-x_off)
+                            }else{
+                                return this.x_mult*((1/Math.sin(t - Math.PI/2))-x_off)
+                            }   
+                        }
+                        y_func = (t) => {
+                            t = t/2
+                            if (isLeZero(Math.abs(t) - Math.PI/2)){
+                                return (-this.y_mult + y_off)
+                            }else{
+                                return (this.y_mult + y_off)
+                            }
+                        }
+                        xi_func = (x) => {
+                            let asin = 2*Math.asin(1/(x/this.x_mult + x_off))
+                            return [
+                                asin, asin + Math.PI/2
+                            ]
+                        }
+                        yi_func = (y) => {
+                            /**
+                            if (isZero(y - (-this.y_mult + y_off))){
+                                return [Math.PI]
+                            }else{
+                                return [2*Math.PI]
+                            }
+                                 */
+                            return [Infinity]
+                        }
                     break;
                     case Conic_Orientation.VERTICAL:
-                        x_func = (t) => t
+                        // t/2 to turn 2*PI to PI
+                        
+                        x_func = (t) => {
+                            t = t/2
+                            if (isLeZero(Math.abs(t) - Math.PI/2)){
+                                return (-this.x_mult + x_off)
+                            }else{
+                                return (this.x_mult + x_off)
+                            }
+                        }
                         y_func = (t) => {
-                            let y = Math.sqrt(this.y_mult*(t - x_off)*(t - x_off))
-                            return -y + y_off
+                            t = t/2
+                            if (isLeZero(Math.abs(t) - Math.PI/2)){
+                                return this.y_mult*((1/Math.sin(t))-y_off)
+                            }else{
+                                return this.y_mult*((1/Math.sin(t - Math.PI/2))-y_off)
+                            }   
                         }
-                        xi_func = (x) => [x]
+                        xi_func = (x) => {
+                            /**
+                            if (isZero(x - (-this.x_mult + x_off))){
+                                return [0]
+                            }else{
+                                return [2*Math.PI]
+                            }
+                                 */
+                            return [Infinity]
+                        }
                         yi_func = (y) => {
-                           let t1 = Math.sqrt((y - y_off)*(y - y_off)/this.y_mult) 
-                           let t2 = Math.sqrt((-y - y_off)*(-y - y_off)/this.y_mult) 
-                            return [t1 + x_off,t2 + x_off]
+                            let asin = 2*Math.asin(1/(y/this.y_mult + y_off))
+                            return [
+                                asin, asin + Math.PI
+                            ]
                         }
+                        
                     break;
                     case Conic_Orientation.NONE:
+                        x_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return (1/Math.sin(t) + x_off)
+                            }else{
+                                return (-1/Math.sin(t) + x_off)
+                            }
+                        }
+                        y_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return this.y_mult*(1/Math.sin(t))+y_off
+                            }else{
+                                return -this.y_mult*(-1/Math.sin(t))+y_off
+                            }   
+                        }
+                        xi_func = (x) => {
+                            let asin = -Math.asin(1/(x - x_off))
+                            return [asin < 0 ? asin+2*Math.PI: asin,asin+Math.PI]
+                        }
+                        yi_func = (y) => {
+                            let asin = Math.asin(this.y_mult/(y - y_off))
+                            return [
+                                asin < 0 ? asin+2*Math.PI: asin,-asin+Math.PI
+                            ]
+                        }
                     break;
 
                 }
@@ -519,7 +609,7 @@ export class ParameterizedConic {
         let x = point.x
         let y = point.y
         let {A:A,B:B,C:C,D:D,E:E,F:F} = this.conic.getEquation()
-        return Math.abs(A *x*x + B *x*y + C *y*y + D *x  + E *y + F) <= 1e-5
+        return isZero(A *x*x + B *x*y + C *y*y + D *x  + E *y + F)
     }
 
     getTOfPoint(point){
@@ -529,6 +619,8 @@ export class ParameterizedConic {
             rotate point to be in live with unrotated conic
             inverse should then be easy*
         */
+
+    let vert_h = false
        let sin = Math.sin(this.angle)
        let cos = Math.cos(this.angle)
        // reverse rotation?
@@ -540,25 +632,22 @@ export class ParameterizedConic {
             let x_ts = this.xi_func(x)
             let y_ts = this.yi_func(y)
 
+            
             for (let i = 0; i < x_ts.length; i++){
                 for (let j = 0; j < y_ts.length; j++){
                     let p_x = this.getPointFromT(x_ts[i])
                     let p_y = this.getPointFromT(y_ts[j])
-                    
+
                     //if (Math.abs(x_ts[i]- y_ts[j]) <= 1e-10){
-                    if (euclideanDistance(p_x,p_y) <= 1e-5){
-                        return x_ts[i]
-                    }else{
-                        if ((euclideanDistance(p_x,p_y) <= 10)){
-                            console.log("NOT CLOSE ENOUGH","X",x,x_ts[i],p_x,"Y",y,y_ts[j],p_y)
-                        }
-                        
+                    if (isZero(euclideanDistance(p_x,p_y)) || x_ts[i] == Infinity || y_ts[j] == Infinity){
+                        return x_ts[i] != Infinity?x_ts[i]:y_ts[j]
                     }
                 }
             }
         }else{
             console.log("INVALID POINT",point,this)
         }
+        console.log("MISS?",this.type,this.orientation)
         return null
     }
 
@@ -649,10 +738,10 @@ export function getConicType(conic){
      can get in form (x-a)^2-(y-b)^2=0
      */
 
-     let parallel = (A== 0 && D == 0) || (C == 0 && E == 0)
-     let crossed = Math.abs((D*D/(4*A)) + (E*E/(4*C)) - F) <= 1e-5
+     let parallel = (isZero(A) && isZero(D)) || (isZero(C) && isZero(E))
+     let crossed = isZero((D*D/(4*A)) + (E*E/(4*C)) - F)
 
-    if (Math.abs(beta) <= 1e-5 || parallel || crossed){
+    if (isZero(beta) || parallel || crossed){
         return Conic_Type.DEGENERATE
     }else{
         const d = B*B - 4*A*C
@@ -739,7 +828,9 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
     }
     ts.sort(t_sort)
 
-    console.log("SORTED?",ts)
+    if (parameterized_conic.type == Conic_Type.DEGENERATE){
+        console.log("TS: ",ts)
+    }
 
     start = ts[0]
     end = ts[ts.length-1]

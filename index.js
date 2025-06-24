@@ -9,7 +9,6 @@ let canvasElement = document.getElementById('canvas');
 let canvas = new Canvas(canvasElement);
 let ctx = canvas.ctx;
 console.log(canvas);  
-
 /**
 canvasElement.onmousedown = (event) => {
     CAMERA.move_lock = false
@@ -41,8 +40,7 @@ canvasElement.onmousemove = (event) => {
 canvasElement.onscroll = (event) => {
     CAMERA.changeOffset(event.movementX,event.movementY)
 }
-
- */
+*/
 
 function testBisector(boundary,point1,point2){
     let drawable_point1 = new DrawablePoint(point1);
@@ -142,7 +140,7 @@ b.push(testBisector(boundary,point1,new Point(20,70)))
 
 console.log("CONIC TESTING!")
 
-let c = new Conic({A:-3,B:0,C:1,D:0,E:0,F:1})
+let c = new Conic({A:-100,B:0,C:0,D:10000,E:0,F:1000000})
 //console.log(c)
 let p_c = parameterizeConic(c)
 //console.log(p_c)
@@ -228,7 +226,7 @@ for(let i = 0; i < gons.length; i++){
         d_p.draw(ctx)
     }
     */
-         
+         draw_conic.draw(ctx,50)
     
 
 

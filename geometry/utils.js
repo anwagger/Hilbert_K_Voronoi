@@ -2,7 +2,7 @@ import {Point, Segment} from "./primitives.js"
 
 export function euclideanDistance(point1,point2){
     let dx = point1.x - point2.x
-    let dy = point1.y - point1.y
+    let dy = point1.y - point2.y
     return Math.sqrt(dx * dx + dy * dy)
 }
 
@@ -56,7 +56,7 @@ export function intersectSegmentsAsLines(s1, s2) {
 
   const denominator = (a1 * b2) - (a2 * b1)
 
-  if (Math.abs(denominator) < 1e-10) {
+  if (isZero(denominator)) {
     return null; 
   }
 
@@ -66,7 +66,7 @@ export function intersectSegmentsAsLines(s1, s2) {
 }
 
 export function isBetween(a, b, c){
-  return ((a-c) <= 1e-10 && (c-b) <= 1e-10) || ((b-c) <= 1e-10 && (c-a) <= 1e-10);
+  return (isLeZero(a-c) && isLeZero(c-b)) || (isLeZero(b-c) && isLeZero(c-a));
 }
 
 // copied from nithins code, might need to be changed
@@ -115,7 +115,7 @@ export function pointOnPolygon(point,polygon){
     for (let i = 0; i < n; i++) {
         const p1 = points[i];
         const p2 = points[(i + 1) % n];
-        if (pointSegDistance(point,new Segment(p1,p2)) <= 1e-10){
+        if (isZero(pointSegDistance(point,new Segment(p1,p2)))){
           return true
         }
     }
@@ -135,7 +135,7 @@ export function pointInPolygon(point, polygon) {
         const p2 = points[(i + 1) % n];
 
         // added later...
-        if (pointSegDistance(point,new Segment(p1,p2)) <= 1e-10){
+        if (isZero(pointSegDistance(point,new Segment(p1,p2)))){
           return true
         }
 
@@ -264,4 +264,12 @@ export function cleanArray(arr){
     }
   }
   return new_arr
+}
+
+export function isZero(num){
+  return (Math.abs(num) <= 1e-4)
+}
+
+export function isLeZero(num){
+  return num <= 1e-10
 }
