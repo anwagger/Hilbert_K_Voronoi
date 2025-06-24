@@ -231,7 +231,9 @@ export class DrawableBisector {
   }
 
   draw(ctx){
-    this.drawable_conic_segments.forEach((d_c_s) => {
+    const debug_colors = ["red","orange","yellow","green","blue","purple","pink","brown","grey"]
+    this.drawable_conic_segments.forEach((d_c_s,i) => {
+      d_c_s.color = debug_colors[i % debug_colors.length]
       d_c_s.draw(ctx,50)
     })
   }
@@ -282,13 +284,21 @@ export class DrawableConicSegment {
       s.color = this.color 
       s.draw(ctx)
     });
+
+    let p1 = new DrawablePoint(c_s.parameterized_conic.getPointFromT(c_s.start))
+    p1.color = this.color
+    p1.draw(ctx)
+    let p2 = new DrawablePoint(c_s.parameterized_conic.getPointFromT(c_s.end))
+    p2.color = this.color
+    p2.draw(ctx)
+
     /**
     ctx.beginPath();
     ctx.setLineDash([3, 3]); 
     ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
     ctx.stroke(); 
     ctx.setLineDash([]); 
-     */
+   */
 
   }
   /*

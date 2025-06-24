@@ -3,6 +3,7 @@ import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMid
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point } from "../../geometry/primitives.js";
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray} from "../../geometry/utils.js"
+import { intersectBisectors } from "../../geometry/bisectors.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -35,6 +36,7 @@ export class Canvas {
       this.sites = [];
       this.segments = [];
       this.bisectors = [];
+      this.bisector_intersections = [];
 
       this.draggingPoint = null;
 
@@ -86,10 +88,11 @@ export class Canvas {
         });
    }
    drawBisectors() {
-         this.bisectors.forEach((bisector) => {
-            bisector.draw(this.ctx)
-            
-        });
+      this.bisectors.forEach((bisector,i) => {
+         bisector.draw(this.ctx)
+         
+         
+      });
    }
 
    createNgon(n) {
@@ -223,34 +226,48 @@ export class Canvas {
         this.drawAll();
    }
 
-   setBisectors() {
+   setBisectors(event) {
       let selectedSites = []
-      this.sites.forEach((site) =>{
+      this.sites.forEach((site,i) =>{
          if (site.selected){
 
-            selectedSites.push(site)
+            selectedSites.push(i)
          }
-      })
+      })      
       for(let i = 0; i < selectedSites.length; i++){
+         let p1 = selectedSites[i]
          for(let j = i+1; j < selectedSites.length; j++){
-            let needNew = true
-            this.bisectors.forEach((bisector,b) => {
-               if (bisector.p1 === i && bisector.p2 === j || bisector.p1 === j && bisector.p2 === i){
-                  needNew = false
-                  this.recalculateBisector(b)
+            let p2 = selectedSites[j]
+            if (event.target.checked){
+               let needNew = true
+               this.bisectors.forEach((bisector,b) => {
+                  if ((bisector.p1 === p1 && bisector.p2 === p2) || (bisector.p1 === p2 && bisector.p2 === p1)){
+                     needNew = false
+                     this.recalculateBisector(b)
+                  }
+               })
+               if(needNew){
+                  let boundary = this.boundary.polygon
+                  let point1 = this.sites[selectedSites[i]].drawable_point.point
+                  let point2 = this.sites[selectedSites[j]].drawable_point.point
+                  let h_p1 = calculateHilbertPoint(boundary,point1)
+                  let h_p2 = calculateHilbertPoint(boundary,point2)
+                  let bisector = calculateBisector(boundary,h_p1,h_p2)
+                  this.addBisector(bisector,i,j)
                }
-            })
-            if(needNew){
-               let boundary = this.boundary.polygon
-               let point1 = selectedSites[i].drawable_point.point
-               let point2 = selectedSites[j].drawable_point.point
-               let h_p1 = calculateHilbertPoint(boundary,point1)
-               let h_p2 = calculateHilbertPoint(boundary,point2)
-               let bisector = calculateBisector(boundary,h_p1,h_p2)
-               this.addBisector(bisector,i,j)
+            }else{
+               this.bisectors.forEach((bisector,b) => {
+                  if ((bisector.p1 === p1 && bisector.p2 === p2) || (bisector.p1 === p2 && bisector.p2 === p1)){
+                     this.deleteBisector(b)
+                  }
+               })
+               this.bisectors = cleanArray(this.bisectors)
             }
+            
+            
          }
       }
+      this.calculateBisectorIntersections()
       this.drawAll();
    }
 
@@ -263,6 +280,27 @@ export class Canvas {
       let h_p2 = calculateHilbertPoint(boundary,point2)
       let new_bisector = new DrawableBisector(calculateBisector(boundary,h_p1,h_p2),draw_bisector.p1,draw_bisector.p2)
       this.bisectors[b] = new_bisector
+   }
+
+   deleteBisector(b){
+      this.bisectors[b] = null
+      // cleaned later
+   }
+
+   calculateBisectorIntersections(){
+      /*
+      this.bisector_intersections = []
+      for(let i = 0; i < this.bisectors.length; i++){
+         for(let j = i+1; j < this.bisectors.length; j++){
+            let b1 = this.bisectors[i].bisector
+            let b2 = this.bisectors[j].bisector
+            let intersection = intersectBisectors(b1,b2)
+            if (intersection){
+               this.bisector_intersections.push(new DrawablePoint(intersection))
+            }
+         }
+      }
+         **/
    }
 
 
@@ -394,12 +432,18 @@ export class Canvas {
          site.drawable_spokes[site.drawable_spokes.length-1].color = site.color
       })
 
+      let change_bisector = false
       for(let b = 0; b < this.bisectors.length; b++){
          let bisector = this.bisectors[b]
          if(bisector.p1 == index || bisector.p2 == index){
+            change_bisector = true
             this.recalculateBisector(b)
          }
       }
+      if (change_bisector){
+         this.calculateBisectorIntersections()
+      }
+      
    }
 
    recalculateAll(){
@@ -416,7 +460,7 @@ export class Canvas {
          this.recalculateBisector(b)
       }
 
-      
+      this.calculateBisectorIntersections()
       
    }
 

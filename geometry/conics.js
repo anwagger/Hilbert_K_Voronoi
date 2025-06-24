@@ -1,5 +1,5 @@
 import { Point, Segment,Bound } from "./primitives.js"
-import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic } from "./utils.js"
+import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds } from "./utils.js"
 
 export class Conic {
     constructor(equation){
@@ -112,8 +112,6 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
     if (!intersectBounds(c_s1.bound,c_s2.bound)){
         return false
     }
-
-
     let split = 2
 
     let range1 = c_s1.end - c_s1.start
@@ -139,12 +137,13 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
         let start2 = c_s2.start + range2*i/split
         let end2 = c_s2.start + range2*(i+1)/split
         let bound2 = calculateConicSegmentBounds(c_s2.parameterized_conic,start2,end2)
-        sub_cs1.push(new ConicSegment(c_s2.parameterized_conic,start2,end2,bound2))
+        sub_cs2.push(new ConicSegment(c_s2.parameterized_conic,start2,end2,bound2))
     }
 
     for (let i = 0; i < split; i++){
         for (let j = 0; j < split; j++){
             if (intersectBounds(sub_cs1[i].bound,sub_cs2[j].bound)){
+                console.log("RECURSE",sub_cs1[i],sub_cs2[j])
                 let intersection = approximateConicSegmentIntersection(sub_cs1[i],sub_cs2[j])
                 if (intersection){
                     return intersection
@@ -526,21 +525,28 @@ export class ParameterizedConic {
                         solving derivates
                         X:
                             0 = cos*this.x_mult*sec(t)*tan(t) - sin*this.y_mult*sec(t)*sec(t)
-                            csc(x) = cos*this.x_mult/(sin*this.y_mult)
-                            x = acsc(cos*this.x_mult/(sin*this.y_mult))
+                            0 = cos*this.x_mult*tan(t) - sin*this.y_mult*sec(t)
+                            sin*this.y_mult*sec(t) = cos*this.x_mult*tan(t)
+                            1 = sin(t)*(cos*this.x_mult)/(sin*this.y_mult)
+                            sin(t) = (sin*this.y_mult)/(cos*this.x_mult)
+                            t = asin((sin*this.y_mult)/(cos*this.x_mult))
+                            
                         Y: 
                             0 = cos*this.y_mult*sec(t)*sec(t) + sin*this.x_mult*sec(t)*tan(t)
-                            csc(x) = -cos*this.y_mult/(sin*this.x_mult)
-                            x = acsc(-cos*this.y_mult/(sin*this.x_mult))
+                            0 = cos*this.y_mult*sec(t) + sin*this.x_mult*tan(t)
+                            -sin*this.x_mult*tan(t) = cos*this.y_mult*sec(t)
+                            -sin*this.x_mult*sin(t) = cos*this.y_mult
+                            sin(t) = -(cos*this.y_mult)/(sin*this.x_mult)
+                            t = asin(-(cos*this.y_mult)/(sin*this.x_mult))
                         */
                         dx_func = () => {
-                            //Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
-                            let t = 1/Math.asin((-cos*this.y_mult)/(sin*this.x_mult))
+                            //t = asin((sin*this.y_mult)/(cos*this.x_mult))
+                            let t = Math.asin((sin*this.y_mult)/(cos*this.x_mult))
                             return [t,-t + Math.PI]
                         }
                         dy_func = () => {
-                            //Math.asin((sin*this.x_mult)/(-cos*this.y_mult))
-                            let t = 1/Math.asin((-cos*this.y_mult)/(sin*this.x_mult))
+                            //t = asin(-(cos*this.y_mult)/(sin*this.x_mult))
+                            let t = Math.asin(-(cos*this.y_mult)/(sin*this.x_mult))
                             return [t,-t + Math.PI]
                         }
                     break;
@@ -561,21 +567,25 @@ export class ParameterizedConic {
                         solving derivates
                         X:
                             0 = cos*this.x_mult*sec(t)*sec(t) - sin*this.y_mult*sec(t)*tan(t)
+                            sin*this.y_mult*tan(t) = cos*this.x_mult*sec(t)
+                            sin*this.y_mult*sin(t) = cos*this.x_mult
                             sin(t) = (cos*this.x_mult)/(sin*this.y_mult)
-                            t = asin(cos*this.x_mult)/(sin*this.y_mult)
+                            t = asin((cos*this.x_mult)/(sin*this.y_mult))
                         Y: 
                             0 = cos*this.y_mult*sec(t)tan(t) + sin*this.x_mult*sec(t)*sec(t)
-                            sin(t) = -sin*this.x_mult/(cos*this.y_mult)
-                            t = asin(-sin*this.x_mult/(cos*this.y_mult))
+                            -sin*this.x_mult*sec(t) = cos*this.y_mult*tan(t)
+                            -sin*this.x_mult = cos*this.y_mult*sin(t)
+                            sin(t) = -(sin*this.x_mult)/(cos*this.y_mult)
+                            t = asin(-(sin*this.x_mult)/(cos*this.y_mult))
                         */
                        dx_func = () => {
                         //Math.asin((cos*this.x_mult)/(sin*this.y_mult))
-                            let t = 1/Math.asin((sin*this.y_mult)/(cos*this.x_mult))
+                            let t = Math.asin((cos*this.x_mult)/(sin*this.y_mult))
                             return [t,-t + Math.PI]
                        }
                        dy_func = () => {
                         //Math.asin((-sin*this.x_mult)/(cos*this.y_mult))
-                            let t = 1/Math.asin((cos*this.y_mult)/(-sin*this.x_mult))
+                            let t = Math.asin(-(sin*this.x_mult)/(cos*this.y_mult))
                             return [t,-t + Math.PI]
                        }
                     break;

@@ -9,7 +9,8 @@ let canvasElement = document.getElementById('canvas');
 let canvas = new Canvas(canvasElement);
 let ctx = canvas.ctx;
 console.log(canvas);  
-/**
+
+/*
 canvasElement.onmousedown = (event) => {
     CAMERA.move_lock = false
 }
@@ -40,8 +41,8 @@ canvasElement.onmousemove = (event) => {
 canvasElement.onscroll = (event) => {
     CAMERA.changeOffset(event.movementX,event.movementY)
 }
-*/
 
+*/
 function testBisector(boundary,point1,point2){
     let drawable_point1 = new DrawablePoint(point1);
     let drawable_point2 = new DrawablePoint(point2);
@@ -140,7 +141,7 @@ b.push(testBisector(boundary,point1,new Point(20,70)))
 
 console.log("CONIC TESTING!")
 
-let c = new Conic({A:-100,B:0,C:0,D:10000,E:0,F:1000000})
+let c = new Conic({A:6,B:3,C:-2,D:5,E:5,F:-20})
 //console.log(c)
 let p_c = parameterizeConic(c)
 //console.log(p_c)
@@ -148,6 +149,30 @@ let p_c = parameterizeConic(c)
 let c_s = new ConicSegment(p_c,0,2*Math.PI,null)
 
 let draw_conic = new DrawableConicSegment(c_s)
+
+
+let draw_xs = []
+
+let x_0s = p_c.dx_func()
+
+for(let i = 0; i < x_0s.length; i++){
+    let p = p_c.getPointFromT(x_0s[i])
+    let draw_p = new DrawablePoint(p)
+    draw_p.color = "green"
+    console.log("X",i,x_0s[i],p,draw_p)
+    draw_xs.push(draw_p)
+}
+
+let y_0s = p_c.dy_func()
+
+for(let i = 0; i < y_0s.length; i++){
+    let p = p_c.getPointFromT(y_0s[i])
+    let draw_p = new DrawablePoint(p)
+    draw_p.color = "green"
+    console.log("Y",i,y_0s[i],p,draw_p)
+    draw_xs.push(draw_p)
+}
+
 
 
 let c2 = new Conic({A:3,B:0,C:-1,D:0,E:0,F:1})
@@ -227,7 +252,9 @@ for(let i = 0; i < gons.length; i++){
     }
     */
          draw_conic.draw(ctx,50)
-    
+         draw_xs.forEach((d_p) => {            
+            d_p.draw(ctx)
+         })
 
 
 }
