@@ -159,7 +159,7 @@ for(let i = 0; i < x_0s.length; i++){
     let p = p_c.getPointFromT(x_0s[i])
     let draw_p = new DrawablePoint(p)
     draw_p.color = "green"
-    console.log("X",i,x_0s[i],p,draw_p)
+    //console.log("X",i,x_0s[i],p,draw_p)
     draw_xs.push(draw_p)
 }
 
@@ -169,7 +169,7 @@ for(let i = 0; i < y_0s.length; i++){
     let p = p_c.getPointFromT(y_0s[i])
     let draw_p = new DrawablePoint(p)
     draw_p.color = "green"
-    console.log("Y",i,y_0s[i],p,draw_p)
+    //console.log("Y",i,y_0s[i],p,draw_p)
     draw_xs.push(draw_p)
 }
 

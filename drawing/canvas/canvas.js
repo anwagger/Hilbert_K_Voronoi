@@ -90,8 +90,6 @@ export class Canvas {
    drawBisectors() {
       this.bisectors.forEach((bisector,i) => {
          bisector.draw(this.ctx)
-         
-         
       });
    }
 
@@ -253,11 +251,14 @@ export class Canvas {
                   let h_p1 = calculateHilbertPoint(boundary,point1)
                   let h_p2 = calculateHilbertPoint(boundary,point2)
                   let bisector = calculateBisector(boundary,h_p1,h_p2)
-                  this.addBisector(bisector,i,j)
+                  this.addBisector(bisector,p1,p2)
+
                }
             }else{
+               console.log("DELETE")
                this.bisectors.forEach((bisector,b) => {
                   if ((bisector.p1 === p1 && bisector.p2 === p2) || (bisector.p1 === p2 && bisector.p2 === p1)){
+                     console.log("DELETE B",p1,p2)
                      this.deleteBisector(b)
                   }
                })
