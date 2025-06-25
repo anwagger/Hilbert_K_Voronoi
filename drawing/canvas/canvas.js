@@ -19,6 +19,12 @@ export class Canvas {
       this.canvas.style.height = `${rect.height}px`;
       this.dpr = dpr;
       this.deleteBoundaryPoints()
+      
+      // domain of the hilbert simulation
+      this.absolute_border = new DrawablePolygon(new Polygon([new Point(0,0),new Point(1000,0),new Point(1000,1000),new Point(0,1000)]))
+      this.absolute_border.color = "black"
+      this.absolute_border.dashes = [3,3]
+      
       this.boundary = new DrawablePolygon(new Polygon([]),"black");
       this.mode = 'boundary';
       
@@ -71,7 +77,7 @@ export class Canvas {
         } else {
             this.resetCanvas();
         }
-        this.sites = this.sites.filter(site => !pointInPolygon(site,this.boundary.polygon));
+        this.sites = this.sites.filter(site => (!pointInPolygon(site,this.boundary.polygon) || !pointInPolygon(site,this.absolute_border.polygon)));
         
         this.recalculateAll()
         this.drawAll();
@@ -150,7 +156,7 @@ export class Canvas {
       
       let point = new Point(CAMERA.ix(x), CAMERA.iy(y))
 
-      if (pointInPolygon(point,this.boundary.polygon)){
+      if (pointInPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.absolute_border.polygon)){
          let site = new Site(new DrawablePoint(point))
          this.sites.push(site);
          site.setColor(this.getNewColor(this.sites))
@@ -164,9 +170,13 @@ export class Canvas {
       if (this.boundaryType === 'freeDraw') {
 
          const {x, y} = this.getMousePos(event);
-         this.boundary.addPoint(new Point(CAMERA.ix(x), CAMERA.iy(y)));
-         this.recalculateAll()
-         this.drawAll()
+         let point = new Point(CAMERA.ix(x), CAMERA.iy(y))
+         if (pointInPolygon(point,this.absolute_border.polygon)){
+            this.boundary.addPoint(point);
+            this.recalculateAll()
+            this.drawAll()
+         }
+
       }
    }
    deleteBoundaryPoints(){
@@ -356,7 +366,7 @@ export class Canvas {
       const {x, y} = this.getMousePos(event);
       const mouse = new Point(CAMERA.ix(x),CAMERA.iy(y))
       if(this.draggingPoint != null){
-         if(pointInPolygon(mouse,this.boundary.polygon)){
+         if(pointInPolygon(mouse,this.boundary.polygon) && pointInPolygon(mouse,this.absolute_border.polygon)){
             let site = this.sites[this.draggingPoint]
             site.drawable_point.point.x = mouse.x
             site.drawable_point.point.y = mouse.y
@@ -524,6 +534,9 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
    drawAll() {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      this.absolute_border.draw(this.ctx);
+
 
       this.boundary.points.forEach((point) => {
          if (this.boundary.showInfo){

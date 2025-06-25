@@ -340,6 +340,7 @@ export function calculateMidsector(boundary,h_p1,h_p2){
     let x_diff = h_p1.point.x - h_p2.point.x
 
     let y_diff = h_p1.point.y - h_p2.point.y
+    // issue if points are same x?
 
     let points = boundary.points
 
@@ -372,6 +373,8 @@ export function calculateMidsector(boundary,h_p1,h_p2){
             }
         }
     }
+
+    console.log("MID",enter,exit,exit,enter)
 
     return calculateSector(boundary,h_p1,h_p2,enter,exit,exit,enter)
 

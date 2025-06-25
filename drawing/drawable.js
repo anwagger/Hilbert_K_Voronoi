@@ -1,3 +1,4 @@
+import { ConicSegment } from "../geometry/conics.js";
 import { Polygon, Segment } from "../geometry/primitives.js";
 import { createSegmentsFromPoints,
   convexHull, 
@@ -55,6 +56,7 @@ export class DrawablePolygon {
       this.color = color;
       this.stroke_style = stroke_style;
       this.show_vertices = show_vertices;
+      this.dashes = null
    }
 
    addPoint(point){
@@ -73,11 +75,17 @@ export class DrawablePolygon {
 
    // from nithins
   draw(ctx) {
+    if (this.dashes){
+        ctx.setLineDash(this.dashes) 
+    }
     this.segments.forEach((segment) => {
       //segment.setPenWidth(this.penWidth);
       segment.color = this.color
+
       segment.draw(ctx);
+      
     });
+    ctx.setLineDash([]) 
     if (this.show_vertices) {
       this.points.forEach((point) => {
         // point.setRadius(this.radius);
@@ -214,6 +222,46 @@ export class DrawablePoint {
         }
   }
 
+}
+
+export class DrawableBisectorSegment {
+  constructor(bisector_segment,p1_index,p2_index){
+    this.bisector_segment = bisector_segment
+    this.p1 = p1_index
+    this.p2 = p2_index 
+    this.drawable_conic_segments = []
+    this.color = "blue"
+    let start = bisector_segment.start
+    let end = bisector_segment.end
+    let conic_segments = bisector_segment.bisector.conic_segments
+    for (let i = Math.floor(start); i < Math.ceil(end); i++){
+        let conic_segment = conic_segments[i];
+        let p_conic = conic_segment.parameterized_conic
+        
+        if (i == Math.floor(start)) {
+            let range = conic_segment.end - conic_segment.start
+            let mid_t = conic_segment.start + range * (start % 1)
+
+            let partial_c_s = new ConicSegment(p_conic,mid_t,conic_segment.end,calculateConicSegmentBounds(p_conic,mid_t,conic_segment.end))
+            this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
+        }else if (i == Math.ceil(end) - 1){
+            let range = conic_segment.end - conic_segment.start
+            let mid_t = conic_segment.end - range * (1- (start % 1))
+            let partial_c_s = new ConicSegment(p_conic,conic_segment.start,mid_t,calculateConicSegmentBounds(p_conic,conic_segment.start,mid_t))
+            this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
+        }else{
+            this.drawable_conic_segments.push(new DrawableConicSegment(conic_segment))
+        }
+    }
+  }
+
+  draw(ctx){
+    const debug_colors = ["red","orange","yellow","green","blue","purple","pink","brown","grey"]
+    this.drawable_conic_segments.forEach((d_c_s,i) => {
+      d_c_s.color = debug_colors[i % debug_colors.length]
+      d_c_s.draw(ctx,50)
+    })
+  }
 }
 
 export class DrawableBisector {

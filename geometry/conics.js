@@ -836,14 +836,18 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
     let t_sort = (a,b) =>{
         return a[0] - b[0]
     }
-    ts.sort(t_sort)
+    ts = ts.sort(t_sort)
 
-    if (parameterized_conic.type == Conic_Type.DEGENERATE){
-        console.log("TS: ",ts)
+    if (ts.length > 2){
+        console.log("TS",parameterized_conic.type,ts)
     }
 
     start = ts[0]
     end = ts[ts.length-1]
+
+    if (ts.length > 2 && parameterized_conic.type === Conic_Type.DEGENERATE){
+        //end = ts[1]
+    }
 
     // take shortest way around
     let direction = Math.abs(end[0]-start[0])>2*Math.PI-Math.abs(end[0]-start[0])
