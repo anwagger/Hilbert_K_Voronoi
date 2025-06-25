@@ -420,3 +420,16 @@ export class Site {
     ctx.stroke();
 }
 }
+
+export class drawableVoronoi {
+  constructor(voronoi) {
+    this.brute_force = true;
+    this.voronoi = voronoi;
+  }
+
+  drawBruteForce(ctx) {
+    const order = this.voronoi.order;
+    
+  }
+
+}
