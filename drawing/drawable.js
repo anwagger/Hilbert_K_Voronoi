@@ -427,9 +427,28 @@ export class drawableVoronoi {
     this.voronoi = voronoi;
   }
 
-  drawBruteForce(ctx) {
-    const order = this.voronoi.order;
-    
+  drawBruteForce(canvas) {
+    const ctx = canvas.ctx;
+    const degree = this.voronoi.order;
+    const grid = this.voronoi.bruteForce(canvas);
+    let image_data = ctx.createImageData(width, height);
+
+    // currently brute forces for the 1000x1000 boundary, will get it working with paramaters eventually.
+    for (let x = 0; x < 4 * 1000; x+4) {
+      for (let y = 0; y < 4 * 1000; y+4) {
+        if (grid[x][y].length > 0) {
+          const site = grid[x][y].get(degree-1).index;
+          const hex = colorNameToHex(site.color);
+          const {r,g,b} = hexToRgb(hex);
+          image_data.data[x+y*w] = r;
+          image_data.data[x+y*w+1] = g;
+          image_data.data[x+y*w+2] = b;
+          image_data.data[x+y*w+3] = 255; // max opacity by default, prob can change
+        }
+      }
+    }
+
+    ctx.putImageData(image_data,0,0);
   }
 
 }

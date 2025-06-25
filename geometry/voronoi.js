@@ -48,13 +48,14 @@ export class VoronoiDiagram {
         this.degree = degree
         this.partition_tree = partition_tree
         this.metric = "hilbert"; // might make this an enum later idk
+        this.mode = "kth"; // can be "kth" or "k"
     }
 
     // just works for hilbert rn, needs cases for when metric isnt hilbert
     bruteForce(canvas) {
         let grid = matrix(1000,1000,null); // defaults the grid to be null
-        const height = canvas.height;
-        const width = canvas.width;
+        const height = 1000; // should be determined by absolute boundary/ resolution at some point
+        const width = 1000;
         const sites = canvas.sites;
         const points = this.boundary.points;
         for (let x = 0; x < height; x++) {
@@ -109,5 +110,6 @@ export class VoronoiDiagram {
                 grid[x][y] = pairs;
             }
         }
+        return grid;
     }
 }
