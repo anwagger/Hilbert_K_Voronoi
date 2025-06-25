@@ -43,6 +43,7 @@ export class Canvas {
       this.segments = [];
       this.bisectors = [];
       this.bisector_intersections = [];
+      this.voronoi = null;
 
       this.draggingPoint = null;
 

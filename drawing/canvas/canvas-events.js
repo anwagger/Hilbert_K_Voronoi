@@ -1,6 +1,7 @@
 import { Point } from "../../geometry/primitives.js";
 import { cleanArray, pointInPolygon } from "../../geometry/utils.js";
-import { CAMERA } from "../drawable.js";
+import { VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
+import { CAMERA, DrawableVoronoi } from "../drawable.js";
 
 // from nithins
 export function initEvents(canvas) {
@@ -15,6 +16,7 @@ export function initEvents(canvas) {
       document.getElementById('polygonContainer').style.display = (canvas.mode === "boundary") ? 'block' : 'none';
       document.getElementById('siteContainer').style.display = canvas.mode === "site" ? 'block' : 'none';
       document.getElementById('zoomContainer').style.display = canvas.mode === "view" ? 'block' : 'none';
+      document.getElementById('voronoiContainer').style.display = canvas.mode === "voronoi" ? 'block' : 'none';
    }
 
 
@@ -159,6 +161,18 @@ export function initEvents(canvas) {
       CAMERA.offset.x = 0;
       CAMERA.offset.y = 0;
       canvas.drawAll();
+   })
+
+   document.getElementById('bruteForceVoronoi').addEventListener('click', (event) => {
+      const input = document.getElementById('voronoiDegree').value;
+      const degree = parseInt(input);
+      console.log(degree);
+      if (degree >= 1 && degree <= canvas.sites.length) {
+         const voronoi = new DrawableVoronoi(new Voronoi(canvas.boundary,degree));
+         voronoi.drawBruteForce(canvas);
+      } else {
+         alert("Invalid degree :((((");
+      }
    })
    
 

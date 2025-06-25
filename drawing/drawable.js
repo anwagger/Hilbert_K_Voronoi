@@ -421,21 +421,23 @@ export class Site {
 }
 }
 
-export class drawableVoronoi {
+export class DrawableVoronoi {
   constructor(voronoi) {
     this.brute_force = true;
     this.voronoi = voronoi;
   }
 
   drawBruteForce(canvas) {
+    const width = 1000;
+    const height = 1000;
     const ctx = canvas.ctx;
     const degree = this.voronoi.order;
     const grid = this.voronoi.bruteForce(canvas);
     let image_data = ctx.createImageData(width, height);
 
     // currently brute forces for the 1000x1000 boundary, will get it working with paramaters eventually.
-    for (let x = 0; x < 4 * 1000; x+4) {
-      for (let y = 0; y < 4 * 1000; y+4) {
+    for (let x = 0; x < (4 * 1000); x+4) {
+      for (let y = 0; y < (4 * 1000); y+4) {
         if (grid[x][y].length > 0) {
           const site = grid[x][y].get(degree-1).index;
           const hex = colorNameToHex(site.color);

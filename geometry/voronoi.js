@@ -1,5 +1,5 @@
-import { Point, Segment } from "./primitives";
-import { pointInPolygon, pointOnPolygon } from "./utils";
+import { Point, Segment } from "./primitives.js";
+import { pointInPolygon, pointOnPolygon, matrix } from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -42,7 +42,7 @@ export function calculateVoronoiCellBounds(voronoi_cell){
 
 
 export class VoronoiDiagram {
-    constructor(boundary, cells,degree,partition_tree){
+    constructor(boundary, cells = [],degree,partition_tree = []){
         this.boundary = boundary
         this.cells = cells
         this.degree = degree
@@ -62,7 +62,7 @@ export class VoronoiDiagram {
             for (let y = 0; y < width; y++) {
                 let pairs = [];
                 const point = new Point(x,y);
-                if(pointInPolygon(point,boundary) && !pointOnPolygon(point,this.boundary)) {
+                if(pointInPolygon(point,this.boundary) && !pointOnPolygon(point,this.boundary)) {
                     for (let s = 0; s < sites.length; s++) {
                         const site = sites[s];
                         if (site.x === x && site.y === y) {
