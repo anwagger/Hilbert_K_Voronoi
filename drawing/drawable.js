@@ -308,6 +308,7 @@ export class DrawableConicSegment {
     let start = this.conic_segment.start
     
     // for debugging!
+    
     /**
     let degen = this.conic_segment.parameterized_conic.type === "D" && this.conic_segment.parameterized_conic.orientation === "N"
     if (degen){
@@ -315,6 +316,8 @@ export class DrawableConicSegment {
       dt = 2*Math.PI/num_of_points//2*Math.PI/num_of_points
     }
        */
+    
+      
     
 
 
@@ -340,13 +343,12 @@ export class DrawableConicSegment {
     p2.color = this.color
     p2.draw(ctx)
 
-    /**
     ctx.beginPath();
     ctx.setLineDash([3, 3]); 
     ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
     ctx.stroke(); 
     ctx.setLineDash([]); 
-   */
+  
 
   }
   /*

@@ -422,7 +422,7 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
 
     let p_conic = parameterizeConic(conic)
 
-    let {start_t:start_t, start_segment:start_segment,start_point:s_point, end_t:end_t, end_segment:end_segment,end_point:e_point} = getConicParameterBoundsInPolygon(p_conic,sector.polygon)
+    let {start_t:start_t, start_segment:start_segment,start_point:s_point, end_t:end_t, end_segment:end_segment,end_point:e_point} = getConicParameterBoundsInPolygon(p_conic,sector.polygon,start_point)
     
     if (start_t === null || end_t === null){
         console.log("BAD T")

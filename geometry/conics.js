@@ -179,7 +179,8 @@ export function parameterizeConic(conic){
             
             orientation = Conic_Orientation.NONE
             // has a gap near the cross, but HOPEFULLY, shouldn't be an issue, otherwise I will cry (or more likely guarentee it works for positive X)
-            parameterization.x_mult = 1
+            // new formulation fills in the gaps?
+            parameterization.x_mult = 1000
             parameterization.x_const = -D/(2*A)
             parameterization.y_mult = Math.sqrt(A/-C)
             parameterization.y_const = -E/(2*C)
@@ -391,6 +392,7 @@ export class ParameterizedConic {
                         
                     break;
                     case Conic_Orientation.NONE:
+                        /*
                         x_func = (t) => {
                             if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
                                 return (1/Math.sin(t) + x_off)
@@ -411,6 +413,31 @@ export class ParameterizedConic {
                         }
                         yi_func = (y) => {
                             let asin = Math.asin(this.y_mult/(y - y_off))
+                            return [
+                                asin < 0 ? asin+2*Math.PI: asin,-asin+Math.PI
+                            ]
+                        }
+                         */
+                        x_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return (this.x_mult*Math.sin(t) + x_off)
+                            }else{
+                                return (-this.x_mult*Math.sin(t) + x_off)
+                            }
+                        }
+                        y_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return this.y_mult*(this.x_mult*Math.sin(t))+y_off
+                            }else{
+                                return this.y_mult*(this.x_mult*Math.sin(t))+y_off
+                            }   
+                        }
+                        xi_func = (x) => {
+                            let asin = -Math.asin((x - x_off)/this.x_mult)
+                            return [asin < 0 ? asin+2*Math.PI: asin,asin+Math.PI]
+                        }
+                        yi_func = (y) => {
+                            let asin = Math.asin((y - y_off)/(this.x_mult*this.y_mult))
                             return [
                                 asin < 0 ? asin+2*Math.PI: asin,-asin+Math.PI
                             ]
@@ -796,10 +823,13 @@ export function bisectorConicFromSector(boundary,sector){
     return conic
 }
 
-export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
+export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,start_point = null){
 
     let intersections = parameterized_conic.conic.intersectPolygon(polygon)
 
+    if (parameterized_conic.type == Conic_Type.DEGENERATE && parameterized_conic.orientation == Conic_Orientation.NONE){
+        console.log("DN INTS",intersections)
+    }
     let ts = []
 
     //testing
@@ -836,30 +866,47 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon){
     let t_sort = (a,b) =>{
         return a[0] - b[0]
     }
+
+    
+
+    if(start_point != null){
+        t_sort = (a,b) => {
+            return euclideanDistance(start_point,a[2]) - euclideanDistance(start_point,b[2])
+        }
+    }
+
     ts = ts.sort(t_sort)
 
-    if (ts.length > 2){
-        console.log("TS",parameterized_conic.type,ts)
+    if (ts.length != 2){
+        console.log("TS",parameterized_conic.type,parameterized_conic.orientation,ts)
     }
 
     start = ts[0]
-    end = ts[ts.length-1]
-
-    if (ts.length > 2 && parameterized_conic.type === Conic_Type.DEGENERATE){
-        //end = ts[1]
+    let index = 1
+    end = ts[index]
+    while(isZero(ts[index][0]-start[0]) && index < ts.length){
+        index += 1
+        end = ts[index]
     }
 
+    //end = ts[ts.length-1]
+
     // take shortest way around
+        /*
+
     let direction = Math.abs(end[0]-start[0])>2*Math.PI-Math.abs(end[0]-start[0])
     if (direction){
+        console.log("SWAP",Math.abs(end[0]-start[0]),2*Math.PI-Math.abs(end[0]-start[0]))
         let temp = start
         start = end
         end = temp
     }
-
+    
     if(start[0] > end[0]){
         end[0] += 2*Math.PI
     }
+         */
+
 
     if (start[0] === Infinity || start[0] === -Infinity || end[0] === Infinity || end[0] === -Infinity){
         console.log("MISS")
