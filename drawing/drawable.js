@@ -3,7 +3,9 @@ import { Polygon, Segment } from "../geometry/primitives.js";
 import { createSegmentsFromPoints,
   convexHull, 
   intersectSegments, 
-  intersectSegmentsAsLines } from "../geometry/utils.js";
+  intersectSegmentsAsLines,
+colorNameToHex,
+hexToRgb } from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -433,24 +435,28 @@ export class DrawableVoronoi {
     const width = 1000;
     const height = 1000;
     const ctx = canvas.ctx;
-    const degree = this.voronoi.order;
+    const degree = this.voronoi.degree;
     const grid = this.voronoi.bruteForce(canvas);
     let image_data = ctx.createImageData(width, height);
 
     // currently brute forces for the 1000x1000 boundary, will get it working with paramaters eventually.
-    for (let x = 0; x < (4 * 1000); x+4) {
-      for (let y = 0; y < (4 * 1000); y+4) {
-        if (grid[x][y].length > 0) {
-          const site = grid[x][y].get(degree-1).index;
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        const cell = grid[x]?.[y];
+        if (Array.isArray(cell) && cell.length > degree - 1) {
+          const s = cell[degree - 1].index;
+          const site = canvas.sites[s];
           const hex = colorNameToHex(site.color);
-          const {r,g,b} = hexToRgb(hex);
-          image_data.data[x+y*w] = r;
-          image_data.data[x+y*w+1] = g;
-          image_data.data[x+y*w+2] = b;
-          image_data.data[x+y*w+3] = 255; // max opacity by default, prob can change
+          const { r, g, b } = hexToRgb(hex);
+          const i = (y * width + x) * 4;
+          image_data.data[i] = r;
+          image_data.data[i+1] = g;
+          image_data.data[i+2] = b;
+          image_data.data[i+3] = 255;
         }
       }
     }
+
 
     ctx.putImageData(image_data,0,0);
   }
