@@ -422,7 +422,7 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
 
     let p_conic = parameterizeConic(conic)
 
-    let {start_t:start_t, start_segment:start_segment,start_point:s_point, end_t:end_t, end_segment:end_segment,end_point:e_point} = getConicParameterBoundsInPolygon(p_conic,sector.polygon,start_point)
+    let {start_t:start_t, start_segment:start_segment,start_point:s_point, end_t:end_t, end_segment:end_segment,end_point:e_point,direction:direction} = getConicParameterBoundsInPolygon(p_conic,sector.polygon,start_point)
     
     if (start_t === null || end_t === null){
         console.log("BAD T")
@@ -478,7 +478,7 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
 
     //console.log("ENTER:",start_point,"START",start_p,"END",end_p)
 
-    let c_s = new ConicSegment(p_conic,start_num===0?start_t:end_t,start_num===0?end_t:start_t,bound)
+    let c_s = new ConicSegment(p_conic,start_num===0?start_t:end_t,start_num===0?end_t:start_t,bound,direction)
     
     // data.length will equal 1 if there is no valid way forward
     // 0 should not happen because of the first check, but just in case...
@@ -514,9 +514,12 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
         // flip both order and parameter bounds
         start_segments = start_segments.reverse()
         for (let i = 0; i < start_segments.length; i++){
-            let temp = start_segments.start
-            start_segments.start = start_segments.end
-            start_segments.end = temp
+            let conic_seg = start_segments[i]
+            let temp = conic_seg.start
+            conic_seg.start = conic_seg.end
+            conic_seg.end = temp
+            //conic_seg.direction *= -1
+
         }
         start_segments.push(c_s)
         let final_bisector = start_segments.concat(end_segments)

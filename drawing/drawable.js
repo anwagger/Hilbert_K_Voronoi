@@ -1,4 +1,4 @@
-import { ConicSegment } from "../geometry/conics.js";
+import { ConicSegment,calculateConicSegmentBounds } from "../geometry/conics.js";
 import { Polygon, Segment } from "../geometry/primitives.js";
 import { createSegmentsFromPoints,
   convexHull, 
@@ -304,7 +304,9 @@ export class DrawableConicSegment {
     // then we can draw a line between the points
     // yay
 
-    let dt = (this.conic_segment.end - this.conic_segment.start) / num_of_points;
+    let length = (this.conic_segment.end - this.conic_segment.start)
+    
+    let dt = this.conic_segment.direction * length / num_of_points;
     let segments = [];
 
     let start = this.conic_segment.start
@@ -318,16 +320,17 @@ export class DrawableConicSegment {
       dt = 2*Math.PI/num_of_points//2*Math.PI/num_of_points
     }
        */
-    
-      
-    
-
 
     let c_s = this.conic_segment
 
+    //console.log(c_s.parameterized_conic.type,c_s.parameterized_conic.orientation,"start",c_s.start,"end",c_s.end,"dir",c_s.direction,"len",length,"dt",dt)
+
+
     for (let i = 0; i <= num_of_points - 1; i++) {
       let t1 = start + dt * i;
+      
       let t2 = start + dt * ((i + 1));
+      
       let p1 = c_s.parameterized_conic.getPointFromT(t1);
       let p2 = c_s.parameterized_conic.getPointFromT(t2);
       segments.push(new DrawableSegment(new Segment(p1, p2)));

@@ -1,5 +1,5 @@
 import { Point, Segment,Bound } from "./primitives.js"
-import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds } from "./utils.js"
+import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon } from "./utils.js"
 
 export class Conic {
     constructor(equation){
@@ -657,7 +657,7 @@ export class ParameterizedConic {
             inverse should then be easy*
         */
 
-    let vert_h = false
+        let parallel = false
        let sin = Math.sin(this.angle)
        let cos = Math.cos(this.angle)
        // reverse rotation?
@@ -668,15 +668,32 @@ export class ParameterizedConic {
 
             let x_ts = this.xi_func(x)
             let y_ts = this.yi_func(y)
+            
 
+            if(parallel){
+                console.log("PARA",point,x_ts,y_ts)
+            }
             
             for (let i = 0; i < x_ts.length; i++){
                 for (let j = 0; j < y_ts.length; j++){
                     let p_x = this.getPointFromT(x_ts[i])
                     let p_y = this.getPointFromT(y_ts[j])
 
+                    if(parallel){
+                        console.log("CHECK",p_x,p_y)
+                    }
+
+                    let is_valid = false
+                    if(x_ts[i] != Infinity && y_ts[j] != Infinity){
+                        is_valid = isZero(euclideanDistance(p_x,p_y))
+                    }else if(x_ts[i] == Infinity){
+                        is_valid = isZero(euclideanDistance(point,p_y))
+                    }else if(y_ts[i] == Infinity){
+                        is_valid = isZero(euclideanDistance(point,p_x))
+                    }
+
                     //if (Math.abs(x_ts[i]- y_ts[j]) <= 1e-10){
-                    if (isZero(euclideanDistance(p_x,p_y)) || x_ts[i] == Infinity || y_ts[j] == Infinity){
+                    if (is_valid){
                         return x_ts[i] != Infinity?x_ts[i]:y_ts[j]
                     }
                 }
@@ -839,7 +856,6 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
         for (let i = 0; i < intersections[segment_num].length; i++) {
             let point = intersections[segment_num][i]
             points.push(point)
-            //console.log("p",point,parameterized_conic.getTOfPoint(point),parameterized_conic.getPointFromT(parameterized_conic.getTOfPoint(point)))
             // keep track of t and which segment it collided with
             ts.push([parameterized_conic.getTOfPoint(point),segment_num,point])
         }
@@ -871,7 +887,9 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
 
     if(start_point != null){
         t_sort = (a,b) => {
-            return euclideanDistance(start_point,a[2]) - euclideanDistance(start_point,b[2])
+            let start_t = parameterized_conic.getTOfPoint(start_point)
+            //return euclideanDistance(start_point,a[2]) - euclideanDistance(start_point,b[2])
+            return Math.abs(start_t - a[0]) - Math.abs(start_t - b[0])
         }
     }
 
@@ -889,23 +907,44 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
         end = ts[index]
     }
 
+    if (parameterized_conic.type ==Conic_Type.DEGENERATE && parameterized_conic.orientation == Conic_Orientation.NONE){
+        console.log("HERE",ts.length)
+        let center_point = parameterized_conic.getPointFromT(0)
+        if(pointOnPolygon(center_point,polygon)){
+            let poss_ts = [0,Math.PI,2*Math.PI]
+            let start_t = parameterized_conic.getTOfPoint(start_point)
+            poss_ts.sort((a,b) => {
+                return Math.abs(start_t - a) - Math.abs(start_t - b)
+            })
+            end = [poss_ts[0],null,center_point]
+        }
+        
+    }
+
     //end = ts[ts.length-1]
 
     // take shortest way around
-        /*
 
-    let direction = Math.abs(end[0]-start[0])>2*Math.PI-Math.abs(end[0]-start[0])
-    if (direction){
-        console.log("SWAP",Math.abs(end[0]-start[0]),2*Math.PI-Math.abs(end[0]-start[0]))
-        let temp = start
-        start = end
-        end = temp
-    }
-    
-    if(start[0] > end[0]){
+    if(end[0] < 0){
         end[0] += 2*Math.PI
     }
-         */
+    if(start[0] < 0){
+        start[0] += 2*Math.PI
+    }
+
+    let direction = 1
+    let first = start//start[0] < end[0]?start:end
+    let last = end//start[0] < end[0]?end:start
+    let change_direction = Math.abs(last[0]-first[0])>2*Math.PI-Math.abs(last[0]-first[0])
+    if (change_direction){
+
+        // come back to this!
+        console.log("SWAP",Math.abs(last[0]-first[0]),2*Math.PI-Math.abs(last[0]-first[0]))
+        //direction = -1
+    }
+        
+
+         
 
 
     if (start[0] === Infinity || start[0] === -Infinity || end[0] === Infinity || end[0] === -Infinity){
@@ -915,7 +954,7 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     }
 
     // return boundign t's and their associated segments
-    return {start_t: start[0],start_segment:start[1],start_point:start[2],end_t:end[0],end_segment:end[1],end_point:end[2],points:points}
+    return {start_t: start[0],start_segment:start[1],start_point:start[2],end_t:end[0],end_segment:end[1],end_point:end[2],direction:direction,points:points}
 }
 
 export function unrotateConic(c){
@@ -938,11 +977,12 @@ export function unrotateConic(c){
 }
 
 export class ConicSegment {
-    constructor(parameterized_conic,start,end,bound){
+    constructor(parameterized_conic,start,end,bound,direction = 0){
         this.parameterized_conic = parameterized_conic
         this.start = start
         this.end = end
         this.bound = bound
+        this.direction = direction
     }
 }
 

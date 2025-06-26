@@ -1,9 +1,9 @@
-import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector } from "../drawable.js"
+import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment } from "../drawable.js"
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point } from "../../geometry/primitives.js";
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray} from "../../geometry/utils.js"
-import { intersectBisectors } from "../../geometry/bisectors.js";
+import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -64,6 +64,7 @@ export class Canvas {
    }
 
    setPolygonType(type) {
+         this.boundary = new DrawablePolygon(new Polygon([]),this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
         this.boundaryType = type;
         if (type === 'customNgon') {
             const n = parseInt(this.customNgonInput);
@@ -76,10 +77,20 @@ export class Canvas {
         } else if (type !== 'freeDraw') {
             this.createNgon(parseInt(type));
         } else {
-            this.resetCanvas();
+            //this.resetCanvas();
+
         }
-        this.sites = this.sites.filter(site => (!pointInPolygon(site,this.boundary.polygon) || !pointInPolygon(site,this.absolute_border.polygon)));
-        
+        let deleteSiteIndex = []
+        this.sites.forEach((site,i) => {
+         if(!pointInPolygon(site.drawable_point.point,this.boundary.polygon) || !pointInPolygon(site.drawable_point.point,this.absolute_border.polygon)){
+            console.log("delete",i,site)
+            deleteSiteIndex.push(i)
+         }
+        });
+        for (let i = 0; i < deleteSiteIndex.length; i++){
+            this.deleteSite(deleteSiteIndex[i])
+        }
+        this.sites = cleanArray(this.sites)
         this.recalculateAll()
         this.drawAll();
     }
@@ -96,6 +107,10 @@ export class Canvas {
    }
    drawBisectors() {
       this.bisectors.forEach((bisector,i) => {
+         
+         //let b_s = new BisectorSegment(bisector.bisector,1.5,bisector.bisector.conic_segments.length-0.5,null)
+         //let d_b_s  =new DrawableBisectorSegment(b_s)
+         //d_b_s.draw(this.ctx)
          bisector.draw(this.ctx)
       });
    }
@@ -416,19 +431,24 @@ export class Canvas {
    deleteSelectedSites(){
       this.sites.forEach((s,idx) => {
       if (s.selected) {
-         for(let b = 0; b < this.bisectors.length; b++ ){
-            let bisector = this.bisectors[b]
-            if(bisector.p1 == idx || bisector.p2 == idx){
-               this.bisectors[b] = null
-            }
-         }
-         this.bisectors = cleanArray(this.bisectors)
-         s.drawable_point.deleteInfoBox();
-         this.sites[idx] = null;
+         this.deleteSite(idx)
       }
    });
       this.sites = cleanArray(this.sites) // removes any null elts from array
       this.drawAll();
+   }
+
+   deleteSite(idx){
+      let site = this.sites[idx]
+      for(let b = 0; b < this.bisectors.length; b++ ){
+         let bisector = this.bisectors[b]
+         if(bisector.p1 == idx || bisector.p2 == idx){
+            this.bisectors[b] = null
+         }
+      }
+      this.bisectors = cleanArray(this.bisectors)
+      site.drawable_point.deleteInfoBox();
+      this.sites[idx] = null;
    }
 
 
