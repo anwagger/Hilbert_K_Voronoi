@@ -99,6 +99,9 @@ export function initEvents(canvas) {
       }else if(canvas.mode === 'site'){
          if(!event.shiftKey){
             canvas.addSite(event)
+            if (canvas.voronoi !== null) {
+               canvas.voronoi.drawBruteForce(this);
+            }
          }
       } 
    });
@@ -227,6 +230,9 @@ export function initEvents(canvas) {
          canvas.selectSingleSite(event)
          canvas.selecting = false;
          canvas.drawAll()
+         if (canvas.voronoi !== null) {
+         canvas.voronoi.drawBruteForce(this);
+         }
        }
    }
 

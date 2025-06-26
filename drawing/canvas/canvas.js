@@ -388,6 +388,7 @@ export class Canvas {
             site.drawable_point.point.y = mouse.y
             this.recalculateSite(this.draggingPoint);
          }
+
          this.drawAll()
       }
    }
@@ -559,11 +560,10 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       this.absolute_border.draw(this.ctx);
 
-
       if (this.voronoi !== null) {
          this.voronoi.drawBruteForce(this);
       }
-      
+
       this.boundary.points.forEach((point) => {
          if (this.boundary.showInfo){
             point.drawInfoBox(this, this.dpr); 
