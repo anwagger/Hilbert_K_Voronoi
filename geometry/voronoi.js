@@ -1,20 +1,16 @@
 import { Point, Segment } from "./primitives.js";
-import { pointInPolygon, pointOnPolygon, matrix } from "./utils.js";
+import { pointInPolygon, 
+    pointOnPolygon, 
+    intersectSegmentsAsLines, 
+    pointSegDistance, 
+    euclideanDistance, 
+    hilbertMetric, 
+    matrix } from "./utils.js";
 
 class Pair {
   constructor(i, d) {
     this.index = i;
     this.dist = d;
-  }
-  
-  compareTo(other) {
-    if (this.dist < other.dist) {
-      return -1;
-    } else if (this.dist > other.dist) {
-      return 1;
-    } else {
-      return 0;
-    }
   }
 }
 
@@ -53,11 +49,12 @@ export class VoronoiDiagram {
 
     // just works for hilbert rn, needs cases for when metric isnt hilbert
     bruteForce(canvas) {
-        let grid = matrix(1000,1000,null); // defaults the grid to be null
+        let grid = matrix(1000,1000,[]); // defaults the grid to be null
         const height = 1000; // should be determined by absolute boundary/ resolution at some point
         const width = 1000;
         const sites = canvas.sites;
         const points = this.boundary.points;
+        const sensitivity = 1e-3;
         for (let x = 0; x < height; x++) {
             for (let y = 0; y < width; y++) {
                 let pairs = [];
@@ -65,11 +62,12 @@ export class VoronoiDiagram {
                 if(pointInPolygon(point,this.boundary) && !pointOnPolygon(point,this.boundary)) {
                     for (let s = 0; s < sites.length; s++) {
                         const site = sites[s];
-                        if (site.x === x && site.y === y) {
-                            pairs.add(new Pair(s, 0));
+                        const p = site.drawable_point.point; // this is the sites point idk what else to call it
+                        if (p.x === x && p.y === y) {
+                            pairs.push(new Pair(s, 0));
                             continue;
                         }
-                        const mid = new Segment(site,point);
+                        const mid = new Segment(p,point);
                         const ints = [];
                         let count = 0;
                         for (let p = 0; p < points.length; p++) {
@@ -96,18 +94,18 @@ export class VoronoiDiagram {
 
                         if (count === 2) {
                             if (count == 2) {
-                                const first = euclideanDistance(site, ints[0]) < euclideanDistance(point, ints[0])? ints[0]:ints[1];
-                                const last = euclideanDistance(site, ints[0]) < euclideanDistance(point, ints[0])? ints[1]:ints[0];
+                                const first = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[0]:ints[1];
+                                const last = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[1]:ints[0];
                                 let hilbert = 0;
-                                hilbert = hilbertMetric(first, site, point, last);
-                                pairs.add(new Pair(s, hilbert));
+                                hilbert = hilbertMetric(first, p, point, last);
+                                pairs.push(new Pair(s, hilbert));
                             }
                         }
                     }
                 }
                 
-                pairs.sort((a,b) => a.compareTo(b));
-                grid[x][y] = pairs;
+                pairs.sort((a, b) => a.dist - b.dist);
+                grid[x][y] = pairs;            
             }
         }
         return grid;
