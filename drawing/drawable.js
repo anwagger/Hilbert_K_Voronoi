@@ -434,34 +434,57 @@ export class DrawableVoronoi {
     this.voronoi = voronoi;
   }
 
-  drawBruteForce(canvas) {
-    const width = 1000;
-    const height = 1000;
-    const ctx = canvas.ctx;
-    const degree = this.voronoi.degree;
-    const grid = this.voronoi.bruteForce(canvas);
-    let image_data = ctx.createImageData(width, height);
+  
+  // andrew im ngl i vibecoded part of this because i was confused abt the camera it makes sense to me though
+    drawBruteForce(canvas) {
+        const width = 1000;
+        const height = 1000;
+        const ctx = canvas.ctx; // This is the main canvas context
+        const degree = this.voronoi.degree;
+        const grid = this.voronoi.bruteForce(canvas);
 
-    // currently brute forces for the 1000x1000 boundary, will get it working with paramaters eventually.
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
-        const cell = grid[x]?.[y];
-        if (Array.isArray(cell) && cell.length > degree - 1) {
-          const s = cell[degree - 1].index;
-          const site = canvas.sites[s];
-          const hex = colorNameToHex(site.color);
-          const { r, g, b } = hexToRgb(hex);
-          const i = (y * width + x) * 4;
-          image_data.data[i] = r;
-          image_data.data[i+1] = g;
-          image_data.data[i+2] = b;
-          image_data.data[i+3] = 255;
+        // temp canvas stuff gemini suggested for drawing to scale, might be a better way this is p slow rn
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        let image_data = tempCtx.createImageData(width, height);
+
+        for (let x = 0; x < width; x++) {
+            for (let y = 0; y < height; y++) {
+                const cell = grid[x]?.[y];
+                if (Array.isArray(cell) && cell.length > degree - 1) {
+                    const s = cell[degree - 1].index;
+                    const site = canvas.sites[s];
+                    if (site) {
+                        const hex = colorNameToHex(site.color);
+                        const { r, g, b } = hexToRgb(hex);
+                        const i = (y * width + x) * 4;
+                        image_data.data[i] = r;
+                        image_data.data[i + 1] = g;
+                        image_data.data[i + 2] = b;
+                        image_data.data[i + 3] = 150;
+                    }
+                }
+            }
         }
-      }
+
+        tempCtx.putImageData(image_data, 0, 0);
+
+        ctx.globalAlpha = 0.6;
+
+        const drawWidth = CAMERA.x(canvas.absolute_border.polygon.points[1].x) - CAMERA.x(canvas.absolute_border.polygon.points[0].x);
+        const drawHeight = CAMERA.y(canvas.absolute_border.polygon.points[2].y) - CAMERA.y(canvas.absolute_border.polygon.points[0].y);
+
+        ctx.drawImage(
+            tempCanvas,               
+            CAMERA.x(0),              
+            CAMERA.y(0),          
+            drawWidth,                
+            drawHeight              
+        );
+        ctx.globalAlpha = 1.0; 
     }
-
-
-    ctx.putImageData(image_data,0,0);
-  }
 
 }

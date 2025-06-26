@@ -554,11 +554,16 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 }
 
    drawAll() {
+      
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
       this.absolute_border.draw(this.ctx);
 
 
+      if (this.voronoi !== null) {
+         this.voronoi.drawBruteForce(this);
+      }
+      
       this.boundary.points.forEach((point) => {
          if (this.boundary.showInfo){
             point.drawInfoBox(this, this.dpr); 

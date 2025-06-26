@@ -169,6 +169,7 @@ export function initEvents(canvas) {
       console.log(degree);
       if (degree >= 1 && degree <= canvas.sites.length) {
          const voronoi = new DrawableVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
+         canvas.voronoi = voronoi;
          voronoi.drawBruteForce(canvas);
       } else {
          alert("Invalid degree :((((");
@@ -217,7 +218,7 @@ export function initEvents(canvas) {
    canvasElement.onmouseup = (event) => {
        CAMERA.move_lock = true
 
-       if (canvas.mode === "site"){
+       if (canvas.mode === "site" || canvas.mode === "voronoi"){
          if (event.shiftKey){
             canvas.selectSites()
          }else{
@@ -237,7 +238,7 @@ export function initEvents(canvas) {
    
    canvasElement.onmousemove = (event) => {
 
-      if (canvas.mode === "site"){
+      if (canvas.mode === "site" || canvas.mode === "voronoi"){
          if(event.shiftKey){
             if (canvas.selecting){
                const {x, y} = canvas.getMousePos(event);
