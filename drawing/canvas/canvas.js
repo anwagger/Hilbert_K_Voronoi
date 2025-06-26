@@ -44,6 +44,7 @@ export class Canvas {
       this.bisectors = [];
       this.bisector_intersections = [];
       this.voronoi = null;
+      this.voronoi_image = null;
 
       this.draggingPoint = null;
 
@@ -390,6 +391,9 @@ export class Canvas {
          }
 
          this.drawAll()
+         if (this.voronoi !== null) {
+            this.voronoi.drawBruteForce(this,false);
+         }
       }
    }
 
@@ -560,9 +564,6 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       this.absolute_border.draw(this.ctx);
 
-      if (this.voronoi !== null) {
-         this.voronoi.drawBruteForce(this);
-      }
 
       this.boundary.points.forEach((point) => {
          if (this.boundary.showInfo){
