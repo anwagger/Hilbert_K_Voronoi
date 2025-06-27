@@ -151,7 +151,15 @@ export function initEvents(canvas) {
    document.addEventListener('keydown', (event) => {
          if (event.key === 'Delete') {
             canvas.deleteSelectedSites()
-         } 
+         } else if (canvas.mode === "voronoi") {
+            let int = parseInt(event.key);
+            console.log(int);
+            if (int !== NaN && int <= canvas.sites.length && int >= 1) {
+               canvas.voronoi.voronoi.degree = int;
+               console.log(canvas.voronoi.voronoi.degree);
+               canvas.voronoi.drawBruteForce(canvas,false);
+            }
+         }
    });
 
    document.getElementById('zoomRange').addEventListener('change', (event) => {

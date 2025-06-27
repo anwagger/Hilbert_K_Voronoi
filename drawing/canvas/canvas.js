@@ -392,7 +392,7 @@ export class Canvas {
 
          this.drawAll()
          if (this.voronoi !== null) {
-            this.voronoi.drawBruteForce(this,false);
+            this.voronoi.drawBruteForce(this,false,false);
          }
       }
    }

@@ -432,11 +432,12 @@ export class DrawableVoronoi {
   constructor(voronoi) {
     this.brute_force = true;
     this.voronoi = voronoi;
+    this.grid = [];
   }
 
   
   // andrew im ngl i vibecoded part of this because i was confused abt the camera it makes sense to me though
-    drawBruteForce(canvas,recalculate = true) {
+    drawBruteForce(canvas,recalculate = true, degree = true) {
         // temp canvas stuff gemini suggested for drawing to scale, might be a better way this is p slow rn
         const width = 1000;
         const height = 1000;
@@ -446,9 +447,16 @@ export class DrawableVoronoi {
         const tempCtx = tempCanvas.getContext('2d');
         const ctx = canvas.ctx; // This is the main canvas context
 
-        if (recalculate) {
+        if (degree) {
           const degree = this.voronoi.degree;
-          const grid = this.voronoi.bruteForce(canvas);
+          let grid;
+
+          if (recalculate) {
+            grid = this.voronoi.bruteForce(canvas);
+            this.grid = grid;
+          } else {
+            grid = this.grid;
+          }
 
           let image_data = tempCtx.createImageData(width, height);
 
