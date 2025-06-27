@@ -304,15 +304,7 @@ export class DrawableConicSegment {
     // then we can draw a line between the points
     // yay
 
-    length = (this.conic_segment.end - this.conic_segment.start)
-
-    if(length < 0){
-        length += 2*Math.PI
-    }
-    
-    if(this.conic_segment.direction == -1){
-      length -= 2*Math.PI
-    }
+    let length = this.conic_segment.getRange()
 
     let dt = length / num_of_points;
     let segments = [];

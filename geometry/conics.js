@@ -112,41 +112,43 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
     if (!intersectBounds(c_s1.bound,c_s2.bound)){
         return false
     }
-    let split = 5
+
+    let split = 2
 
     // bad :(
-    let range1 = c_s1.end - c_s1.start
-    let range2 = c_s1.end - c_s1.start 
+    let range1 = c_s1.getRange()
+    let first1 = c_s1.start//Math.min(c_s1.start,c_s1.end)
 
-    let mid_point1 = c_s1.parameterized_conic.getPointFromT(c_s1.start+range1/2)
-    let mid_point2 = c_s2.parameterized_conic.getPointFromT(c_s2.start+range2/2)
+    let range2 = c_s2.getRange()
+    let first2 = c_s2.start//Math.min(c_s2.start,c_s2.end)
+
+    let mid_point1 = c_s1.parameterized_conic.getPointFromT(first1+range1/2)
+    let mid_point2 = c_s2.parameterized_conic.getPointFromT(first2+range2/2)
 
     let sensitivity = 1e-5
 
-    if (euclideanDistance(mid_point1,mid_point2) <= sensitivity){
-        return mid_point1
-    }else if (isZero(range1) && isZero(range2)){
-        return false
+    if (isZero(range1) && isZero(range2)){
+        return new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2)
     }
 
     let sub_cs1 = []
     let sub_cs2 = []
 
     for (let i = 0; i < split; i++){
-        let start1 = c_s1.start + range1*i/split
-        let end1 = c_s1.start + range1*(i+1)/split
+        let start1 = first1 + range1*i/split
+        let end1 = first1 + range1*(i+1)/split
         let bound1 = calculateConicSegmentBounds(c_s1.parameterized_conic,start1,end1,c_s1.direction)
         sub_cs1.push(new ConicSegment(c_s1.parameterized_conic,start1,end1,bound1,c_s1.direction))
-        let start2 = c_s2.start + range2*i/split
-        let end2 = c_s2.start + range2*(i+1)/split
+        let start2 = first2 + range2*i/split
+        let end2 = first2 + range2*(i+1)/split
         let bound2 = calculateConicSegmentBounds(c_s2.parameterized_conic,start2,end2,c_s2.direction)
         sub_cs2.push(new ConicSegment(c_s2.parameterized_conic,start2,end2,bound2,c_s2.direction))
     }
 
+
     for (let i = 0; i < split; i++){
         for (let j = 0; j < split; j++){
             if (intersectBounds(sub_cs1[i].bound,sub_cs2[j].bound)){
-                console.log("RECURSE",sub_cs1[i],sub_cs2[j])
                 let intersection = approximateConicSegmentIntersection(sub_cs1[i],sub_cs2[j])
                 if (intersection){
                     return intersection
@@ -154,6 +156,7 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
             }
         }
     }
+    console.log("NOTHIN")
     return false
 }
 
@@ -1000,7 +1003,7 @@ export class ConicSegment {
         this.direction = direction
     }
 
-    getMidT(){
+    getRange(){
 
         //let opposite = (this.direction == 1 && this.start > this.end) || (this.direction == -1 && this.start < this.end)
 
@@ -1015,12 +1018,7 @@ export class ConicSegment {
         length -= 2*Math.PI
         }
 
-        if (this.start < this.end){
-            return this.start+length/2
-        }else{
-            return this.end+length/2
-        }
-
+        return length
     }
 }
 

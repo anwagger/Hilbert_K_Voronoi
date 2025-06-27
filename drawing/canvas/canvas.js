@@ -108,12 +108,11 @@ export class Canvas {
    }
    drawBisectors() {
       this.bisectors.forEach((bisector,i) => {
-         
-         //let b_s = new BisectorSegment(bisector.bisector,1.5,bisector.bisector.conic_segments.length-0.5,null)
-         //let d_b_s  =new DrawableBisectorSegment(b_s)
-         //d_b_s.draw(this.ctx)
          bisector.draw(this.ctx)
       });
+      this.bisector_intersections.forEach((d_p,i) => {
+         d_p.draw(this.ctx)
+      })
    }
 
    createNgon(n) {
@@ -320,20 +319,21 @@ export class Canvas {
    }
 
    calculateBisectorIntersections(){
-      /**
+      
       this.bisector_intersections = []
       for(let i = 0; i < this.bisectors.length; i++){
          for(let j = i+1; j < this.bisectors.length; j++){
             let b1 = this.bisectors[i].bisector
             let b2 = this.bisectors[j].bisector
+            console.log("INTERSECT")
             let intersection = intersectBisectors(b1,b2)
+            console.log("DONE INTERSECT",intersection)
+
             if (intersection){
                this.bisector_intersections.push(new DrawablePoint(intersection))
             }
          }
       }
-      */
-         
    }
 
 

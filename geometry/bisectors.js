@@ -1,4 +1,4 @@
-import { approximateConicSegmentIntersection } from "./conics.js"
+import {intersectConicSegments } from "./conics.js"
 
 export class Bisector {
     constructor(conic_segments){
@@ -49,7 +49,7 @@ export function calculateBisectorSegmentBounds(bisector,start,end){
 export function intersectBisectors(b1,b2){
     for(let i = 0; i < b1.conic_segments.length; i++){
         for(let j = 0; j < b2.conic_segments.length; j++){
-            let intersection = approximateConicSegmentIntersection(b1.conic_segments[i],b2.conic_segments[j])
+            let intersection = intersectConicSegments(b1.conic_segments[i],b2.conic_segments[j])
             if (intersection){
                 return intersection
             }
