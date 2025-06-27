@@ -1,3 +1,5 @@
+import { calculateCircumcenter } from "./bisectors.js";
+import { calculateBisector, calculateHilbertPoint } from "./hilbert.js";
 import { Point, Segment } from "./primitives.js";
 import { pointInPolygon, 
     pointOnPolygon, 
@@ -5,7 +7,9 @@ import { pointInPolygon,
     pointSegDistance, 
     euclideanDistance, 
     hilbertMetric, 
-    matrix } from "./utils.js";
+    matrix, 
+    matrix3D,
+    calculateHilbertDistance} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -110,4 +114,149 @@ export class VoronoiDiagram {
         }
         return grid;
     }
+
+    
+}
+
+export function n3lognVoronoiClassifications(boundary,points){
+
+    const n = points.length
+    // calculate spokes
+    let h_points = []
+    for(let i = 0; i < n; i++){
+        h_points.push(calculateHilbertPoint(boundary,points[i]))
+    }
+
+
+    // calculate bisectors
+    let bisectors = matrix(n,n,null)
+    for(let i = 0; i < n; i++){
+        for(let j = i+1; j < n; j++){
+            let bisector = calculateBisector(boundary,h_points[i],h_points[j])
+            bisectors[i][j] = bisector
+            bisectors[j][i] = bisector
+        }
+    }
+
+    // get ordering of other points
+    point_orders = []
+    distances = matrix(n,n,0)
+    for(let i = 0; i < n; i++){
+        point_orders.push([])
+        for(let j = 0; j < n; j++){
+            if(j != i){
+                const dist = calculateHilbertDistance(boundary,h_points[i].point,h_points[j].point)
+                distances[i][j] = dist
+                distances[j][i] = dist
+                point_orders.push(j)
+            }
+        }
+        // sort orderings of points
+        const sort_orders = (a,b) => distances[i][a] - distances[i][b]
+        point_orders[i].sort(sort_orders)
+    }
+    
+    // calculate circumcenters
+    let circumcenter_data = matrix3D(n,n,n,false)
+    for(let i = 0; i < n; i++){
+        for(let j = i+1; j < n; j++){
+            for(let k = j+1; k < n; k++){
+                let c = calculateCircumcenter(bisectors[i][j],bisectors[j][k],bisectors[i][k])
+                if(c){
+                    let data = {
+                        point: c,
+                        [i]: {},
+                        [j]:{},
+                        [k]:{},
+                    }
+                    // calculate t's and orientation
+                    // higher degree is the side where the third point is closer
+                    data[i][j] = {
+                        t: bisectors[i][j].getTofPoint(c),
+                    }
+                    let ij_start_p = bisectors[i][j].getPointFromT(0)
+                    let ij_less_dist = calculateHilbertDistance(boundary,ij_start_p,points[k])
+                    let ij_end_p = bisectors[i][j].getPointFromT(bisectors[i][j].conic_segments.length)
+                    let ij_more_dist = calculateHilbertDistance(boundary,ij_end_p,points[k]) 
+                    data[i][j].less = ij_less_dist < ij_more_dist?1:-1
+                    data[i][j].more = ij_less_dist < ij_more_dist?-1:1
+                    data[j][i] = data[i][j]
+                    
+                    data[j][k] = {
+                        t: bisectors[j][k].getTofPoint(c),
+                    }
+                    let jk_start_p = bisectors[j][k].getPointFromT(0)
+                    let jk_less_dist = calculateHilbertDistance(boundary,jk_start_p,points[i])
+                    let jk_end_p = bisectors[j][k].getPointFromT(bisectors[j][k].conic_segments.length)
+                    let jk_more_dist = calculateHilbertDistance(boundary,jk_end_p,points[i]) 
+                    data[j][k].less = jk_less_dist < jk_more_dist?1:-1
+                    data[j][k].more = jk_less_dist < jk_more_dist?-1:1
+                    data[k][j] = data[j][k]
+                    
+                    
+                    data[k][i] = {
+                        t: bisectors[k][i].getTofPoint(c),
+                    }
+                    let ki_start_p = bisectors[k][i].getPointFromT(0)
+                    let ki_less_dist = calculateHilbertDistance(boundary,ki_start_p,points[j])
+                    let ki_end_p = bisectors[k][i].getPointFromT(bisectors[k][i].conic_segments.length)
+                    let ki_more_dist = calculateHilbertDistance(boundary,ki_end_p,points[j]) 
+                    data[k][i].less = ki_less_dist < ki_more_dist?1:-1
+                    data[k][i].more = ki_less_dist < ki_more_dist?-1:1
+                    data[i][k] = data[k][i]
+
+                    // set data
+                    circumcenter_data[i][j][k] = data
+                    circumcenter_data[i][k][j] = data
+                    circumcenter_data[j][i][k] = data
+                    circumcenter_data[j][k][i] = data
+                    circumcenter_data[k][i][j] = data
+                    circumcenter_data[k][j][i] = data
+                }
+            }
+        }
+    }
+
+    // classify each segment of the bisectors
+    let bisector_classifications = matrix(n,n,false)
+    for(let i = 0; i < n; i++){
+        for(let j = i+1; j < n; j++){
+            // order circumcenters
+            let ordered_circumcenters = []
+            for(let k = j+1; k < n; k++){
+                ordered_circumcenters.push(circumcenter_data[i][j][k])
+            }
+            const sort_centers = (a,b) => a[i][j].t - b[i][j].t
+            ordered_circumcenters.sort(sort_centers)
+
+            bisector_classifications[i][j] = []
+            bisector_classifications[j][i] = bisector_classifications[i][j]
+            // find degree of first segment
+            let anchor = bisectors[i][j].getPointFromT(0)
+            let ordered_points = []
+            for(let p = 0; p < n; p++){
+                ordered_points.push(p)
+            }
+            ordered_points.sort((a,b) => {
+                return calculateHilbertDistance(boundary,anchor,points[a]) - calculateHilbertDistance(boundary,anchor,points[b])
+            })
+            // calculate degree 
+            let degree = 1
+            for(let p = 0; p < n; p++){
+                if(ordered_points[p] != i && ordered_points[p] != j){
+                    degree += 1
+                }else{
+                    break;
+                }
+            }
+            bisector_classifications[i][j].push(degree)
+            // for each subsequent segment, change the degree by the circumcenter classification
+            for(let c = 0; c < ordered_circumcenters.length; c++){
+                degree = degree + ordered_circumcenters[c][i][j].more
+                bisector_classifications[i][j].push(degree)
+            }
+        }
+    }
+    return bisector_classifications
+    // put it all together?
 }

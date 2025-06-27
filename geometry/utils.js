@@ -22,6 +22,41 @@ export function hilbertMetric(edge1, point1, point2, edge2){
     return 0.5 * Math.log(crossRatio(edge1,point1,point2,edge2))
 }
 
+export function calculateHilbertDistance(boundary,point1,point2){
+  const mid = new Segment(point1,point2);
+  const points = boundary.points;
+  const ints = [];
+  let count = 0;
+  for (let p = 0; p < points.length; p++) {
+      const p2 = (p + 1) % points.length;
+      const seg = new Segment(points[p], points[p2]);
+      const i = intersectSegmentsAsLines(mid, seg);
+      if (i !== null) {
+      //println("GOOD",mid.start,mid.end,i,seg.start,seg.end,pointSegDistance(i,seg));
+          if (pointSegDistance(i, seg) <= sensitivity) {
+              if (count > 0) {
+                  if (euclideanDistance(i, ints[0]) <= sensitivity) {
+                      // replace point as to not have
+                      count--;
+                  }
+              }
+              ints[count] = i;
+              count++;
+          }
+      }
+
+      if (count > 1) break;
+  }
+
+  if (count === 2) {
+    const first = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[0]:ints[1];
+    const last = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[1]:ints[0];
+    let hilbert = 0;
+    return hilbertMetric(first, p, point, last);
+  }
+  return NaN
+}
+
 export function lineEquation(segment){
     const p1 = segment.start
     const p2 = segment.end
@@ -305,6 +340,14 @@ export function matrix( rows, cols, defaultValue){
   }
 
 return arr;
+}
+
+export function matrix3D( rows, cols,height, defaultValue){
+  let arr = []
+  for(let i = 0; i < rows; i++){
+    arr.push(matrix(cols,height,defaultValue))
+  }
+  return arr
 }
 
 

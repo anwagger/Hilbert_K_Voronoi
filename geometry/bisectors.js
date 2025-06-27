@@ -1,8 +1,38 @@
 import {intersectConicSegments } from "./conics.js"
+import { Point } from "./primitives.js"
+import { euclideanDistance, isLeZero, isZero } from "./utils.js"
 
 export class Bisector {
     constructor(conic_segments){
         this.conic_segments = conic_segments
+    }
+
+    getPointFromT(t){
+        if(t == this.conic_segments.length){
+            let c_s = this.conic_segments[this.conic_segments.length-1]
+            return c_s.getPointFromT(c_s.end)
+        }
+        let c_s = this.conic_segments[Math.floor(t)]
+        let percentage = t - Math.floor(t)
+        let range = c_s.getRange()
+        return c_s.getPointFromT(c_s.start + range * percentage)
+    }
+
+    getTofPoint(point){
+        let x = point.x
+        let y = point.y
+        for(let c = 0; c < this.conic_segments.length; c++){
+            let c_s = this.conic_segments[i]
+            let t = c_s.parameterized_conic.getTofPoint(point)
+            if(t){
+                let range = c_s.getRange()
+                // suspect ...
+                let percentage = 1 - (c_s.start - t)/range
+                if(isLeZero(percentage-1) && isLeZero(-percentage)){
+                    return c + percentage
+                }
+            }
+        }
     }
 }
 
@@ -56,4 +86,17 @@ export function intersectBisectors(b1,b2){
         }
     }
     return false
+}
+
+
+export function calculateCircumcenter(b1,b2,b3){
+    let i12 = intersectBisectors(b1,b2)
+    let i23 = intersectBisectors(b2,b3)
+    let i13 = intersectBisectors(b1,b3)
+    if(i12 && i23 && i13 && 
+    isZero(euclideanDistance(i12,i13)**2) && 
+    isZero(euclideanDistance(i12,i23)**2) && 
+    isZero(euclideanDistance(i23,i13)**2)){
+        return new Point((i12.x + i23.x + i13.x)/3,(i12.y + i23.y + i13.y)/3)
+    }
 }

@@ -241,15 +241,15 @@ export class DrawableBisectorSegment {
         let p_conic = conic_segment.parameterized_conic
         
         if (i == Math.floor(start)) {
-            let range = conic_segment.end - conic_segment.start
+            let range = conic_segment.getRange()
             let mid_t = conic_segment.start + range * (start % 1)
 
-            let partial_c_s = new ConicSegment(p_conic,mid_t,conic_segment.end,calculateConicSegmentBounds(p_conic,mid_t,conic_segment.end))
+            let partial_c_s = new ConicSegment(p_conic,mid_t,conic_segment.end,calculateConicSegmentBounds(p_conic,mid_t,conic_segment.end,conic_segment.direction))
             this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
         }else if (i == Math.ceil(end) - 1){
-            let range = conic_segment.end - conic_segment.start
+            let range = conic_segment.getRange()  
             let mid_t = conic_segment.end - range * (1- (start % 1))
-            let partial_c_s = new ConicSegment(p_conic,conic_segment.start,mid_t,calculateConicSegmentBounds(p_conic,conic_segment.start,mid_t))
+            let partial_c_s = new ConicSegment(p_conic,conic_segment.start,mid_t,calculateConicSegmentBounds(p_conic,conic_segment.start,mid_t,conic_segment.direction))
             this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
         }else{
             this.drawable_conic_segments.push(new DrawableConicSegment(conic_segment))
