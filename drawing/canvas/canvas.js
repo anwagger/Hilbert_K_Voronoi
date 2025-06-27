@@ -446,6 +446,9 @@ export class Canvas {
    });
       this.sites = cleanArray(this.sites) // removes any null elts from array
       this.drawAll();
+      if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
+         canvas.voronoi.drawBruteForce(canvas,false,false);
+      }
    }
 
    deleteSite(idx){
