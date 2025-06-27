@@ -157,6 +157,7 @@ export function initEvents(canvas) {
             if (int !== NaN && int <= canvas.sites.length && int >= 1) {
                canvas.voronoi.voronoi.degree = int;
                console.log(canvas.voronoi.voronoi.degree);
+               canvas.drawAll();
                canvas.voronoi.drawBruteForce(canvas,false);
             }
          }
@@ -165,6 +166,9 @@ export function initEvents(canvas) {
    document.getElementById('zoomRange').addEventListener('change', (event) => {
       CAMERA.setScale(event.target.value);
       canvas.drawAll();
+      if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
+         canvas.voronoi.drawBruteForce(canvas,false,false);
+      }
    })
 
    document.getElementById('resetZoom').addEventListener('click', (event) => {
@@ -274,9 +278,15 @@ export function initEvents(canvas) {
             if (event.shiftKey){
                   CAMERA.changeScale(event.movementY)
                   canvas.drawAll()
+                  if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
+                     canvas.voronoi.drawBruteForce(canvas,false,false);
+                  }
             }else{
                CAMERA.changeOffset(event.movementX,event.movementY)
                canvas.drawAll()
+               if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
+                  canvas.voronoi.drawBruteForce(canvas,false,false);
+               }
             }
          }
       }else{
@@ -284,6 +294,9 @@ export function initEvents(canvas) {
             if (!event.shiftKey && (canvas.draggingPoint == null)){
                CAMERA.changeOffset(event.movementX,event.movementY)
                canvas.drawAll()
+               if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
+                  canvas.voronoi.drawBruteForce(canvas,false,false);
+               }
             }
          }
       } 
