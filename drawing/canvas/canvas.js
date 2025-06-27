@@ -2,7 +2,7 @@ import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSp
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point } from "../../geometry/primitives.js";
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor} from "../../geometry/utils.js"
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
 export class Canvas {
    constructor(canvasElement) {
@@ -246,9 +246,13 @@ export class Canvas {
    }
 
    addBisector(bisector,p1,p2) {
-         let d_b = new DrawableBisector(bisector,p1,p2)
-        this.bisectors.push(d_b);
-        this.drawAll();
+      let c1 = this.sites[p1].color 
+      let c2 = this.sites[p2].color
+      let c3 = avgColor(c1,c2)
+
+      let d_b = new DrawableBisector(bisector,p1,p2,c3)
+      this.bisectors.push(d_b);
+      this.drawAll();
    }
 
    setBisectors(event) {
@@ -306,7 +310,7 @@ export class Canvas {
       let point2 = this.sites[draw_bisector.p2].drawable_point.point
       let h_p1 = calculateHilbertPoint(boundary,point1)
       let h_p2 = calculateHilbertPoint(boundary,point2)
-      let new_bisector = new DrawableBisector(calculateBisector(boundary,h_p1,h_p2),draw_bisector.p1,draw_bisector.p2)
+      let new_bisector = new DrawableBisector(calculateBisector(boundary,h_p1,h_p2),draw_bisector.p1,draw_bisector.p2,draw_bisector.color)
       this.bisectors[b] = new_bisector
    }
 

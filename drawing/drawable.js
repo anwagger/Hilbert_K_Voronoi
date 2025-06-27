@@ -267,12 +267,12 @@ export class DrawableBisectorSegment {
 }
 
 export class DrawableBisector {
-  constructor(bisector,p1_index,p2_index) {
+  constructor(bisector,p1_index,p2_index,color = "black") {
     this.p1 = p1_index
     this.p2 = p2_index
     this.bisector = bisector;
     this.drawable_conic_segments = [];
-    this.color = "blue"
+    this.color = color
     bisector.conic_segments.forEach((c_s) => {
       let d_c_s = new DrawableConicSegment(c_s)
       d_c_s.color = this.color
@@ -336,14 +336,18 @@ export class DrawableConicSegment {
       s.draw(ctx)
     });
 
+    /**
+    // bisector sector intersection points
     let p1 = new DrawablePoint(c_s.parameterized_conic.getPointFromT(c_s.start))
     p1.color = this.color
     p1.draw(ctx)
     let p2 = new DrawablePoint(c_s.parameterized_conic.getPointFromT(c_s.end))
     p2.color = this.color
     p2.draw(ctx)
+     */
 
     /**
+    // bisector bounding box
     ctx.beginPath();
     ctx.setLineDash([3, 3]); 
     ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))

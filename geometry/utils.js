@@ -352,3 +352,26 @@ export function hexToRgb(hex) {
     b: parseInt(result[3], 16)
   } : null;
 }
+
+export function avgColor(c1,c2){
+      let h1 = colorNameToHex(c1)
+      let rgb1 = hexToRgb(h1?h1:c1) 
+      let h2 = colorNameToHex(c2)
+      let rgb2 = hexToRgb(h2?h2:c2)
+      let r = Math.floor((rgb1.r + rgb2.r)/2).toString(16)
+      if(r.length === 1){
+        r = "0" + r
+      }
+      let g = Math.floor((rgb1.g + rgb2.g)/2).toString(16) 
+      if(g.length === 1){
+        g = "0" + g
+      }
+      let b = Math.floor((rgb1.b + rgb2.b)/2).toString(16)
+      if(b.length === 1){
+        b = "0" + b
+      }
+      let new_color = "#" + r + g + b
+      console.log("COLOR",c1,c2,new_color)
+      return new_color
+
+}
