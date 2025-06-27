@@ -132,12 +132,12 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
     for (let i = 0; i < split; i++){
         let start1 = c_s1.start + range1*i/split
         let end1 = c_s1.start + range1*(i+1)/split
-        let bound1 = calculateConicSegmentBounds(c_s1.parameterized_conic,start1,end1)
-        sub_cs1.push(new ConicSegment(c_s1.parameterized_conic,start1,end1,bound1))
+        let bound1 = calculateConicSegmentBounds(c_s1.parameterized_conic,start1,end1,c_s1.direction)
+        sub_cs1.push(new ConicSegment(c_s1.parameterized_conic,start1,end1,bound1,c_s1.direction))
         let start2 = c_s2.start + range2*i/split
         let end2 = c_s2.start + range2*(i+1)/split
-        let bound2 = calculateConicSegmentBounds(c_s2.parameterized_conic,start2,end2)
-        sub_cs2.push(new ConicSegment(c_s2.parameterized_conic,start2,end2,bound2))
+        let bound2 = calculateConicSegmentBounds(c_s2.parameterized_conic,start2,end2,c_s2.direction)
+        sub_cs2.push(new ConicSegment(c_s2.parameterized_conic,start2,end2,bound2,c_s2.direction))
     }
 
     for (let i = 0; i < split; i++){
@@ -646,7 +646,8 @@ export class ParameterizedConic {
         let x = point.x
         let y = point.y
         let {A:A,B:B,C:C,D:D,E:E,F:F} = this.conic.getEquation()
-        return isZero(A *x*x + B *x*y + C *y*y + D *x  + E *y + F)
+        let closeness = (A *x*x + B *x*y + C *y*y + D *x  + E *y + F) 
+        return isZero(closeness**2)
     }
 
     getTOfPoint(point){
@@ -685,11 +686,12 @@ export class ParameterizedConic {
 
                     let is_valid = false
                     if(x_ts[i] != Infinity && y_ts[j] != Infinity){
-                        is_valid = isZero(euclideanDistance(p_x,p_y))
+                        is_valid = isZero(euclideanDistance(p_x,p_y)**2)
                     }else if(x_ts[i] == Infinity){
-                        is_valid = isZero(euclideanDistance(point,p_y))
+                        is_valid = isZero(euclideanDistance(point,p_y)**2)
                     }else if(y_ts[i] == Infinity){
-                        is_valid = isZero(euclideanDistance(point,p_x))
+                        is_valid = isZero(euclideanDistance(point,p_x)**2)
+                    }else{
                     }
 
                     //if (Math.abs(x_ts[i]- y_ts[j]) <= 1e-10){
@@ -701,7 +703,11 @@ export class ParameterizedConic {
         }else{
             console.log("INVALID POINT",point,this)
         }
-        console.log("MISS?",this.type,this.orientation)
+        let x0 = point.x
+        let y0 = point.y
+        let {A:A,B:B,C:C,D:D,E:E,F:F} = this.conic.getEquation()
+        let close = (A *x0*x0 + B *x0*y0 + C *y0*y0 + D *x0  + E *y0 + F)
+        console.log("MISS?",this.type,this.orientation,point,close,isZero(close**2), this)
         return null
     }
 
@@ -861,11 +867,8 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
         }
     }
 
-
-
     let start = [Infinity,-1]
     let end = [-Infinity,-1] 
-
 
     /**
     for (let i = 0; i < ts.length; i++){
@@ -882,14 +885,11 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     let t_sort = (a,b) =>{
         return a[0] - b[0]
     }
-
-    
-
     if(start_point != null){
         t_sort = (a,b) => {
-            let start_t = parameterized_conic.getTOfPoint(start_point)
-            //return euclideanDistance(start_point,a[2]) - euclideanDistance(start_point,b[2])
-            return Math.abs(start_t - a[0]) - Math.abs(start_t - b[0])
+            return euclideanDistance(start_point,a[2]) - euclideanDistance(start_point,b[2])
+            //let start_t = parameterized_conic.getTOfPoint(start_point)
+            //return Math.abs(start_t - a[0]) - Math.abs(start_t - b[0])
         }
     }
 
@@ -908,7 +908,6 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     }
 
     if (parameterized_conic.type ==Conic_Type.DEGENERATE && parameterized_conic.orientation == Conic_Orientation.NONE){
-        console.log("HERE",ts.length)
         let center_point = parameterized_conic.getPointFromT(0)
         if(pointOnPolygon(center_point,polygon)){
             let poss_ts = [0,Math.PI,2*Math.PI]
@@ -918,7 +917,6 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
             })
             end = [poss_ts[0],null,center_point]
         }
-        
     }
 
     //end = ts[ts.length-1]
@@ -935,16 +933,19 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     let direction = 1
     let first = start//start[0] < end[0]?start:end
     let last = end//start[0] < end[0]?end:start
-    let change_direction = Math.abs(last[0]-first[0])>2*Math.PI-Math.abs(last[0]-first[0])
+
+    let length = last[0]-first[0]
+    if(length < 0){
+        length += 2*Math.PI
+    }
+
+    let change_direction = length >Math.PI
     if (change_direction){
 
         // come back to this!
-        console.log("SWAP",Math.abs(last[0]-first[0]),2*Math.PI-Math.abs(last[0]-first[0]))
-        //direction = -1
+        console.log("SWAP",first,last,length,Math.PI )
+        direction = -1
     }
-        
-
-         
 
 
     if (start[0] === Infinity || start[0] === -Infinity || end[0] === Infinity || end[0] === -Infinity){
@@ -986,17 +987,31 @@ export class ConicSegment {
     }
 }
 
-export function calculateConicSegmentBounds(parameterized_conic,start,end){   
+export function calculateConicSegmentBounds(parameterized_conic,start,end,direction = 0){   
     let start_p = parameterized_conic.getPointFromT(start)
     let end_p = parameterized_conic.getPointFromT(end)
-    
+
+    let opposite = (direction == 1 && start > end) || (direction == -1 && start < end)
+
     let bound = new Bound(Math.max(start_p.y,end_p.y),Math.min(start_p.y,end_p.y),Math.min(start_p.x,end_p.x),Math.max(start_p.x,end_p.x))
     
+        if(opposite){
+            console.log("INITIAL",bound)
+        }
+
     let d0_x = parameterized_conic.dx_func()
     
     for (let i = 0; i < d0_x.length; i++){
         let t = d0_x[i]
-        if (isBetween(start,end,t)){
+        // fix?
+        t = (t + 2*Math.PI) % (2*Math.PI)
+        let inside = isBetween(start,end,t)
+        if(opposite){
+            inside = !isBetween(start,end,t)
+            console.log("bound neg",start,end,direction,t,(t + 2*Math.PI) % (2*Math.PI),inside)
+            
+        }
+        if (inside && (t != Infinity && t == t)){
             let p = parameterized_conic.getPointFromT(t)
             bound.left = Math.min(p.x,bound.left)
             bound.right = Math.max(p.x,bound.right)
@@ -1007,12 +1022,19 @@ export function calculateConicSegmentBounds(parameterized_conic,start,end){
 
     for (let i = 0; i < d0_y.length; i++){
         let t = d0_y[i]
-        if (isBetween(start,end,t)){
+        t = (t + 2*Math.PI) % (2*Math.PI)
+        let inside = isBetween(start,end,t)
+        if(opposite){
+            inside = !isBetween(start,end,t)
+            console.log("bound neg",start,end,direction,t,(t + 2*Math.PI) % (2*Math.PI),inside)
+        }
+        if (inside && (t != Infinity && t == t)){
             let p = parameterized_conic.getPointFromT(t)
             bound.bottom = Math.min(p.y,bound.bottom)
             bound.top = Math.max(p.y,bound.top)
         }
     }
+    
     
     return bound
 
