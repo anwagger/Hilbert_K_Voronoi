@@ -112,8 +112,9 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
     if (!intersectBounds(c_s1.bound,c_s2.bound)){
         return false
     }
-    let split = 2
+    let split = 5
 
+    // bad :(
     let range1 = c_s1.end - c_s1.start
     let range2 = c_s1.end - c_s1.start 
 
@@ -124,6 +125,8 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
 
     if (euclideanDistance(mid_point1,mid_point2) <= sensitivity){
         return mid_point1
+    }else if (isZero(range1) && isZero(range2)){
+        return false
     }
 
     let sub_cs1 = []
@@ -187,15 +190,15 @@ export function parameterizeConic(conic){
         }else if (hor_parallel){ //parallel lines
             orientation = Conic_Orientation.HORIZONTAL
             // makes the lower-number ts much more reasonably compact, negative values are non-existant though...
-            parameterization.x_mult = 100
-            parameterization.x_const = 1
+            parameterization.x_mult = 1000
+            parameterization.x_const = 0
             parameterization.y_mult = Math.sqrt((-F+(E*E)/(4*C))/C)
             parameterization.y_const = -E/(2*C)
         }else if(ver_parallel){ 
             orientation = Conic_Orientation.VERTICAL
             // makes the lower-number ts much more reasonably compact, negative values are non-existant though...
-            parameterization.y_mult = 100
-            parameterization.y_const = 1
+            parameterization.y_mult = 1000
+            parameterization.y_const = 0
             parameterization.x_mult = Math.sqrt((-F+(D*D)/(4*A))/A)
             parameterization.x_const = -D/(2*A)
         }else{// point
@@ -321,6 +324,7 @@ export class ParameterizedConic {
                 switch (this.orientation){
                     case Conic_Orientation.HORIZONTAL:
                         // t/2 to turn 2*PI to PI
+                        /**
                         x_func = (t) => {
                             t = t/2
                             if (isLeZero(Math.abs(t) - Math.PI/2)){
@@ -344,19 +348,34 @@ export class ParameterizedConic {
                             ]
                         }
                         yi_func = (y) => {
-                            /**
-                            if (isZero(y - (-this.y_mult + y_off))){
-                                return [Math.PI]
+                            return [Infinity]
+                        }
+                        */
+                       x_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return (this.x_mult*Math.sin(t) - x_off)
                             }else{
-                                return [2*Math.PI]
-                            }
-                                 */
+                                return (-this.x_mult*Math.sin(t) - x_off)
+                            }  
+                        }
+                        y_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return -this.y_mult+y_off
+                            }else{
+                                return this.y_mult+y_off
+                            }   
+                        }
+                        xi_func = (x) => {
+                            let asin = -Math.asin((x + x_off)/this.x_mult)
+                            return [asin < 0 ? asin+2*Math.PI: asin,asin+Math.PI]
+                        }
+                        yi_func = (y) => {
                             return [Infinity]
                         }
                     break;
                     case Conic_Orientation.VERTICAL:
                         // t/2 to turn 2*PI to PI
-                        
+                        /**
                         x_func = (t) => {
                             t = t/2
                             if (isLeZero(Math.abs(t) - Math.PI/2)){
@@ -374,13 +393,6 @@ export class ParameterizedConic {
                             }   
                         }
                         xi_func = (x) => {
-                            /**
-                            if (isZero(x - (-this.x_mult + x_off))){
-                                return [0]
-                            }else{
-                                return [2*Math.PI]
-                            }
-                                 */
                             return [Infinity]
                         }
                         yi_func = (y) => {
@@ -389,35 +401,32 @@ export class ParameterizedConic {
                                 asin, asin + Math.PI
                             ]
                         }
+                        */
+                        x_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return -this.x_mult+x_off
+                            }else{
+                                return this.x_mult+x_off
+                            }   
+                        }
+                       y_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return (this.y_mult*Math.sin(t) - y_off)
+                            }else{
+                                return (-this.y_mult*Math.sin(t) - y_off)
+                            }  
+                        }
+                        xi_func = (x) => {
+                            return [Infinity]
+                        }
+                        yi_func = (y) => {
+                            let asin = -Math.asin((y + y_off)/this.y_mult)
+                            return [asin < 0 ? asin+2*Math.PI: asin,asin+Math.PI]
+                        }
+
                         
                     break;
                     case Conic_Orientation.NONE:
-                        /*
-                        x_func = (t) => {
-                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
-                                return (1/Math.sin(t) + x_off)
-                            }else{
-                                return (-1/Math.sin(t) + x_off)
-                            }
-                        }
-                        y_func = (t) => {
-                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
-                                return this.y_mult*(1/Math.sin(t))+y_off
-                            }else{
-                                return -this.y_mult*(-1/Math.sin(t))+y_off
-                            }   
-                        }
-                        xi_func = (x) => {
-                            let asin = -Math.asin(1/(x - x_off))
-                            return [asin < 0 ? asin+2*Math.PI: asin,asin+Math.PI]
-                        }
-                        yi_func = (y) => {
-                            let asin = Math.asin(this.y_mult/(y - y_off))
-                            return [
-                                asin < 0 ? asin+2*Math.PI: asin,-asin+Math.PI
-                            ]
-                        }
-                         */
                         x_func = (t) => {
                             if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
                                 return (this.x_mult*Math.sin(t) + x_off)
@@ -540,6 +549,7 @@ export class ParameterizedConic {
 
                         xi_func = (x) => {
                             // was Math.acos(this.x_mult/(x - x_off)
+                            
                             let t = Math.acos(this.x_mult/(x - x_off))
                             return [t,-t]
                         }
@@ -588,6 +598,7 @@ export class ParameterizedConic {
                         yi_func = (y) => {
                             //Math.acos(this.y_mult/(y - y_off))
                             let t = Math.acos(this.y_mult/(y - y_off))//1/Math.acos((y - y_off)/this.y_mult)
+
                             return [t,-t]
                         }
                         /*
@@ -658,7 +669,7 @@ export class ParameterizedConic {
             inverse should then be easy*
         */
 
-        let parallel = false
+        let parallel = this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.HORIZONTAL
        let sin = Math.sin(this.angle)
        let cos = Math.cos(this.angle)
        // reverse rotation?
@@ -681,15 +692,17 @@ export class ParameterizedConic {
                     let p_y = this.getPointFromT(y_ts[j])
 
                     if(parallel){
-                        console.log("CHECK",p_x,p_y)
+                        console.log("CHECK",p_x,x_ts[i],p_y,y_ts[j])
                     }
 
                     let is_valid = false
                     if(x_ts[i] != Infinity && y_ts[j] != Infinity){
                         is_valid = isZero(euclideanDistance(p_x,p_y)**2)
-                    }else if(x_ts[i] == Infinity){
+                    }else if(x_ts[i] === Infinity){
+
                         is_valid = isZero(euclideanDistance(point,p_y)**2)
-                    }else if(y_ts[i] == Infinity){
+                    }else if(y_ts[j] === Infinity){
+
                         is_valid = isZero(euclideanDistance(point,p_x)**2)
                     }else{
                     }
@@ -703,11 +716,9 @@ export class ParameterizedConic {
         }else{
             console.log("INVALID POINT",point,this)
         }
-        let x0 = point.x
-        let y0 = point.y
-        let {A:A,B:B,C:C,D:D,E:E,F:F} = this.conic.getEquation()
-        let close = (A *x0*x0 + B *x0*y0 + C *y0*y0 + D *x0  + E *y0 + F)
-        console.log("MISS?",this.type,this.orientation,point,close,isZero(close**2), this)
+        // TODO: FIX PARALLEL LIKE YOU DID WITH CROSSED
+
+        console.log("MISS?",this.type,this.orientation,point,this)
         return null
     }
 
@@ -902,7 +913,7 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     start = ts[0]
     let index = 1
     end = ts[index]
-    while(isZero(ts[index][0]-start[0]) && index < ts.length){
+    while(index < ts.length && isZero(ts[index][0]-start[0])){
         index += 1
         end = ts[index]
     }
@@ -916,6 +927,9 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
                 return Math.abs(start_t - a) - Math.abs(start_t - b)
             })
             end = [poss_ts[0],null,center_point]
+        }else{
+            console.log("DN CENTER NOT ON:",center_point,polygon)
+            console.log("USING",start,end)
         }
     }
 
@@ -985,6 +999,29 @@ export class ConicSegment {
         this.bound = bound
         this.direction = direction
     }
+
+    getMidT(){
+
+        //let opposite = (this.direction == 1 && this.start > this.end) || (this.direction == -1 && this.start < this.end)
+
+        length = (this.end - this.start)
+
+        if(length < 0){
+            length += 2*Math.PI
+        }
+
+        
+        if(this.direction == -1){
+        length -= 2*Math.PI
+        }
+
+        if (this.start < this.end){
+            return this.start+length/2
+        }else{
+            return this.end+length/2
+        }
+
+    }
 }
 
 export function calculateConicSegmentBounds(parameterized_conic,start,end,direction = 0){   
@@ -994,10 +1031,6 @@ export function calculateConicSegmentBounds(parameterized_conic,start,end,direct
     let opposite = (direction == 1 && start > end) || (direction == -1 && start < end)
 
     let bound = new Bound(Math.max(start_p.y,end_p.y),Math.min(start_p.y,end_p.y),Math.min(start_p.x,end_p.x),Math.max(start_p.x,end_p.x))
-    
-        if(opposite){
-            console.log("INITIAL",bound)
-        }
 
     let d0_x = parameterized_conic.dx_func()
     
@@ -1007,9 +1040,7 @@ export function calculateConicSegmentBounds(parameterized_conic,start,end,direct
         t = (t + 2*Math.PI) % (2*Math.PI)
         let inside = isBetween(start,end,t)
         if(opposite){
-            inside = !isBetween(start,end,t)
-            console.log("bound neg",start,end,direction,t,(t + 2*Math.PI) % (2*Math.PI),inside)
-            
+            inside = !isBetween(start,end,t)            
         }
         if (inside && (t != Infinity && t == t)){
             let p = parameterized_conic.getPointFromT(t)
@@ -1026,7 +1057,6 @@ export function calculateConicSegmentBounds(parameterized_conic,start,end,direct
         let inside = isBetween(start,end,t)
         if(opposite){
             inside = !isBetween(start,end,t)
-            console.log("bound neg",start,end,direction,t,(t + 2*Math.PI) % (2*Math.PI),inside)
         }
         if (inside && (t != Infinity && t == t)){
             let p = parameterized_conic.getPointFromT(t)
@@ -1034,8 +1064,7 @@ export function calculateConicSegmentBounds(parameterized_conic,start,end,direct
             bound.top = Math.max(p.y,bound.top)
         }
     }
-    
-    
+
     return bound
 
 }

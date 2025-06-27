@@ -281,9 +281,9 @@ export class DrawableBisector {
   }
 
   draw(ctx){
-    const debug_colors = ["red","orange","yellow","green","blue","purple","pink","brown","grey"]
+    //const debug_colors = ["red","orange","yellow","green","blue","purple","pink","brown","grey"]
     this.drawable_conic_segments.forEach((d_c_s,i) => {
-      d_c_s.color = debug_colors[i % debug_colors.length]
+      //d_c_s.color = debug_colors[i % debug_colors.length]
       d_c_s.draw(ctx,50)
     })
   }
@@ -304,41 +304,22 @@ export class DrawableConicSegment {
     // then we can draw a line between the points
     // yay
 
-
-
     length = (this.conic_segment.end - this.conic_segment.start)
 
     if(length < 0){
         length += 2*Math.PI
     }
-
     
     if(this.conic_segment.direction == -1){
       length -= 2*Math.PI
     }
-
-    //console.log(this.conic_segment.start,this.conic_segment.end,this.conic_segment.direction,length,(this.conic_segment.end - this.conic_segment.start),this)
-
 
     let dt = length / num_of_points;
     let segments = [];
 
     let start = this.conic_segment.start
     
-    // for debugging!
-    
-    /**
-    let degen = this.conic_segment.parameterized_conic.type === "D" && this.conic_segment.parameterized_conic.orientation === "N"
-    if (degen){
-      start = 0
-      dt = 2*Math.PI/num_of_points//2*Math.PI/num_of_points
-    }
-       */
-
     let c_s = this.conic_segment
-
-    //console.log(c_s.parameterized_conic.type,c_s.parameterized_conic.orientation,"start",c_s.start,"end",c_s.end,"dir",c_s.direction,"len",length,"dt",dt)
-
 
     for (let i = 0; i <= num_of_points - 1; i++) {
       let t1 = start + dt * i;
@@ -362,12 +343,13 @@ export class DrawableConicSegment {
     p2.color = this.color
     p2.draw(ctx)
 
+    /**
     ctx.beginPath();
     ctx.setLineDash([3, 3]); 
     ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
     ctx.stroke(); 
     ctx.setLineDash([]); 
-  
+   */
 
   }
   /*

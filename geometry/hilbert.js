@@ -1,7 +1,7 @@
 import {Bisector} from "./bisectors.js"
 import { ConicSegment,bisectorConicFromSector,parameterizeConic,getConicParameterBoundsInPolygon,calculateConicSegmentBounds } from "./conics.js"
 import { Polygon, Sector, Segment,Spoke } from "./primitives.js"
-import { convexHull, euclideanDistance, intersectSegments, pointInPolygon,isBetween, intersectSegmentsAsLines, pointSegDistance, pointOnPolygon } from "./utils.js"
+import { convexHull, euclideanDistance, intersectSegments, pointInPolygon,isBetween, intersectSegmentsAsLines, pointSegDistance, pointOnPolygon, isZero, hasSign } from "./utils.js"
 
 export class HilbertPoint {
     constructor(point,spokes){
@@ -366,7 +366,7 @@ export function calculateMidsector(boundary,h_p1,h_p2){
             let ix_diff = intersection.x - h_p1.point.x
             let iy_diff = intersection.y - h_p1.point.y
             // intersect before or after
-            if (Math.sign(x_diff) === Math.sign(ix_diff) && Math.sign(y_diff) === Math.sign(iy_diff)){
+            if (hasSign(x_diff) === hasSign(ix_diff) && hasSign(y_diff) === hasSign(iy_diff)){
                 enter = i
             }else{
                 exit = i

@@ -270,6 +270,16 @@ export function isZero(num){
   return (Math.abs(num) <= 1e-4)
 }
 
+export function hasSign(num){
+  if (isZero(num)){
+    return 0
+  }else if( num > 0){
+    return 1
+  }else{
+    -1
+  }
+}
+
 export function isLeZero(num){
   return num <= 1e-10
 }
