@@ -1,4 +1,4 @@
-import { calculateCircumcenter } from "./bisectors.js";
+import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter } from "./bisectors.js";
 import { calculateBisector, calculateHilbertPoint } from "./hilbert.js";
 import { Point, Segment } from "./primitives.js";
 import { pointInPolygon, 
@@ -9,7 +9,8 @@ import { pointInPolygon,
     hilbertMetric, 
     matrix, 
     matrix3D,
-    calculateHilbertDistance} from "./utils.js";
+    calculateHilbertDistance,
+    pushOrCreateInObject} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -19,14 +20,14 @@ class Pair {
 }
 
 export class VoronoiCell {
-    constructor(bisector_segments, bound){
+    constructor(contained_sites,bisector_segments, bound){
         this.bisector_segments = bisector_segments
         this.bound = bound
+        this.contained_sites = contained_sites
     }
 }
 
-export function calculateVoronoiCellBounds(voronoi_cell){
-    let bisectors = voronoi_cell.bisector_segments
+export function calculateVoronoiCellBounds(bisectors){
     // find the extremes of each of the bounds of the conic_segments
     return bisectors.reduce(
         (bisector_segment, current_bound) => {
@@ -118,7 +119,7 @@ export class VoronoiDiagram {
     
 }
 
-export function n3lognVoronoiClassifications(boundary,points){
+export function n3lognVoronoi(boundary,points){
 
     const n = points.length
     // calculate spokes
@@ -164,6 +165,9 @@ export function n3lognVoronoiClassifications(boundary,points){
                 let c = calculateCircumcenter(bisectors[i][j],bisectors[j][k],bisectors[i][k])
                 if(c){
                     let data = {
+                        i:i,
+                        j:j,
+                        k:k,
                         point: c,
                         [i]: {},
                         [j]:{},
@@ -219,6 +223,8 @@ export function n3lognVoronoiClassifications(boundary,points){
 
     // classify each segment of the bisectors
     let bisector_classifications = matrix(n,n,false)
+    // this can be made a self-balancing binary search tree to guarentee lg(n)
+    let voronoi_cell_map = {};
     for(let i = 0; i < n; i++){
         for(let j = i+1; j < n; j++){
             // order circumcenters
@@ -242,21 +248,98 @@ export function n3lognVoronoiClassifications(boundary,points){
             })
             // calculate degree 
             let degree = 1
+            // bitstring of which points are in the cell
+            let hash = 0
             for(let p = 0; p < n; p++){
                 if(ordered_points[p] != i && ordered_points[p] != j){
                     degree += 1
+                    hash += 2**ordered_points[p]
                 }else{
                     break;
                 }
             }
+            
+            // put bisector segment in cell map with the hash
+            let value = {
+                    i:i,
+                    j:j,
+                    start: 0,
+                    end: ordered_circumcenters.length===0?bisectors[i][j].conic_segments.length:ordered_circumcenters[0].t,
+                    degree: degree
+                }
+            // in two cells, one with i and not j, and one with j and not i
+            pushOrCreateInObject(voronoi_cell_map,hash + 2**i,value)
+            pushOrCreateInObject(voronoi_cell_map,hash + 2**j,value)
+            // put classification
             bisector_classifications[i][j].push(degree)
             // for each subsequent segment, change the degree by the circumcenter classification
             for(let c = 0; c < ordered_circumcenters.length; c++){
-                degree = degree + ordered_circumcenters[c][i][j].more
+                let data = ordered_circumcenters[c]
+                // get other point in the circumcenter
+                let k = (data.i === i?
+                            (data.j === j?
+                                data.k
+                            :
+                                data.j
+                            )
+                        :
+                            (data.i === j?
+                                (data.j === i?
+                                    data.k
+                                :
+                                    data.j
+                                )
+                            :
+                                data.i
+                            )
+                        )
+                // if going up a degree, add the third point to the cells, otherwise, remove it 
+                hash += data[i][j].more * (2**k)
+                degree = degree + data[i][j].more
                 bisector_classifications[i][j].push(degree)
+                // put bisector segment in cell map with the hash
+                let value = {
+                    i:i,
+                    j:j,
+                    start: ordered_circumcenters[c].t,
+                    end: c=== ordered_circumcenters.length-1?bisectors[i][j].conic_segments.length:ordered_circumcenters[c+1].t,
+                    degree: degree
+                }
+                // in two cells, one with i and not j, and one with j and not i
+                pushOrCreateInObject(voronoi_cell_map,hash + 2**i,value)
+                pushOrCreateInObject(voronoi_cell_map,hash + 2**j,value)
             }
         }
     }
-    return bisector_classifications
+
+    // list of voronoi cells for each degree
+    let voronoi_lists = []
+    for(let i = 0; i < n; i++){
+        voronoi_lists.push([])
+    }
+    for(v in voronoi_cell_map){
+        let bisector_segments_data = voronoi_cell_map[v]
+        let degree = bisector_segments_data[0].degree
+        let voronoi_cell = new VoronoiCell(v,[],null)
+        for(let d = 0; d < bisector_segments_data.length; d++){
+            let i = bisector_segments_data[d].i
+            let j = bisector_segments_data[d].j
+            let start = bisector_segments_data[d].start
+            let end = bisector_segments_data[d].end
+            let bound = calculateBisectorSegmentBounds(bisectors[i][j],start,end)
+            let bisector_segment = new BisectorSegment(bisectors[i][j],start,end,bound)
+            voronoi_cell.bisector_segments.push(bisector_segment)
+        }
+        voronoi_cell.bound = calculateVoronoiCellBounds(voronoi_cell.bisector_segments)
+        voronoi_lists[degree].push(voronoi_cell)
+    }
+
+    let voronois = []
+    for(let i = 1; i < n; i++){
+        // claculate partition tree?
+        voronois.push(new VoronoiDiagram(boundary,voronoi_lists[i],i,null))
+    }
+
+    return {voronois: voronois,classification:bisector_classifications}
     // put it all together?
 }

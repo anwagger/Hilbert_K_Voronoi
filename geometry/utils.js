@@ -418,3 +418,10 @@ export function avgColor(c1,c2){
       return new_color
 
 }
+
+export function pushOrCreateInObject(obj,index,value){
+  if (!obj[index]){
+    obj[index] = []
+  }
+  obj[index].push(value)
+}
