@@ -1,7 +1,7 @@
 import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter } from "./bisectors.js";
 import { calculateBisector, calculateHilbertPoint } from "./hilbert.js";
 import { PartitionTree } from "./partition_tree.js";
-import { Point, Segment } from "./primitives.js";
+import { Bound, Point, Segment } from "./primitives.js";
 import { pointInPolygon, 
     pointOnPolygon, 
     intersectSegmentsAsLines, 
@@ -30,13 +30,16 @@ export class VoronoiCell {
 
 export function calculateVoronoiCellBounds(bisectors){
     // find the extremes of each of the bounds of the conic_segments
+
+    
     return bisectors.reduce(
-        (bisector_segment, current_bound) => {
+        (current_bound,bisector_segment) => {
             const segment_bound = bisector_segment.bound
             current_bound.top = Math.max(current_bound.top,segment_bound.top)
             current_bound.bottom = Math.min(current_bound.bottom,segment_bound.bottom)
             current_bound.left = Math.min(current_bound.left,segment_bound.left)
             current_bound.right = Math.max(current_bound.right,segment_bound.right)
+            return current_bound
         },
         new Bound(Infinity,-Infinity,-Infinity,Infinity),
     );
@@ -55,6 +58,10 @@ export class VoronoiDiagram {
 
     // just works for hilbert rn, needs cases for when metric isnt hilbert
     bruteForce(canvas) {
+
+        console.log("TESTING!")
+        createVoronoiFromCanvas(canvas)
+
         let grid = matrix(1000,1000,[]); // defaults the grid to be null
         const height = 1000; // should be determined by absolute boundary/ resolution at some point
         const width = 1000;
@@ -120,6 +127,15 @@ export class VoronoiDiagram {
     
 }
 
+export function createVoronoiFromCanvas(canvas){
+    let boundary = canvas.boundary.polygon
+    let points = []
+    canvas.sites.forEach((site,i) => {
+        points.push(site.drawable_point.point)
+    })
+    return n3lognVoronoi(boundary,points)
+}
+
 export function n3lognVoronoi(boundary,points){
 
     const n = points.length
@@ -140,6 +156,8 @@ export function n3lognVoronoi(boundary,points){
         }
     }
 
+    console.log("BISECTORS:",bisectors)
+
     // get ordering of other points
     let point_orders = []
     let distances = matrix(n,n,0)
@@ -150,13 +168,15 @@ export function n3lognVoronoi(boundary,points){
                 const dist = calculateHilbertDistance(boundary,h_points[i].point,h_points[j].point)
                 distances[i][j] = dist
                 distances[j][i] = dist
-                point_orders.push(j)
+                point_orders[i].push(j)
             }
         }
         // sort orderings of points
         const sort_orders = (a,b) => distances[i][a] - distances[i][b]
         point_orders[i].sort(sort_orders)
     }
+
+    console.log("POINT ORDERS:",point_orders)
     
     // calculate circumcenters
     let circumcenter_data = matrix3D(n,n,n,false)
@@ -209,10 +229,14 @@ export function n3lognVoronoi(boundary,points){
                     circumcenter_data[j][k][i] = data
                     circumcenter_data[k][i][j] = data
                     circumcenter_data[k][j][i] = data
+                }else{
+                    console.log("NO CIRCUMCENTER")
                 }
             }
         }
     }
+
+    console.log("CIRCUMCENTERS:",circumcenter_data)
 
     // classify each segment of the bisectors
     let bisector_classifications = matrix(n,n,false)
@@ -223,7 +247,9 @@ export function n3lognVoronoi(boundary,points){
             // order circumcenters
             let ordered_circumcenters = []
             for(let k = j+1; k < n; k++){
-                ordered_circumcenters.push(circumcenter_data[i][j][k])
+                if (circumcenter_data[i][j][k]){
+                    ordered_circumcenters.push(circumcenter_data[i][j][k])
+                }
             }
             const sort_centers = (a,b) => a[i][j].t - b[i][j].t
             ordered_circumcenters.sort(sort_centers)
@@ -294,13 +320,16 @@ export function n3lognVoronoi(boundary,points){
         }
     }
 
+    console.log("CLASSIFICATION",bisector_classifications)
+    console.log("CELL MAP",voronoi_cell_map)
+
     // list of voronoi cells for each degree
     let voronoi_lists = []
     for(let i = 0; i < n; i++){
         voronoi_lists.push([])
     }
     // create the cells from the map
-    for(v in voronoi_cell_map){
+    for(let v in voronoi_cell_map){
         let bisector_segments_data = voronoi_cell_map[v]
         let degree = bisector_segments_data[0].degree
         let voronoi_cell = new VoronoiCell(v,[],null)
@@ -314,8 +343,11 @@ export function n3lognVoronoi(boundary,points){
             voronoi_cell.bisector_segments.push(bisector_segment)
         }
         voronoi_cell.bound = calculateVoronoiCellBounds(voronoi_cell.bisector_segments)
-        voronoi_lists[degree].push(voronoi_cell)
+        voronoi_lists[degree-1].push(voronoi_cell)
     }
+
+    console.log("VORONOI CELLS",voronoi_lists)
+
     // combine the cells into diagrams
     let voronois = []
     for(let i = 1; i < n; i++){
@@ -324,6 +356,8 @@ export function n3lognVoronoi(boundary,points){
         voronoi.partition_tree = partition_tree
         voronois.push(voronoi)
     }
+
+    console.log("VORONOIS",voronois)
 
     return {voronois: voronois,classification:bisector_classifications}
 }

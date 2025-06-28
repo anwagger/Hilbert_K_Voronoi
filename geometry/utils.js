@@ -1,4 +1,4 @@
-import {Point, Segment} from "./primitives.js"
+import {Bound, Point, Segment} from "./primitives.js"
 
 export function euclideanDistance(point1,point2){
     let dx = point1.x - point2.x
@@ -33,9 +33,9 @@ export function calculateHilbertDistance(boundary,point1,point2){
       const i = intersectSegmentsAsLines(mid, seg);
       if (i !== null) {
       //println("GOOD",mid.start,mid.end,i,seg.start,seg.end,pointSegDistance(i,seg));
-          if (pointSegDistance(i, seg) <= sensitivity) {
+          if (isZero(pointSegDistance(i, seg))) {
               if (count > 0) {
-                  if (euclideanDistance(i, ints[0]) <= sensitivity) {
+                  if (isZero(euclideanDistance(i, ints[0]))) {
                       // replace point as to not have
                       count--;
                   }
@@ -49,10 +49,10 @@ export function calculateHilbertDistance(boundary,point1,point2){
   }
 
   if (count === 2) {
-    const first = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[0]:ints[1];
-    const last = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[1]:ints[0];
+    const first = euclideanDistance(point1, ints[0]) < euclideanDistance(point2, ints[0])? ints[0]:ints[1];
+    const last = euclideanDistance(point1, ints[0]) < euclideanDistance(point2, ints[0])? ints[1]:ints[0];
     let hilbert = 0;
-    return hilbertMetric(first, p, point, last);
+    return hilbertMetric(first, point1, point2, last);
   }
   return NaN
 }
@@ -272,17 +272,17 @@ export function computeBoundingBox(polygon) {
         let max_x = -Infinity;
         let min_y = Infinity;
         let max_y = -Infinity;
-        for (p in polygon.points) {
+        for (let p in polygon.points) {
             min_x = Math.min(min_x,p.x);
             max_x = Math.max(max_x, p.x);
             min_y = Math.min(min_y, p.y);
             max_y = Math.max(max_y, p.y);
         }
-        return Bound(min_x,max_x,min_y,max_y);
+        return new Bound(min_x,max_x,min_y,max_y);
     }
 
 export function computeClosestBound(bounds, point) {
-    curr = 0;
+    let curr = 0;
     
     for (b in bounds) {
       curr = Math.min(Math.abs(curr - point), Math.abs(b.left - point), Math.abs(b.right - point));

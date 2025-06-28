@@ -1,7 +1,6 @@
-import { useInsertionEffect } from "react";
-import { Bound } from "./primitives";
-import { computeBoundingBox, computeClosestBound, intersectBounds } from "./utils";
-import { calculateVoronoiCellBounds, VoronoiCell } from "./voronoi";
+import { Bound } from "./primitives.js";
+import { computeBoundingBox, computeClosestBound, intersectBounds } from "./utils.js";
+import { calculateVoronoiCellBounds, VoronoiCell } from "./voronoi.js";
 
 const Partition_Node_Type = {
     X: 0,
@@ -43,7 +42,8 @@ export class PartitionTree {
         
         // gets all of the voronoi bounds and puts them into a hashmap corresponding to their index
         for (let i = 0; i < voronoi.cells.length; i++) {
-            voronoi_bounds.set(i, c.calculateVoronoiCellBounds);
+            let c = voronoi.cells[i]
+            voronoi_bounds.set(i, c.bound);
         }
 
         // we use this to find which bound has the closest 
@@ -70,16 +70,16 @@ export class PartitionTree {
         }
 
 
-        if (left_voronoi_bounds.size() <= 3) {
-                node.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
+        if (left_voronoi_bounds.size <= 3) {
+                this.root.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
             } else {
-                node.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
+                this.root.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
             }
 
-        if (right_voronoi_bounds.size() <= 3) {
-            node.left = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
+        if (right_voronoi_bounds.size <= 3) {
+            this.root.left = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
         } else {
-            node.left = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
+            this.root.left = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
         }
     }
 
@@ -115,14 +115,14 @@ export class PartitionTree {
             }
 
             // we now know there are only 3 or less cells a point can be in if its left to the median
-            if (left_voronoi_bounds.size() <= 3) {
+            if (left_voronoi_bounds.size <= 3) {
                 node.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
             } else {
                 node.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
             }
 
             // same with right
-            if (right_voronoi_bounds.size() <= 3) {
+            if (right_voronoi_bounds.size <= 3) {
                 node.left = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
             } else {
                 node.left = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
@@ -154,21 +154,21 @@ export class PartitionTree {
             }
 
             // we now know there are only 3 cells a point can be in if its above our current median
-            if (top_voronoi_bounds.size() <= 3) {
+            if (top_voronoi_bounds.size <= 3) {
                 node.above = this.createTree(Partition_Node_Type.CELL, top_voronoi_bounds, top_bound);
             } else {
                 node.above = this.createTree(Partition_Node_Type.X, top_voronoi_bounds, top_bound);
             }
 
             // same with right
-            if (bottom_voronoi_bounds.size() <= 3) {
+            if (bottom_voronoi_bounds.size <= 3) {
                 node.below = this.createTree(Partition_Node_Type.CELL, bottom_voronoi_bounds, bottom_bound);
             } else {
                 node.below = this.createTree(Partition_Node_Type.X, bottom_voronoi_bounds, bottom_bound);
             }
         // cell case
         } else {
-            let k = [...voronoi_bounds.keys]; // turns cell indexes into an array
+            let k = [...voronoi_bounds.keys()]; // turns cell indexes into an array
             let outside = k.length > 1 ? k.slice(1) : null;
             let data = {index: k[0], outside: outside};
             return new PartitionTreeNode(Partition_Node_Type.CELL,data);
