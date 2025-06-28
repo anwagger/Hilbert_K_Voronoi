@@ -1,5 +1,6 @@
 import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter } from "./bisectors.js";
 import { calculateBisector, calculateHilbertPoint } from "./hilbert.js";
+import { PartitionTree } from "./partition_tree.js";
 import { Point, Segment } from "./primitives.js";
 import { pointInPolygon, 
     pointOnPolygon, 
@@ -140,8 +141,8 @@ export function n3lognVoronoi(boundary,points){
     }
 
     // get ordering of other points
-    point_orders = []
-    distances = matrix(n,n,0)
+    let point_orders = []
+    let distances = matrix(n,n,0)
     for(let i = 0; i < n; i++){
         point_orders.push([])
         for(let j = 0; j < n; j++){
@@ -174,40 +175,32 @@ export function n3lognVoronoi(boundary,points){
                         [k]:{},
                     }
                     // calculate t's and orientation
-                    // higher degree is the side where the third point is closer
-                    data[i][j] = {
-                        t: bisectors[i][j].getTofPoint(c),
+                    let ps = [i,j,k]
+                    for(let p = 0; p < ps.length; p++){
+                        let i1 = ps[p]
+                        for(let q = p+1; q < ps.length; q++){
+                            let i2 = ps[q]
+                            // calculate thrid point
+                            let r = 0
+                            while(p === r || q === r) r+=1;
+                            let i3 = ps[r]
+
+                            data[i1][i2] = {
+                                t: bisectors[i1][i2].getTofPoint(c),
+                            }
+                            
+                            let start_p = bisectors[i1][i2].getPointFromT(0)
+                            let less_dist = calculateHilbertDistance(boundary,start_p,points[i3])
+                            let end_p = bisectors[i1][i2].getPointFromT(bisectors[i1][i2].conic_segments.length)
+                            let more_dist = calculateHilbertDistance(boundary,end_p,points[i3]) 
+                            
+                            // higher degree is the side where the third point is closer
+                            data[i1][i2].less = less_dist < more_dist?1:-1
+                            data[i1][i2].more = less_dist < more_dist?-1:1
+                            data[i2][i1] = data[i1][i2]
+                        }
                     }
-                    let ij_start_p = bisectors[i][j].getPointFromT(0)
-                    let ij_less_dist = calculateHilbertDistance(boundary,ij_start_p,points[k])
-                    let ij_end_p = bisectors[i][j].getPointFromT(bisectors[i][j].conic_segments.length)
-                    let ij_more_dist = calculateHilbertDistance(boundary,ij_end_p,points[k]) 
-                    data[i][j].less = ij_less_dist < ij_more_dist?1:-1
-                    data[i][j].more = ij_less_dist < ij_more_dist?-1:1
-                    data[j][i] = data[i][j]
-                    
-                    data[j][k] = {
-                        t: bisectors[j][k].getTofPoint(c),
-                    }
-                    let jk_start_p = bisectors[j][k].getPointFromT(0)
-                    let jk_less_dist = calculateHilbertDistance(boundary,jk_start_p,points[i])
-                    let jk_end_p = bisectors[j][k].getPointFromT(bisectors[j][k].conic_segments.length)
-                    let jk_more_dist = calculateHilbertDistance(boundary,jk_end_p,points[i]) 
-                    data[j][k].less = jk_less_dist < jk_more_dist?1:-1
-                    data[j][k].more = jk_less_dist < jk_more_dist?-1:1
-                    data[k][j] = data[j][k]
-                    
-                    
-                    data[k][i] = {
-                        t: bisectors[k][i].getTofPoint(c),
-                    }
-                    let ki_start_p = bisectors[k][i].getPointFromT(0)
-                    let ki_less_dist = calculateHilbertDistance(boundary,ki_start_p,points[j])
-                    let ki_end_p = bisectors[k][i].getPointFromT(bisectors[k][i].conic_segments.length)
-                    let ki_more_dist = calculateHilbertDistance(boundary,ki_end_p,points[j]) 
-                    data[k][i].less = ki_less_dist < ki_more_dist?1:-1
-                    data[k][i].more = ki_less_dist < ki_more_dist?-1:1
-                    data[i][k] = data[k][i]
+
 
                     // set data
                     circumcenter_data[i][j][k] = data
@@ -275,24 +268,13 @@ export function n3lognVoronoi(boundary,points){
             // for each subsequent segment, change the degree by the circumcenter classification
             for(let c = 0; c < ordered_circumcenters.length; c++){
                 let data = ordered_circumcenters[c]
+
                 // get other point in the circumcenter
-                let k = (data.i === i?
-                            (data.j === j?
-                                data.k
-                            :
-                                data.j
-                            )
-                        :
-                            (data.i === j?
-                                (data.j === i?
-                                    data.k
-                                :
-                                    data.j
-                                )
-                            :
-                                data.i
-                            )
-                        )
+                let ps = [data.i,data.j,data.k]
+                let r = 0
+                while(i === ps[r] || j === ps[r]) r+= 1
+                let k = ps[r]
+
                 // if going up a degree, add the third point to the cells, otherwise, remove it 
                 hash += data[i][j].more * (2**k)
                 degree = degree + data[i][j].more
@@ -317,6 +299,7 @@ export function n3lognVoronoi(boundary,points){
     for(let i = 0; i < n; i++){
         voronoi_lists.push([])
     }
+    // create the cells from the map
     for(v in voronoi_cell_map){
         let bisector_segments_data = voronoi_cell_map[v]
         let degree = bisector_segments_data[0].degree
@@ -333,13 +316,14 @@ export function n3lognVoronoi(boundary,points){
         voronoi_cell.bound = calculateVoronoiCellBounds(voronoi_cell.bisector_segments)
         voronoi_lists[degree].push(voronoi_cell)
     }
-
+    // combine the cells into diagrams
     let voronois = []
     for(let i = 1; i < n; i++){
-        // claculate partition tree?
-        voronois.push(new VoronoiDiagram(boundary,voronoi_lists[i],i,null))
+        let voronoi = new VoronoiDiagram(boundary,voronoi_lists[i],i,null)
+        let partition_tree = new PartitionTree(voronoi,boundary)
+        voronoi.partition_tree = partition_tree
+        voronois.push(voronoi)
     }
 
     return {voronois: voronois,classification:bisector_classifications}
-    // put it all together?
 }
