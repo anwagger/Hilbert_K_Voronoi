@@ -1,6 +1,6 @@
 import {intersectConicSegments } from "./conics.js"
 import { Bound, Point } from "./primitives.js"
-import { euclideanDistance, isLeZero, isZero } from "./utils.js"
+import { euclideanDistance, inBound, isLeZero, isZero } from "./utils.js"
 
 export class Bisector {
     constructor(conic_segments){
@@ -19,17 +19,20 @@ export class Bisector {
     }
 
     getTofPoint(point){
-        let x = point.x
-        let y = point.y
         for(let c = 0; c < this.conic_segments.length; c++){
             let c_s = this.conic_segments[c]
-            let t = c_s.parameterized_conic.getTOfPoint(point)
-            if(t){
-                let range = c_s.getRange()
-                // suspect ...
-                let percentage = 1 - (c_s.start - t)/range
-                if(isLeZero(percentage-1) && isLeZero(-percentage)){
-                    return c + percentage
+            if(inBound(point,c_s.bound)){
+                let t = c_s.parameterized_conic.getTOfPoint(point,true) // force point to be on
+                if(t){
+                    let range = c_s.getRange()
+                    // suspect ...
+                    if (t < 0){
+                        t += 2*Math.PI
+                    }
+                    let percentage = 1 - (t - c_s.start)/range
+                    if(isLeZero(percentage-1) && isLeZero(-percentage)){
+                        return c + percentage
+                    }
                 }
             }
         }
@@ -48,20 +51,23 @@ export class BisectorSegment {
 export function calculateBisectorSegmentBounds(bisector,start,end){
     let conic_segments = bisector.conic_segments
     // find the extremes of each of the bounds of the conic_segments
-    
-    let bound = new Bound(Infinity,-Infinity,-Infinity,Infinity)
+
+    // issue here!
+    let bound = new Bound(-Infinity,Infinity,Infinity,-Infinity)
+
+    console.log("CHECK BOUND:",start,end)
 
     for (let i = Math.floor(start); i < Math.ceil(end); i++){
         let conic_segment = conic_segments[i];
-        let segment_bound = new Bound(Infinity,-Infinity,-Infinity,Infinity)
+        let segment_bound = new Bound(-Infinity,Infinity,Infinity,-Infinity)
         
         if (i == Math.floor(start)) {
-            let range = conic_segment.end - conic_segment.start
+            let range = conic_segment.getRange()
             let mid_t = conic_segment.start + range * (start % 1)
             let start_point = conic_segment.parameterized_conic.getPointFromT(mid_t); 
             segment_bound = new Bound(start_point.y,start_point.y,start_point.x,start_point.x)
         }else if (i == Math.ceil(end) - 1){
-            let range = conic_segment.end - conic_segment.start
+            let range = conic_segment.getRange()
             let mid_t = conic_segment.end - range * (1- (start % 1))
             let end_point = conic_segment.parameterized_conic.getPointFromT(mid_t); 
             segment_bound = new Bound(end_point.y,end_point.y,end_point.x,end_point.x)
@@ -69,10 +75,13 @@ export function calculateBisectorSegmentBounds(bisector,start,end){
             segment_bound = conic_segment.bound
         }
 
+        console.log("BOUND CHECK VS",bound,segment_bound)
+
         bound.top = Math.max(bound.top,segment_bound.top)
         bound.bottom = Math.min(bound.bottom,segment_bound.bottom)
         bound.left = Math.min(bound.left,segment_bound.left)
         bound.right = Math.max(bound.right,segment_bound.right)
+        console.log("RESULT",bound)
     }
     return bound
 }
@@ -97,11 +106,6 @@ export function calculateCircumcenter(b1,b2,b3){
     let sensitivity = 1e-2
     if (i12 && i23 && i13){
         let circumcenter = new Point((i12.x + i23.x + i13.x)/3,(i12.y + i23.y + i13.y)/3)
-            console.log("CIRC:",i12,i23,i13,circumcenter,(euclideanDistance(i23,i12)**2), 
-            (euclideanDistance(i13,i23)**2),
-            (euclideanDistance(i12,i13)**2),euclideanDistance(i12,i23)**2 <= sensitivity, 
-            euclideanDistance(i13,i23)**2 <= sensitivity, 
-            euclideanDistance(i23,i13)**2 <= sensitivity)
         if(
             euclideanDistance(i12,i23)**2 <= sensitivity && 
             euclideanDistance(i13,i23)**2 <= sensitivity && 

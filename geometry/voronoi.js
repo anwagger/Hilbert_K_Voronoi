@@ -1,4 +1,4 @@
-import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter } from "./bisectors.js";
+import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter, intersectBisectors } from "./bisectors.js";
 import { calculateBisector, calculateHilbertPoint } from "./hilbert.js";
 import { PartitionTree } from "./partition_tree.js";
 import { Bound, Point, Segment } from "./primitives.js";
@@ -41,7 +41,7 @@ export function calculateVoronoiCellBounds(bisectors){
             current_bound.right = Math.max(current_bound.right,segment_bound.right)
             return current_bound
         },
-        new Bound(Infinity,-Infinity,-Infinity,Infinity),
+        new Bound(-Infinity,Infinity,Infinity,-Infinity),
     );
 }
 
@@ -204,7 +204,6 @@ export function n3lognVoronoi(boundary,points){
                             let r = 0
                             while(p === r || q === r) r+=1;
                             let i3 = ps[r]
-
                             data[i1][i2] = {
                                 t: bisectors[i1][i2].getTofPoint(c),
                             }
@@ -246,9 +245,11 @@ export function n3lognVoronoi(boundary,points){
         for(let j = i+1; j < n; j++){
             // order circumcenters
             let ordered_circumcenters = []
-            for(let k = j+1; k < n; k++){
-                if (circumcenter_data[i][j][k]){
-                    ordered_circumcenters.push(circumcenter_data[i][j][k])
+            for(let k = 0; k < n; k++){
+                if(k != i && k != j){
+                    if (circumcenter_data[i][j][k]){
+                        ordered_circumcenters.push(circumcenter_data[i][j][k])
+                    }
                 }
             }
             const sort_centers = (a,b) => a[i][j].t - b[i][j].t
@@ -276,14 +277,13 @@ export function n3lognVoronoi(boundary,points){
                 }else{
                     break;
                 }
-            }
-            
+            }            
             // put bisector segment in cell map with the hash
             let value = {
                     i:i,
                     j:j,
                     start: 0,
-                    end: ordered_circumcenters.length===0?bisectors[i][j].conic_segments.length:ordered_circumcenters[0].t,
+                    end: ordered_circumcenters.length===0?bisectors[i][j].conic_segments.length:ordered_circumcenters[0][i][j].t,
                     degree: degree
                 }
             // in two cells, one with i and not j, and one with j and not i
@@ -309,8 +309,8 @@ export function n3lognVoronoi(boundary,points){
                 let value = {
                     i:i,
                     j:j,
-                    start: ordered_circumcenters[c].t,
-                    end: c=== ordered_circumcenters.length-1?bisectors[i][j].conic_segments.length:ordered_circumcenters[c+1].t,
+                    start: ordered_circumcenters[c][i][j].t,
+                    end: c=== ordered_circumcenters.length-1?bisectors[i][j].conic_segments.length:ordered_circumcenters[c+1][i][j].t,
                     degree: degree
                 }
                 // in two cells, one with i and not j, and one with j and not i
@@ -350,8 +350,8 @@ export function n3lognVoronoi(boundary,points){
 
     // combine the cells into diagrams
     let voronois = []
-    for(let i = 1; i < n; i++){
-        let voronoi = new VoronoiDiagram(boundary,voronoi_lists[i],i,null)
+    for(let d = 1; d < n; d++){
+        let voronoi = new VoronoiDiagram(boundary,voronoi_lists[d-1],d,null)
         let partition_tree = new PartitionTree(voronoi,boundary)
         voronoi.partition_tree = partition_tree
         voronois.push(voronoi)

@@ -113,7 +113,7 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
         return false
     }
 
-    let split = 2
+    let split = 5
 
     // bad :(
     let range1 = c_s1.getRange()
@@ -125,9 +125,9 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
     let mid_point1 = c_s1.parameterized_conic.getPointFromT(first1+range1/2)
     let mid_point2 = c_s2.parameterized_conic.getPointFromT(first2+range2/2)
 
-    let sensitivity = 1e-5
+    let sensitivity = 1e-10
 
-    if (isZero(range1) && isZero(range2)){
+    if (Math.abs(range1) <= sensitivity && Math.abs(range2) <= sensitivity){
         return new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2)
     }
 
@@ -156,7 +156,6 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
             }
         }
     }
-    console.log("NOTHIN")
     return false
 }
 
@@ -664,7 +663,7 @@ export class ParameterizedConic {
         return isZero(closeness**2)
     }
 
-    getTOfPoint(point){
+    getTOfPoint(point,skipOn = false){
         // TODO
         /*
             parameterize the unrotated conic
@@ -679,7 +678,7 @@ export class ParameterizedConic {
        let x = cos* point.x + sin * point.y
        let y = cos*point.y - sin * point.x
 
-        if (this.isOn(point)){
+        if (this.isOn(point) || skipOn){
 
             let x_ts = this.xi_func(x)
             let y_ts = this.yi_func(y)
@@ -718,6 +717,11 @@ export class ParameterizedConic {
             }
         }else{
             console.log("INVALID POINT",point,this)
+            let x = point.x
+            let y = point.y
+            let {A:A,B:B,C:C,D:D,E:E,F:F} = this.conic.getEquation()
+            let closeness = (A *x*x + B *x*y + C *y*y + D *x  + E *y + F) 
+            console.log("CLOSENESS:",closeness,isZero(closeness**2))
         }
         // TODO: FIX PARALLEL LIKE YOU DID WITH CROSSED
 
