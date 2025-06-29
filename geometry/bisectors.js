@@ -29,7 +29,7 @@ export class Bisector {
                     if (t < 0){
                         t += 2*Math.PI
                     }
-                    let percentage = 1 - (t - c_s.start)/range
+                    let percentage = (t - c_s.start)/range//1 - (t - c_s.start)/range
                     if(isLeZero(percentage-1) && isLeZero(-percentage)){
                         return c + percentage
                     }
@@ -55,8 +55,6 @@ export function calculateBisectorSegmentBounds(bisector,start,end){
     // issue here!
     let bound = new Bound(-Infinity,Infinity,Infinity,-Infinity)
 
-    console.log("CHECK BOUND:",start,end)
-
     for (let i = Math.floor(start); i < Math.ceil(end); i++){
         let conic_segment = conic_segments[i];
         let segment_bound = new Bound(-Infinity,Infinity,Infinity,-Infinity)
@@ -75,13 +73,10 @@ export function calculateBisectorSegmentBounds(bisector,start,end){
             segment_bound = conic_segment.bound
         }
 
-        console.log("BOUND CHECK VS",bound,segment_bound)
-
         bound.top = Math.max(bound.top,segment_bound.top)
         bound.bottom = Math.min(bound.bottom,segment_bound.bottom)
         bound.left = Math.min(bound.left,segment_bound.left)
         bound.right = Math.max(bound.right,segment_bound.right)
-        console.log("RESULT",bound)
     }
     return bound
 }

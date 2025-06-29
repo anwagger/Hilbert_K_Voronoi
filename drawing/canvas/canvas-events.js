@@ -1,7 +1,7 @@
 import { Point } from "../../geometry/primitives.js";
 import { cleanArray, pointInPolygon } from "../../geometry/utils.js";
 import { VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
-import { CAMERA, DrawableVoronoi } from "../drawable.js";
+import { CAMERA, DrawableBruteForceVoronoi } from "../drawable.js";
 
 // from nithins
 export function initEvents(canvas) {
@@ -99,8 +99,8 @@ export function initEvents(canvas) {
       }else if(canvas.mode === 'site'){
          if(!event.shiftKey){
             canvas.addSite(event)
-            if (canvas.voronoi !== null) {
-               canvas.voronoi.drawBruteForce(canvas);
+            if (canvas.brute_force_voronoi !== null) {
+               canvas.brute_force_voronoi.drawBruteForce(canvas);
             }
          }
       } 
@@ -155,10 +155,10 @@ export function initEvents(canvas) {
             let int = parseInt(event.key);
             console.log(int);
             if (int !== NaN && int <= canvas.sites.length && int >= 1) {
-               canvas.voronoi.voronoi.degree = int;
-               console.log(canvas.voronoi.voronoi.degree);
+               canvas.brute_force_voronoi.voronoi.degree = int;
+               console.log(canvas.brute_force_voronoi.voronoi.degree);
                canvas.drawAll();
-               canvas.voronoi.drawBruteForce(canvas,false);
+               canvas.brute_force_voronoi.drawBruteForce(canvas,false);
             }
          }
    });
@@ -166,8 +166,8 @@ export function initEvents(canvas) {
    document.getElementById('zoomRange').addEventListener('change', (event) => {
       CAMERA.setScale(event.target.value);
       canvas.drawAll();
-      if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
-         canvas.voronoi.drawBruteForce(canvas,false,false);
+      if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
+         canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
       }
    })
 
@@ -183,9 +183,11 @@ export function initEvents(canvas) {
       const degree = parseInt(input);
       console.log(degree);
       if (degree >= 1 && degree <= canvas.sites.length) {
-         const voronoi = new DrawableVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
-         canvas.voronoi = voronoi;
+         const voronoi = new DrawableBruteForceVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
+         canvas.brute_force_voronoi = voronoi;
          voronoi.drawBruteForce(canvas);
+
+         canvas.calculate_fast_voronoi = true
       } else {
          alert("Invalid degree :((((");
       }
@@ -243,8 +245,8 @@ export function initEvents(canvas) {
          canvas.selecting = false;
          canvas.drawAll()
 
-         if (canvas.voronoi !== null) {
-         canvas.voronoi.drawBruteForce(canvas);
+         if (canvas.brute_force_voronoi !== null) {
+         canvas.brute_force_voronoi.drawBruteForce(canvas);
          }
        }
    }
@@ -278,14 +280,14 @@ export function initEvents(canvas) {
             if (event.shiftKey){
                   CAMERA.changeScale(event.movementY)
                   canvas.drawAll()
-                  if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
-                     canvas.voronoi.drawBruteForce(canvas,false,false);
+                  if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
+                     canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
                   }
             }else{
                CAMERA.changeOffset(event.movementX,event.movementY)
                canvas.drawAll()
-               if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
-                  canvas.voronoi.drawBruteForce(canvas,false,false);
+               if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
+                  canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
                }
             }
          }
@@ -294,8 +296,8 @@ export function initEvents(canvas) {
             if (!event.shiftKey && (canvas.draggingPoint == null)){
                CAMERA.changeOffset(event.movementX,event.movementY)
                canvas.drawAll()
-               if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
-                  canvas.voronoi.drawBruteForce(canvas,false,false);
+               if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
+                  canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
                }
             }
          }

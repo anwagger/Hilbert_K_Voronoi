@@ -1,9 +1,10 @@
-import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment } from "../drawable.js"
+import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram } from "../drawable.js"
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point } from "../../geometry/primitives.js";
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor} from "../../geometry/utils.js"
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
+import { createVoronoiFromCanvas } from "../../geometry/voronoi.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -43,8 +44,11 @@ export class Canvas {
       this.segments = [];
       this.bisectors = [];
       this.bisector_intersections = [];
-      this.voronoi = null;
+      this.brute_force_voronoi = null;
       this.voronoi_image = null;
+
+      this.calculate_fast_voronoi = false;
+      this.voronoi_diagram = null;
 
       this.draggingPoint = null;
 
@@ -178,6 +182,7 @@ export class Canvas {
          site.setColor(this.getNewColor(this.sites))
          // calculate the new point
          this.recalculateSite(this.sites.length-1)
+         this.calculateFastVoronoi()
          this.drawAll()
       }      
    }
@@ -336,6 +341,16 @@ export class Canvas {
       }
    }
 
+   calculateFastVoronoi(){
+      if (this.calculate_fast_voronoi){
+         let {voronois} = createVoronoiFromCanvas(this)
+         // change for degree!
+         this.voronoi_diagram = new DrawableVoronoiDiagram(voronois[0])
+         console.log("DRAWABLE VORONOI",this.voronoi_diagram)
+      }
+      
+   }
+
 
    deselectSites(){
       this.draggingPoint = null
@@ -393,11 +408,12 @@ export class Canvas {
             site.drawable_point.point.x = mouse.x
             site.drawable_point.point.y = mouse.y
             this.recalculateSite(this.draggingPoint);
+            this.calculateFastVoronoi()
          }
 
          this.drawAll()
-         if (this.voronoi !== null) {
-            this.voronoi.drawBruteForce(this,false,false);
+         if (this.brute_force_voronoi !== null) {
+            this.brute_force_voronoi.drawBruteForce(this,false,false);
          }
       }
    }
@@ -446,8 +462,8 @@ export class Canvas {
    });
       this.sites = cleanArray(this.sites) // removes any null elts from array
       this.drawAll();
-      if (canvas.voronoi !== null && canvas.voronoi.brute_force) {
-         canvas.voronoi.drawBruteForce(canvas,false,false);
+      if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
+         canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
       }
    }
 
@@ -506,6 +522,8 @@ export class Canvas {
       }
 
       this.calculateBisectorIntersections()
+
+      this.calculateFastVoronoi()
       
    }
 
@@ -579,6 +597,10 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
          }
       })
       this.boundary.draw(this.ctx);
+
+      if (this.voronoi_diagram){
+         this.voronoi_diagram.draw(this.ctx)
+      }
 
       this.drawSegments()
 

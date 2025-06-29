@@ -244,12 +244,17 @@ export class DrawableBisectorSegment {
             let range = conic_segment.getRange()
             let mid_t = conic_segment.start + range * (start % 1)
 
-            let partial_c_s = new ConicSegment(p_conic,mid_t,conic_segment.end,calculateConicSegmentBounds(p_conic,mid_t,conic_segment.end,conic_segment.direction))
+            let new_bound = calculateConicSegmentBounds(p_conic,mid_t,conic_segment.end,conic_segment.direction)
+            let partial_c_s = new ConicSegment(p_conic,mid_t,conic_segment.end,new_bound,conic_segment.direction)
             this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
         }else if (i == Math.ceil(end) - 1){
             let range = conic_segment.getRange()  
-            let mid_t = conic_segment.end - range * (1- (start % 1))
-            let partial_c_s = new ConicSegment(p_conic,conic_segment.start,mid_t,calculateConicSegmentBounds(p_conic,conic_segment.start,mid_t,conic_segment.direction))
+            let mid_t = conic_segment.end - range * (1- (end % 1))
+            if (end === Math.ceil(end)){
+              mid_t = conic_segment.end
+            }
+            let new_bound = calculateConicSegmentBounds(p_conic,conic_segment.start,mid_t,conic_segment.direction)
+            let partial_c_s = new ConicSegment(p_conic,conic_segment.start,mid_t,new_bound,conic_segment.direction)
             this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
         }else{
             this.drawable_conic_segments.push(new DrawableConicSegment(conic_segment))
@@ -260,7 +265,7 @@ export class DrawableBisectorSegment {
   draw(ctx){
     const debug_colors = ["red","orange","yellow","green","blue","purple","pink","brown","grey"]
     this.drawable_conic_segments.forEach((d_c_s,i) => {
-      d_c_s.color = debug_colors[i % debug_colors.length]
+      //d_c_s.color = debug_colors[i % debug_colors.length]
       d_c_s.draw(ctx,50)
     })
   }
@@ -420,7 +425,7 @@ export class Site {
 }
 }
 
-export class DrawableVoronoi {
+export class DrawableBruteForceVoronoi {
   constructor(voronoi) {
     this.brute_force = true;
     this.voronoi = voronoi;
@@ -490,5 +495,40 @@ export class DrawableVoronoi {
         );
         ctx.globalAlpha = 1.0; 
     }
+}
 
+export class DrawableVoronoiCell {
+  constructor(voronoi_cell){
+    this.voronoi_cell = voronoi_cell
+    this.drawable_bisector_segments = []
+    this.voronoi_cell.bisector_segments.forEach((b_s,i) =>{
+      // don't care about p2 and p2 for this!
+      let d_b_s = new DrawableBisectorSegment(b_s,null,null)
+      d_b_s.color = "black"
+      this.drawable_bisector_segments.push(d_b_s)
+    })
+  }
+
+  draw(ctx){
+    this.drawable_bisector_segments.forEach((b_s,i) =>{
+      b_s.draw(ctx)
+    })
+  }
+}
+
+export class DrawableVoronoiDiagram {
+  constructor(voronoi){
+    this.voronoi = voronoi
+    this.drawable_cells = []
+    this.voronoi.cells.forEach((cell,i) => {
+      let d_c = new DrawableVoronoiCell(cell)
+      this.drawable_cells.push(d_c)
+    })
+  }
+
+  draw(ctx){
+    this.drawable_cells.forEach((cell,i) => {
+      cell.draw(ctx)
+    })
+  }
 }

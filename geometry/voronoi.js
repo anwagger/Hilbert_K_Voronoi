@@ -59,9 +59,6 @@ export class VoronoiDiagram {
     // just works for hilbert rn, needs cases for when metric isnt hilbert
     bruteForce(canvas) {
 
-        console.log("TESTING!")
-        createVoronoiFromCanvas(canvas)
-
         let grid = matrix(1000,1000,[]); // defaults the grid to be null
         const height = 1000; // should be determined by absolute boundary/ resolution at some point
         const width = 1000;
