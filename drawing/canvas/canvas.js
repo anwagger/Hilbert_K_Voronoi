@@ -48,6 +48,7 @@ export class Canvas {
       this.voronoi_image = null;
 
       this.calculate_fast_voronoi = false;
+      this.voronois = null
       this.voronoi_diagram = null;
 
       this.draggingPoint = null;
@@ -182,7 +183,7 @@ export class Canvas {
          site.setColor(this.getNewColor(this.sites))
          // calculate the new point
          this.recalculateSite(this.sites.length-1)
-         this.calculateFastVoronoi()
+         this.recalculateFastVoronoi()
          this.drawAll()
       }      
    }
@@ -341,11 +342,32 @@ export class Canvas {
       }
    }
 
-   calculateFastVoronoi(){
+   setFastVoronoi(event,degree){
+      if (!event.target.checked){
+         this.calculate_fast_voronoi = false
+      }
+      if(degree >= 1 && degree <= this.sites.length){
+         if(event.target.checked){
+            this.calculate_fast_voronoi = true
+            this.voronois = createVoronoiFromCanvas(this)
+            this.changeFastVoronoiDegree(degree)
+         }
+      }
+      this.drawAll()
+   }
+
+   changeFastVoronoiDegree(degree){
+      if(this.calculate_fast_voronoi){
+         this.voronoi_diagram = new DrawableVoronoiDiagram(this.voronois[degree])
+      }
+   }
+
+   recalculateFastVoronoi(degree = 0){
       if (this.calculate_fast_voronoi){
          let {voronois} = createVoronoiFromCanvas(this)
          // change for degree!
-         this.voronoi_diagram = new DrawableVoronoiDiagram(voronois[0])
+         this.voronois = voronois
+         this.changeFastVoronoiDegree(degree)
          console.log("DRAWABLE VORONOI",this.voronoi_diagram)
       }
       
@@ -408,7 +430,7 @@ export class Canvas {
             site.drawable_point.point.x = mouse.x
             site.drawable_point.point.y = mouse.y
             this.recalculateSite(this.draggingPoint);
-            this.calculateFastVoronoi()
+            this.recalculateFastVoronoi()
          }
 
          this.drawAll()
@@ -523,7 +545,7 @@ export class Canvas {
 
       this.calculateBisectorIntersections()
 
-      this.calculateFastVoronoi()
+      this.recalculateFastVoronoi()
       
    }
 

@@ -153,7 +153,7 @@ export function n3lognVoronoi(boundary,points){
         }
     }
 
-    console.log("BISECTORS:",bisectors)
+    //console.log("BISECTORS:",bisectors)
 
     // get ordering of other points
     let point_orders = []
@@ -173,7 +173,7 @@ export function n3lognVoronoi(boundary,points){
         point_orders[i].sort(sort_orders)
     }
 
-    console.log("POINT ORDERS:",point_orders)
+    //console.log("POINT ORDERS:",point_orders)
     
     // calculate circumcenters
     let circumcenter_data = matrix3D(n,n,n,false)
@@ -204,12 +204,17 @@ export function n3lognVoronoi(boundary,points){
                             data[i1][i2] = {
                                 t: bisectors[i1][i2].getTofPoint(c),
                             }
+
+                            console.log("CIRC T",data[i1][i2].t)
                             
-                            let start_p = bisectors[i1][i2].getPointFromT(0)
+                            let mid_t_start = data[i1][i2].t/2
+                            let start_p = bisectors[i1][i2].getPointFromT(mid_t_start)
                             let less_dist = calculateHilbertDistance(boundary,start_p,points[i3])
-                            let end_p = bisectors[i1][i2].getPointFromT(bisectors[i1][i2].conic_segments.length)
-                            let more_dist = calculateHilbertDistance(boundary,end_p,points[i3]) 
                             
+                            let mid_t_end = data[i1][i2].t + (bisectors[i1][i2].conic_segments.length-data[i1][i2].t )/2
+                            let end_p = bisectors[i1][i2].getPointFromT(mid_t_end)
+                            let more_dist = calculateHilbertDistance(boundary,end_p,points[i3]) 
+
                             // higher degree is the side where the third point is closer
                             data[i1][i2].less = less_dist < more_dist?1:-1
                             data[i1][i2].more = less_dist < more_dist?-1:1
@@ -267,6 +272,7 @@ export function n3lognVoronoi(boundary,points){
             let degree = 1
             // bitstring of which points are in the cell
             let hash = 0
+            console.log("making initial degree for",i,j,"orders:",ordered_points,"first circ:",ordered_circumcenters[0])
             for(let p = 0; p < n; p++){
                 if(ordered_points[p] != i && ordered_points[p] != j){
                     degree += 1
@@ -274,7 +280,8 @@ export function n3lognVoronoi(boundary,points){
                 }else{
                     break;
                 }
-            }            
+            }
+            console.log("INITIAL HASH:",hash,"AND DEGREE",degree)            
             // put bisector segment in cell map with the hash
             let value = {
                     i:i,
@@ -299,8 +306,11 @@ export function n3lognVoronoi(boundary,points){
                 let k = ps[r]
 
                 // if going up a degree, add the third point to the cells, otherwise, remove it 
+                console.log("BISECTOR",i,j,"CROSSING",k,"CHANGE:",data[i][j].more)
                 hash += data[i][j].more * (2**k)
+                
                 degree = degree + data[i][j].more
+                console.log("NEW HASH:",hash,"AND DEGREE:",degree)
                 bisector_classifications[i][j].push(degree)
                 // put bisector segment in cell map with the hash
                 let value = {

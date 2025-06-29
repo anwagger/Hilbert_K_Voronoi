@@ -192,6 +192,13 @@ export function initEvents(canvas) {
          alert("Invalid degree :((((");
       }
    })
+
+   document.getElementById("calculateFastVoronoi").addEventListener('change', (event) => {
+      const input = document.getElementById('voronoiDegree').value;
+      const degree = parseInt(input);
+      console.log("CAL")
+      canvas.setFastVoronoi(event,degree);
+   });
    
 
    let canvasElement = canvas.canvas
