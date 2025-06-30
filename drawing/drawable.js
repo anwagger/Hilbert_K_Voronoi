@@ -239,37 +239,47 @@ export class DrawableBisectorSegment {
     for (let i = Math.floor(start); i < Math.ceil(end); i++){
         let conic_segment = conic_segments[i];
         let p_conic = conic_segment.parameterized_conic
-        
-        if (i == Math.floor(start)) {
-            let range = conic_segment.getRange()
-            let mid_t = conic_segment.start + range * (start % 1)
 
-            let new_bound = calculateConicSegmentBounds(p_conic,mid_t,conic_segment.end,conic_segment.direction)
-            let partial_c_s = new ConicSegment(p_conic,mid_t,conic_segment.end,new_bound,conic_segment.direction)
-            this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
-        }else if (i == Math.ceil(end) - 1){
-            let range = conic_segment.getRange()  
-            let mid_t = conic_segment.end - range * (1- (end % 1))
-            if (end === Math.ceil(end)){
-              mid_t = conic_segment.end
-            }
-            let new_bound = calculateConicSegmentBounds(p_conic,conic_segment.start,mid_t,conic_segment.direction)
-            let partial_c_s = new ConicSegment(p_conic,conic_segment.start,mid_t,new_bound,conic_segment.direction)
-            this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
-        }else{
-            this.drawable_conic_segments.push(new DrawableConicSegment(conic_segment))
+        let start_percentage = 0
+        let end_percentage = 1
+        let range = conic_segment.getRange()
+
+        if (i < start) {
+
+            start_percentage = (start % 1)
+            
+        } 
+        if (i > (end-1)){
+            end_percentage = (end % 1)
+            
         }
+        
+        let start_t = conic_segment.start + range * start_percentage
+        let end_t = conic_segment.start + range * end_percentage
+
+        let new_bound = calculateConicSegmentBounds(p_conic,start_t,end_t,conic_segment.direction)
+        let partial_c_s = new ConicSegment(p_conic,start_t,end_t,new_bound,conic_segment.direction)
+        this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
+        
     }
   }
 
   draw(ctx){
     const debug_colors = ["red","orange","yellow","green","blue","purple","pink","brown","grey"]
+    const segment_num_map = {
+      D: 5,
+      E: 30,
+      H: 30,
+      P: 30,
+    }
+
     this.drawable_conic_segments.forEach((d_c_s,i) => {
       //d_c_s.color = debug_colors[i % debug_colors.length]
-      d_c_s.draw(ctx,50)
+      d_c_s.draw(ctx,segment_num_map[d_c_s.conic_segment.parameterized_conic.type])
     })
 
      // bisector bounding box
+    
     /**
     let b_s = this.bisector_segment
     ctx.beginPath();
@@ -277,7 +287,7 @@ export class DrawableBisectorSegment {
     ctx.rect(CAMERA.x(b_s.bound.left),CAMERA.y(b_s.bound.top),CAMERA.x(b_s.bound.right) - CAMERA.x(b_s.bound.left),CAMERA.y(b_s.bound.bottom) - CAMERA.y(b_s.bound.top))
     ctx.stroke(); 
     ctx.setLineDash([]); 
-      */
+    */
   }
 }
 

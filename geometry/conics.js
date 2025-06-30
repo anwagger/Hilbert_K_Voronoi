@@ -114,7 +114,7 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
         return false
     }
 
-    let split = 5
+    let split = 2
 
     // bad :(
     let range1 = c_s1.getRange()

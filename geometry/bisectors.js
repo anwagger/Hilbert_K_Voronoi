@@ -77,29 +77,29 @@ export function calculateBisectorSegmentBounds(bisector,start,end){
     for (let i = Math.floor(start); i < Math.ceil(end); i++){
         let conic_segment = conic_segments[i];
         let segment_bound = new Bound(-Infinity,Infinity,Infinity,-Infinity)
+
+        let start_percentage = 0
+        let end_percentage = 1
+        let range = conic_segment.getRange()
+
+
         
         // issues for sub-single segment bisectors :(
-        if (i === Math.floor(start)) {
+        if (i < start) {
 
-            let range = conic_segment.getRange()
-            let percentage = (start % 1)
-            let mid_t = conic_segment.start + range * percentage
-            let new_bound = calculateConicSegmentBounds(conic_segment.parameterized_conic,mid_t,conic_segment.end,conic_segment.direction)
-            segment_bound = boundOfBounds(segment_bound,new_bound)
+            start_percentage = (start % 1)
+            
         } 
-        if (i === Math.ceil(end) - 1){
-            let range = conic_segment.getRange()
-            let percentage = (end % 1)
-            if(end == conic_segments.length){
-                percentage = 1
-            }
-            let mid_t = conic_segment.start + range * percentage
-            let new_bound = calculateConicSegmentBounds(conic_segment.parameterized_conic,conic_segment.start,mid_t,conic_segment.direction)
-            segment_bound = boundOfBounds(segment_bound,new_bound)
+        if (i > (end-1)){
+            end_percentage = (end % 1)
+            
         }
-        if(i != Math.floor(start) && i != Math.ceil(end) - 1){
-            segment_bound = conic_segment.bound
-        }
+        
+        let start_t = conic_segment.start + range * start_percentage
+        let end_t = conic_segment.start + range * end_percentage
+
+        
+        segment_bound = calculateConicSegmentBounds(conic_segment.parameterized_conic,start_t,end_t,conic_segment.direction)
 
         bound = boundOfBounds(bound,segment_bound)
     }
