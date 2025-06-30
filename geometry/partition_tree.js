@@ -39,6 +39,7 @@ export class PartitionTree {
     constructor(voronoi,polygon) {
         let bound = computeBoundingBox(polygon);
         let voronoi_bounds = new Map(); // map will store indices as keys and corresponding bounds as values
+        console.log(voronoi.cells)
         
         // gets all of the voronoi bounds and puts them into a hashmap corresponding to their index
         for (let i = 0; i < voronoi.cells.length; i++) {
@@ -47,8 +48,10 @@ export class PartitionTree {
         }
 
         // we use this to find which bound has the closest 
-        let middle_x = Math.floor((bound.right + bound.left) / 2);4
-        let x = computeClosestBound(voronoi_bounds, middle_x);
+        let middle_x = Math.floor((bound.right + bound.left) / 2);
+        console.log(middle_x)
+        let x = computeClosestBound(voronoi_bounds.values(), middle_x);
+        console.log(x)
 
         this.root = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
         let left_bound = new Bound(bound.left,x,bound.top,bound.bottom);
@@ -58,7 +61,7 @@ export class PartitionTree {
         let left_voronoi_bounds = new Map();
         let right_voronoi_bounds = new Map();
 
-        for (k in keys) {
+        for (let k of keys) {
             let b = voronoi_bounds.get(k);
             if (intersectBounds(voronoi_bounds.get(k),left_bound)) {
                 left_voronoi_bounds.set(k,b);
@@ -77,9 +80,9 @@ export class PartitionTree {
             }
 
         if (right_voronoi_bounds.size <= 3) {
-            this.root.left = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
+            this.root.right = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
         } else {
-            this.root.left = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
+            this.root.right = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
         }
     }
 
@@ -103,7 +106,7 @@ export class PartitionTree {
             let left_voronoi_bounds = new Map();
             let right_voronoi_bounds = new Map();
 
-            for (k in keys) {
+            for (let k of keys) {
                 let b = voronoi_bounds.get(k);
                 if (intersectBounds(voronoi_bounds.get(k),left_bound)) {
                     left_voronoi_bounds.set(k,b);
@@ -123,9 +126,9 @@ export class PartitionTree {
 
             // same with right
             if (right_voronoi_bounds.size <= 3) {
-                node.left = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
+                node.right = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
             } else {
-                node.left = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
+                node.right = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
             }
 
             // nearly identical to the x case, just shrinks the bound vertically instead of horizontally
@@ -142,7 +145,7 @@ export class PartitionTree {
             let top_voronoi_bounds = new Map();
             let bottom_voronoi_bounds = new Map();
 
-            for (k in keys) {
+            for (let k of keys) {
                 let b = voronoi_bounds.get(k);
                 if (intersectBounds(voronoi_bounds.get(k),top_bound)) {
                     top_voronoi_bounds.set(k,b);

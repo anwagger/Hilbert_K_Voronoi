@@ -285,7 +285,7 @@ export function computeBoundingBox(polygon) {
         let max_x = -Infinity;
         let min_y = Infinity;
         let max_y = -Infinity;
-        for (let p in polygon.points) {
+        for (let p of polygon.points) {
             min_x = Math.min(min_x,p.x);
             max_x = Math.max(max_x, p.x);
             min_y = Math.min(min_y, p.y);
@@ -296,8 +296,7 @@ export function computeBoundingBox(polygon) {
 
 export function computeClosestBound(bounds, point) {
     let curr = 0;
-    
-    for (b in bounds) {
+    for (let b of bounds) {
       curr = Math.min(Math.abs(curr - point), Math.abs(b.left - point), Math.abs(b.right - point));
     }
 
