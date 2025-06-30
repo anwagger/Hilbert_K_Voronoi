@@ -11,7 +11,8 @@ import { pointInPolygon,
     matrix, 
     matrix3D,
     calculateHilbertDistance,
-    pushOrCreateInObject} from "./utils.js";
+    pushOrCreateInObject,
+    convexHull} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -205,7 +206,10 @@ export function n3lognVoronoi(boundary,points){
                                 t: bisectors[i1][i2].getTofPoint(c),
                             }
 
-                            console.log("CIRC T",data[i1][i2].t)
+                            if (!data[i1][i2].t){
+                                console.log("NO T GOTTEN!",c,bisectors[i1][i2])
+                            }
+                            console.log("CIRC T",i1,i2,data[i1][i2].t)
                             
                             let mid_t_start = data[i1][i2].t/2
                             let start_p = bisectors[i1][i2].getPointFromT(mid_t_start)
@@ -214,6 +218,12 @@ export function n3lognVoronoi(boundary,points){
                             let mid_t_end = data[i1][i2].t + (bisectors[i1][i2].conic_segments.length-data[i1][i2].t )/2
                             let end_p = bisectors[i1][i2].getPointFromT(mid_t_end)
                             let more_dist = calculateHilbertDistance(boundary,end_p,points[i3]) 
+
+                            console.log("SANITY CHECK:",less_dist < more_dist,
+                                calculateHilbertDistance(boundary,bisectors[i1][i2].getPointFromT(0),points[i3])
+                                <
+                                calculateHilbertDistance(boundary,bisectors[i1][i2].getPointFromT(bisectors[i1][i2].conic_segments.length),points[i3]) 
+                            )
 
                             // higher degree is the side where the third point is closer
                             data[i1][i2].less = less_dist < more_dist?1:-1
@@ -260,7 +270,8 @@ export function n3lognVoronoi(boundary,points){
             bisector_classifications[i][j] = []
             bisector_classifications[j][i] = bisector_classifications[i][j]
             // find degree of first segment
-            let anchor = bisectors[i][j].getPointFromT(0)
+            let mid_t = ordered_circumcenters.length > 0?(ordered_circumcenters[0][i][j].t/2):bisectors[i][j].conic_segments.length/2
+            let anchor = bisectors[i][j].getPointFromT(mid_t)
             let ordered_points = []
             for(let p = 0; p < n; p++){
                 ordered_points.push(p)
@@ -273,7 +284,8 @@ export function n3lognVoronoi(boundary,points){
             // bitstring of which points are in the cell
             let hash = 0
             console.log("making initial degree for",i,j,"orders:",ordered_points,"first circ:",ordered_circumcenters[0])
-            for(let p = 0; p < n; p++){
+
+            for(let p = 0; p < ordered_points.length; p++){
                 if(ordered_points[p] != i && ordered_points[p] != j){
                     degree += 1
                     hash += 2**ordered_points[p]
@@ -307,9 +319,15 @@ export function n3lognVoronoi(boundary,points){
 
                 // if going up a degree, add the third point to the cells, otherwise, remove it 
                 console.log("BISECTOR",i,j,"CROSSING",k,"CHANGE:",data[i][j].more)
-                hash += data[i][j].more * (2**k)
+
+                let hash_without_k = hash - (2**k)
+                // special case for 1 
+                let one_check = k===0?(hash_without_k%2===1):false
+                let degree_change = one_check || hash_without_k < 0 || (Math.floor(Math.log2(hash_without_k)) != Math.log2(hash_without_k))?1:-1
+                console.log("PREDICTED DEGREE CHANGE:",degree_change,"calculated degree change: ",data[i][j].more)
+                hash += degree_change * (2**k)
                 
-                degree = degree + data[i][j].more
+                degree = degree + degree_change
                 console.log("NEW HASH:",hash,"AND DEGREE:",degree)
                 bisector_classifications[i][j].push(degree)
                 // put bisector segment in cell map with the hash

@@ -1,6 +1,6 @@
-import {intersectConicSegments } from "./conics.js"
+import {calculateConicSegmentBounds, intersectConicSegments } from "./conics.js"
 import { Bound, Point } from "./primitives.js"
-import { euclideanDistance, inBound, isLeZero, isZero } from "./utils.js"
+import { euclideanDistance, inBound, isBetween, isLeZero, isZero } from "./utils.js"
 
 export class Bisector {
     constructor(conic_segments){
@@ -29,10 +29,30 @@ export class Bisector {
                     if (t < 0){
                         t += 2*Math.PI
                     }
+                    /**
+                    if(range < 0){
+                        if (t < c_s.start + range){
+                            t += 2*Math.PI
+                        }else if (t > c_s.start){
+                            t -= 2*Math.PI
+                        }
+                    }else{
+                        if (t > c_s.start + range){
+                            t -= 2*Math.PI
+                        }else if (t < c_s.start){
+                            t += 2*Math.PI
+                        }
+                    }
+                         */
+                    // t = c_s.start + pct * range
                     let percentage = (t - c_s.start)/range//1 - (t - c_s.start)/range
                     if(isLeZero(percentage-1) && isLeZero(-percentage)){
                         return c + percentage
+                    }else{
+                        console.log("INVALID PERCENTAGE WHEN GETTING T OF POINT",percentage,t,c_s.start,range)
                     }
+                }else{
+                    console.log("Bisector Invalid t",t,point,this)
                 }
             }
         }
@@ -61,14 +81,17 @@ export function calculateBisectorSegmentBounds(bisector,start,end){
         
         if (i == Math.floor(start)) {
             let range = conic_segment.getRange()
-            let mid_t = conic_segment.start + range * (start % 1)
-            let start_point = conic_segment.parameterized_conic.getPointFromT(mid_t); 
-            segment_bound = new Bound(start_point.y,start_point.y,start_point.x,start_point.x)
+            let percentage = (start % 1)
+            let mid_t = conic_segment.start + range * percentage
+            segment_bound = calculateConicSegmentBounds(conic_segment.parameterized_conic,conic_segment.start,mid_t,conic_segment.direction)
         }else if (i == Math.ceil(end) - 1){
             let range = conic_segment.getRange()
-            let mid_t = conic_segment.end - range * (1- (start % 1))
-            let end_point = conic_segment.parameterized_conic.getPointFromT(mid_t); 
-            segment_bound = new Bound(end_point.y,end_point.y,end_point.x,end_point.x)
+            let percentage = (end % 1)
+            if(end == conic_segments.length){
+                percentage = 1
+            }
+            let mid_t = conic_segment.start + range * percentage
+            segment_bound = calculateConicSegmentBounds(conic_segment.parameterized_conic,conic_segment.start,mid_t,conic_segment.direction)
         }else{
             segment_bound = conic_segment.bound
         }
@@ -106,8 +129,10 @@ export function calculateCircumcenter(b1,b2,b3){
             euclideanDistance(i13,i23)**2 <= sensitivity && 
             euclideanDistance(i23,i13)**2 <= sensitivity){
                 return circumcenter
+            }else{
+                console.log("TOOOOO FARRR",i12,i23,i13,euclideanDistance(i12,i23)**2, 
+            euclideanDistance(i13,i23)**2,
+            euclideanDistance(i23,i13)**2)
             }
-    }
-
-    
+    }    
 }

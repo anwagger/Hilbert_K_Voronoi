@@ -268,6 +268,16 @@ export class DrawableBisectorSegment {
       //d_c_s.color = debug_colors[i % debug_colors.length]
       d_c_s.draw(ctx,50)
     })
+
+     // bisector bounding box
+    /**
+    let b_s = this.bisector_segment
+    ctx.beginPath();
+    ctx.setLineDash([5, 5]); 
+    ctx.rect(CAMERA.x(b_s.bound.left),CAMERA.y(b_s.bound.top),CAMERA.x(b_s.bound.right) - CAMERA.x(b_s.bound.left),CAMERA.y(b_s.bound.bottom) - CAMERA.y(b_s.bound.top))
+    ctx.stroke(); 
+    ctx.setLineDash([]); 
+     */
   }
 }
 
@@ -343,14 +353,15 @@ export class DrawableConicSegment {
     p2.draw(ctx)
      */
 
-    /**
+    
     // bisector bounding box
+    /**
     ctx.beginPath();
     ctx.setLineDash([3, 3]); 
     ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
     ctx.stroke(); 
     ctx.setLineDash([]); 
-   */
+    */
 
   }
   /*

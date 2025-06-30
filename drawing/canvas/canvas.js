@@ -349,7 +349,8 @@ export class Canvas {
       if(degree >= 1 && degree <= this.sites.length){
          if(event.target.checked){
             this.calculate_fast_voronoi = true
-            this.voronois = createVoronoiFromCanvas(this)
+            let {voronois:voronois} = createVoronoiFromCanvas(this)
+            this.voronois = voronois
             this.changeFastVoronoiDegree(degree)
          }
       }
@@ -358,13 +359,14 @@ export class Canvas {
 
    changeFastVoronoiDegree(degree){
       if(this.calculate_fast_voronoi){
-         this.voronoi_diagram = new DrawableVoronoiDiagram(this.voronois[degree])
+         console.log("DEGREE",degree,this.voronois)
+         this.voronoi_diagram = new DrawableVoronoiDiagram(this.voronois[degree-1])
       }
    }
 
-   recalculateFastVoronoi(degree = 0){
+   recalculateFastVoronoi(degree = 1){
       if (this.calculate_fast_voronoi){
-         let {voronois} = createVoronoiFromCanvas(this)
+         let {voronois:voronois} = createVoronoiFromCanvas(this)
          // change for degree!
          this.voronois = voronois
          this.changeFastVoronoiDegree(degree)
@@ -620,7 +622,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
       })
       this.boundary.draw(this.ctx);
 
-      if (this.voronoi_diagram){
+      if (this.calculate_fast_voronoi){
          this.voronoi_diagram.draw(this.ctx)
       }
 
