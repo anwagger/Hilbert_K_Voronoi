@@ -208,8 +208,9 @@ export function n3lognVoronoi(boundary,points){
 
                             if (!data[i1][i2].t){
                                 console.log("NO T GOTTEN!",c,bisectors[i1][i2])
+                                console.log("CIRC T",i1,i2,data[i1][i2].t)
                             }
-                            console.log("CIRC T",i1,i2,data[i1][i2].t)
+                            
                             
                             let mid_t_start = data[i1][i2].t/2
                             let start_p = bisectors[i1][i2].getPointFromT(mid_t_start)
@@ -219,11 +220,13 @@ export function n3lognVoronoi(boundary,points){
                             let end_p = bisectors[i1][i2].getPointFromT(mid_t_end)
                             let more_dist = calculateHilbertDistance(boundary,end_p,points[i3]) 
 
+                            /**
                             console.log("SANITY CHECK:",less_dist < more_dist,
                                 calculateHilbertDistance(boundary,bisectors[i1][i2].getPointFromT(0),points[i3])
                                 <
                                 calculateHilbertDistance(boundary,bisectors[i1][i2].getPointFromT(bisectors[i1][i2].conic_segments.length),points[i3]) 
                             )
+                            */
 
                             // higher degree is the side where the third point is closer
                             data[i1][i2].less = less_dist < more_dist?1:-1
@@ -247,7 +250,7 @@ export function n3lognVoronoi(boundary,points){
         }
     }
 
-    console.log("CIRCUMCENTERS:",circumcenter_data)
+    //console.log("CIRCUMCENTERS:",circumcenter_data)
 
     // classify each segment of the bisectors
     let bisector_classifications = matrix(n,n,false)
@@ -283,7 +286,7 @@ export function n3lognVoronoi(boundary,points){
             let degree = 1
             // bitstring of which points are in the cell
             let hash = 0
-            console.log("making initial degree for",i,j,"orders:",ordered_points,"first circ:",ordered_circumcenters[0])
+            //console.log("making initial degree for",i,j,"orders:",ordered_points,"first circ:",ordered_circumcenters[0])
 
             for(let p = 0; p < ordered_points.length; p++){
                 if(ordered_points[p] != i && ordered_points[p] != j){
@@ -293,7 +296,7 @@ export function n3lognVoronoi(boundary,points){
                     break;
                 }
             }
-            console.log("INITIAL HASH:",hash,"AND DEGREE",degree)            
+            //console.log("INITIAL HASH:",hash,"AND DEGREE",degree)            
             // put bisector segment in cell map with the hash
             let value = {
                     i:i,
@@ -318,17 +321,17 @@ export function n3lognVoronoi(boundary,points){
                 let k = ps[r]
 
                 // if going up a degree, add the third point to the cells, otherwise, remove it 
-                console.log("BISECTOR",i,j,"CROSSING",k,"CHANGE:",data[i][j].more)
+                //console.log("BISECTOR",i,j,"CROSSING",k,"CHANGE:",data[i][j].more)
 
                 let hash_without_k = hash - (2**k)
                 // special case for 1 
                 let one_check = k===0?(hash_without_k%2===1):false
                 let degree_change = one_check || hash_without_k < 0 || (Math.floor(Math.log2(hash_without_k)) != Math.log2(hash_without_k))?1:-1
-                console.log("PREDICTED DEGREE CHANGE:",degree_change,"calculated degree change: ",data[i][j].more)
+                //console.log("PREDICTED DEGREE CHANGE:",degree_change,"calculated degree change: ",data[i][j].more)
                 hash += degree_change * (2**k)
                 
                 degree = degree + degree_change
-                console.log("NEW HASH:",hash,"AND DEGREE:",degree)
+                //console.log("NEW HASH:",hash,"AND DEGREE:",degree)
                 bisector_classifications[i][j].push(degree)
                 // put bisector segment in cell map with the hash
                 let value = {
@@ -345,8 +348,8 @@ export function n3lognVoronoi(boundary,points){
         }
     }
 
-    console.log("CLASSIFICATION",bisector_classifications)
-    console.log("CELL MAP",voronoi_cell_map)
+    //console.log("CLASSIFICATION",bisector_classifications)
+    //console.log("CELL MAP",voronoi_cell_map)
 
     // list of voronoi cells for each degree
     let voronoi_lists = []
@@ -371,7 +374,7 @@ export function n3lognVoronoi(boundary,points){
         voronoi_lists[degree-1].push(voronoi_cell)
     }
 
-    console.log("VORONOI CELLS",voronoi_lists)
+    //console.log("VORONOI CELLS",voronoi_lists)
 
     // combine the cells into diagrams
     let voronois = []
@@ -382,7 +385,7 @@ export function n3lognVoronoi(boundary,points){
         voronois.push(voronoi)
     }
 
-    console.log("VORONOIS",voronois)
+    //console.log("VORONOIS",voronois)
 
     return {voronois: voronois,classification:bisector_classifications}
 }

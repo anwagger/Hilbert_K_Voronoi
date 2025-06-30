@@ -132,6 +132,7 @@ export function calculateCircumcenter(boundary,b1,b2,b3){
     let i23 = intersectBisectors(boundary,b2,b3)
     let i13 = intersectBisectors(boundary,b1,b3)
     let sensitivity = 1e-2
+    //console.log("CALCULATING CIRCUMCENRER!")
     if (i12 && i23 && i13){
         let circumcenter = new Point((i12.x + i23.x + i13.x)/3,(i12.y + i23.y + i13.y)/3)
         if(

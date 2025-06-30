@@ -333,34 +333,6 @@ export class ParameterizedConic {
             case Conic_Type.DEGENERATE:
                 switch (this.orientation){
                     case Conic_Orientation.HORIZONTAL:
-                        // t/2 to turn 2*PI to PI
-                        /**
-                        x_func = (t) => {
-                            t = t/2
-                            if (isLeZero(Math.abs(t) - Math.PI/2)){
-                                return this.x_mult*((1/Math.sin(t))-x_off)
-                            }else{
-                                return this.x_mult*((1/Math.sin(t - Math.PI/2))-x_off)
-                            }   
-                        }
-                        y_func = (t) => {
-                            t = t/2
-                            if (isLeZero(Math.abs(t) - Math.PI/2)){
-                                return (-this.y_mult + y_off)
-                            }else{
-                                return (this.y_mult + y_off)
-                            }
-                        }
-                        xi_func = (x) => {
-                            let asin = 2*Math.asin(1/(x/this.x_mult + x_off))
-                            return [
-                                asin, asin + Math.PI/2
-                            ]
-                        }
-                        yi_func = (y) => {
-                            return [Infinity]
-                        }
-                        */
                        x_func = (t) => {
                             if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
                                 return (this.x_mult*Math.sin(t) - x_off)
@@ -384,34 +356,6 @@ export class ParameterizedConic {
                         }
                     break;
                     case Conic_Orientation.VERTICAL:
-                        // t/2 to turn 2*PI to PI
-                        /**
-                        x_func = (t) => {
-                            t = t/2
-                            if (isLeZero(Math.abs(t) - Math.PI/2)){
-                                return (-this.x_mult + x_off)
-                            }else{
-                                return (this.x_mult + x_off)
-                            }
-                        }
-                        y_func = (t) => {
-                            t = t/2
-                            if (isLeZero(Math.abs(t) - Math.PI/2)){
-                                return this.y_mult*((1/Math.sin(t))-y_off)
-                            }else{
-                                return this.y_mult*((1/Math.sin(t - Math.PI/2))-y_off)
-                            }   
-                        }
-                        xi_func = (x) => {
-                            return [Infinity]
-                        }
-                        yi_func = (y) => {
-                            let asin = 2*Math.asin(1/(y/this.y_mult + y_off))
-                            return [
-                                asin, asin + Math.PI
-                            ]
-                        }
-                        */
                         x_func = (t) => {
                             if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
                                 return -this.x_mult+x_off
@@ -679,7 +623,7 @@ export class ParameterizedConic {
             inverse should then be easy*
         */
 
-        let parallel = this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.HORIZONTAL
+        let parallel = false//this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.HORIZONTAL
        let sin = Math.sin(this.angle)
        let cos = Math.cos(this.angle)
        // reverse rotation?
@@ -877,7 +821,7 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     let intersections = parameterized_conic.conic.intersectPolygon(polygon)
 
     if (parameterized_conic.type == Conic_Type.DEGENERATE && parameterized_conic.orientation == Conic_Orientation.NONE){
-        console.log("DN INTS",intersections)
+        //console.log("DN INTS",intersections)
     }
     let ts = []
 
@@ -922,7 +866,7 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     ts = ts.sort(t_sort)
 
     if (ts.length != 2){
-        console.log("TS",parameterized_conic.type,parameterized_conic.orientation,ts)
+        //console.log("TS",parameterized_conic.type,parameterized_conic.orientation,ts)
     }
 
     start = ts[0]
@@ -944,8 +888,8 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
             })
             end = [poss_ts[0],null,center_point]
         }else{
-            console.log("DN CENTER NOT ON:",center_point,polygon)
-            console.log("USING",start,end)
+            //console.log("DN CENTER NOT ON:",center_point,polygon)
+            //console.log("USING",start,end)
         }
     }
 
@@ -973,7 +917,7 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     if (change_direction){
 
         // come back to this!
-        console.log("SWAP",first,last,length,Math.PI )
+        //console.log("SWAP",first,last,length,Math.PI )
         direction = -1
     }
 

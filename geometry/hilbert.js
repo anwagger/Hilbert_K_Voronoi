@@ -374,7 +374,7 @@ export function calculateMidsector(boundary,h_p1,h_p2){
         }
     }
 
-    console.log("MID",enter,exit,exit,enter)
+    //console.log("MID",enter,exit,exit,enter)
 
     return calculateSector(boundary,h_p1,h_p2,enter,exit,exit,enter)
 
@@ -405,18 +405,18 @@ export function calculateBisector(boundary,h_p1,h_p2){
 
     //console.log("MID-SECTOR:",sector)
 
-    console.log("TRAVERSING")
+    //console.log("TRAVERSING")
 
     let conic_segments = traverseBisector(boundary,h_p1,h_p2,sector,null)
 
-    console.log("DONE")
+    //console.log("DONE")
 
     return new Bisector(conic_segments)
 }
 
 export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
 
-    console.log("recurse:",sector.p1_enter,sector.p1_exit,sector.p2_enter,sector.p2_exit)
+    //console.log("recurse:",sector.p1_enter,sector.p1_exit,sector.p2_enter,sector.p2_exit)
 
     let conic = bisectorConicFromSector(boundary,sector)
 
@@ -523,7 +523,7 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
         }
         start_segments.push(c_s)
         let final_bisector = start_segments.concat(end_segments)
-        console.log("FINAL:",final_bisector)
+        //console.log("FINAL:",final_bisector)
         return final_bisector
     }
 
