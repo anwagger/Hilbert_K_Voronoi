@@ -451,11 +451,53 @@ export class DrawableBruteForceVoronoi {
     this.brute_force = true;
     this.voronoi = voronoi;
     this.grid = [];
+    this.update = false
+  }
+
+  calculateBruteForce(canvas){
+    console.log("CNVAS",canvas)
+    const grid = this.voronoi.bruteForce(canvas);
+    this.grid = grid;
+    this.calculateBruteForceImage(canvas)
+    this.update = true
+  }
+
+  calculateBruteForceImage(canvas){
+    const width = 1000;
+    const height = 1000;
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    const tempCtx = tempCanvas.getContext('2d');
+    const degree = this.voronoi.degree;
+    let grid = this.grid;
+
+    let image_data = tempCtx.createImageData(width, height);
+
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+            const cell = grid[x]?.[y];
+            if (Array.isArray(cell) && cell.length > degree - 1) {
+                const s = cell[degree - 1].index;
+                const site = canvas.sites[s];
+                if (site) {
+                    const hex = colorNameToHex(site.color);
+                    const { r, g, b } = hexToRgb(hex);
+                    const i = (y * width + x) * 4;
+                    image_data.data[i] = r;
+                    image_data.data[i + 1] = g;
+                    image_data.data[i + 2] = b;
+                    image_data.data[i + 3] = 150;
+                }
+            }
+        }
+    }
+    canvas.voronoi_image = image_data;
   }
 
   
   // andrew im ngl i vibecoded part of this because i was confused abt the camera it makes sense to me though
-    drawBruteForce(canvas,recalculate = true, degree = true) {
+    drawBruteForce(canvas,recalculate = false, degree = true) {
         // temp canvas stuff gemini suggested for drawing to scale, might be a better way this is p slow rn
         const width = 1000;
         const height = 1000;
@@ -464,41 +506,6 @@ export class DrawableBruteForceVoronoi {
         tempCanvas.height = height;
         const tempCtx = tempCanvas.getContext('2d');
         const ctx = canvas.ctx; // This is the main canvas context
-
-        if (degree) {
-          const degree = this.voronoi.degree;
-          let grid;
-
-          if (recalculate) {
-            grid = this.voronoi.bruteForce(canvas);
-            this.grid = grid;
-          } else {
-            grid = this.grid;
-          }
-
-          let image_data = tempCtx.createImageData(width, height);
-
-          for (let x = 0; x < width; x++) {
-              for (let y = 0; y < height; y++) {
-                  const cell = grid[x]?.[y];
-                  if (Array.isArray(cell) && cell.length > degree - 1) {
-                      const s = cell[degree - 1].index;
-                      const site = canvas.sites[s];
-                      if (site) {
-                          const hex = colorNameToHex(site.color);
-                          const { r, g, b } = hexToRgb(hex);
-                          const i = (y * width + x) * 4;
-                          image_data.data[i] = r;
-                          image_data.data[i + 1] = g;
-                          image_data.data[i + 2] = b;
-                          image_data.data[i + 3] = 150;
-                      }
-                  }
-              }
-          }
-          canvas.voronoi_image = image_data;
-
-        }
 
         tempCtx.putImageData(canvas.voronoi_image, 0, 0);
 

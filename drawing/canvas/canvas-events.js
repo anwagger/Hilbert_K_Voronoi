@@ -99,9 +99,6 @@ export function initEvents(canvas) {
       }else if(canvas.mode === 'site'){
          if(!event.shiftKey){
             canvas.addSite(event)
-            if (canvas.brute_force_voronoi !== null) {
-               canvas.brute_force_voronoi.drawBruteForce(canvas);
-            }
          }
       } 
    });
@@ -158,8 +155,8 @@ export function initEvents(canvas) {
                canvas.brute_force_voronoi.voronoi.degree = int;
                console.log(canvas.brute_force_voronoi.voronoi.degree);
                canvas.changeFastVoronoiDegree(int)
+               canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
                canvas.drawAll();
-               canvas.brute_force_voronoi.drawBruteForce(canvas,false);
             }
          }
    });
@@ -167,9 +164,6 @@ export function initEvents(canvas) {
    document.getElementById('zoomRange').addEventListener('change', (event) => {
       CAMERA.setScale(event.target.value);
       canvas.drawAll();
-      if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
-         canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
-      }
    })
 
    document.getElementById('resetZoom').addEventListener('click', (event) => {
@@ -179,17 +173,24 @@ export function initEvents(canvas) {
       canvas.drawAll();
    })
 
-   document.getElementById('bruteForceVoronoi').addEventListener('click', (event) => {
-      const input = document.getElementById('voronoiDegree').value;
-      const degree = parseInt(input);
-      console.log(degree);
-      if (degree >= 1 && degree <= canvas.sites.length) {
-         const voronoi = new DrawableBruteForceVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
-         canvas.brute_force_voronoi = voronoi;
-         voronoi.drawBruteForce(canvas);
-      } else {
-         alert("Invalid degree :((((");
+   document.getElementById('bruteForceVoronoi').addEventListener('change', (event) => {
+      if(event.target.checked){
+         const input = document.getElementById('voronoiDegree').value;
+         const degree = parseInt(input);
+         console.log(degree);
+         if (degree >= 1 && degree <= canvas.sites.length) {
+            const voronoi = new DrawableBruteForceVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
+            canvas.brute_force_voronoi = voronoi;
+            canvas.recalculateBruteForceVoronoi()
+            canvas.drawAll()
+         } else {
+            alert("Invalid degree :((((");
+         }
+      }else{
+         canvas.brute_force_voronoi = null
+         canvas.drawAll()
       }
+      
    })
 
    document.getElementById("calculateFastVoronoi").addEventListener('change', (event) => {
@@ -248,11 +249,8 @@ export function initEvents(canvas) {
          }
          canvas.selectSingleSite(event)
          canvas.selecting = false;
+         canvas.recalculateBruteForceVoronoi()
          canvas.drawAll()
-
-         if (canvas.brute_force_voronoi !== null) {
-         canvas.brute_force_voronoi.drawBruteForce(canvas);
-         }
        }
    }
 
@@ -285,15 +283,9 @@ export function initEvents(canvas) {
             if (event.shiftKey){
                   CAMERA.changeScale(event.movementY)
                   canvas.drawAll()
-                  if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
-                     canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
-                  }
             }else{
                CAMERA.changeOffset(event.movementX,event.movementY)
                canvas.drawAll()
-               if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
-                  canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
-               }
             }
          }
       }else{
@@ -301,9 +293,6 @@ export function initEvents(canvas) {
             if (!event.shiftKey && (canvas.draggingPoint == null)){
                CAMERA.changeOffset(event.movementX,event.movementY)
                canvas.drawAll()
-               if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
-                  canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
-               }
             }
          }
       } 

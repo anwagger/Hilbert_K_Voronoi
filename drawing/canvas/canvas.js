@@ -184,6 +184,8 @@ export class Canvas {
          // calculate the new point
          this.recalculateSite(this.sites.length-1)
          this.recalculateFastVoronoi()
+         this.recalculateBruteForceVoronoi()
+
          this.drawAll()
       }      
    }
@@ -373,7 +375,12 @@ export class Canvas {
          this.changeFastVoronoiDegree(degree)
          console.log("DRAWABLE VORONOI",this.voronoi_diagram)
       }
-      
+   }
+   recalculateBruteForceVoronoi(){
+      if (this.brute_force_voronoi){
+         console.log("THS",this)
+         this.brute_force_voronoi.calculateBruteForce(this)
+      }
    }
 
 
@@ -434,12 +441,10 @@ export class Canvas {
             site.drawable_point.point.y = mouse.y
             this.recalculateSite(this.draggingPoint);
             this.recalculateFastVoronoi()
+            // DONT RECALCULATE BRUTE FORCE HERE!
          }
 
          this.drawAll()
-         if (this.brute_force_voronoi !== null) {
-            this.brute_force_voronoi.drawBruteForce(this,false,false);
-         }
       }
    }
 
@@ -487,9 +492,6 @@ export class Canvas {
    });
       this.sites = cleanArray(this.sites) // removes any null elts from array
       this.drawAll();
-      if (canvas.brute_force_voronoi !== null && canvas.brute_force_voronoi.brute_force) {
-         canvas.brute_force_voronoi.drawBruteForce(canvas,false,false);
-      }
    }
 
    deleteSite(idx){
@@ -549,6 +551,7 @@ export class Canvas {
       this.calculateBisectorIntersections()
 
       this.recalculateFastVoronoi()
+      this.recalculateBruteForceVoronoi()
       
    }
 
@@ -612,6 +615,11 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
    drawAll() {
       
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      if(this.brute_force_voronoi){
+         this.brute_force_voronoi.drawBruteForce(this,false);  
+         this.brute_force_voronoi.update = false
+      }
 
       this.absolute_border.draw(this.ctx);
 
