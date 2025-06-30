@@ -381,6 +381,32 @@ export class ParameterizedConic {
                         
                     break;
                     case Conic_Orientation.NONE:
+                        /*
+                        x_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return (this.x_mult*Math.sin(t) + x_off)
+                            }else{
+                                return (-this.x_mult*Math.sin(t) + x_off)
+                            }
+                        }
+                        y_func = (t) => {
+                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
+                                return this.y_mult*(this.x_mult*Math.sin(t))+y_off
+                            }else{
+                                return this.y_mult*(this.x_mult*Math.sin(t))+y_off
+                            }   
+                        }
+                        xi_func = (x) => {
+                            let asin = -Math.asin((x - x_off)/this.x_mult)
+                            return [asin < 0 ? asin+2*Math.PI: asin,asin+Math.PI]
+                        }
+                        yi_func = (y) => {
+                            let asin = Math.asin((y - y_off)/(this.x_mult*this.y_mult))
+                            return [
+                                asin < 0 ? asin+2*Math.PI: asin,-asin+Math.PI
+                            ]
+                        }
+                         */
                         x_func = (t) => {
                             if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
                                 return (this.x_mult*Math.sin(t) + x_off)
@@ -821,7 +847,11 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     let intersections = parameterized_conic.conic.intersectPolygon(polygon)
 
     if (parameterized_conic.type == Conic_Type.DEGENERATE && parameterized_conic.orientation == Conic_Orientation.NONE){
+<<<<<<< Updated upstream
         //console.log("DN INTS",intersections)
+=======
+        console.log("DN INTS",intersections)
+>>>>>>> Stashed changes
     }
     let ts = []
 
@@ -855,23 +885,37 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     let t_sort = (a,b) =>{
         return a[0] - b[0]
     }
+<<<<<<< Updated upstream
     if(start_point != null){
         t_sort = (a,b) => {
             return euclideanDistance(start_point,a[2]) - euclideanDistance(start_point,b[2])
             //let start_t = parameterized_conic.getTOfPoint(start_point)
             //return Math.abs(start_t - a[0]) - Math.abs(start_t - b[0])
+=======
+
+    
+
+    if(start_point != null){
+        t_sort = (a,b) => {
+            return euclideanDistance(start_point,a[2]) - euclideanDistance(start_point,b[2])
+>>>>>>> Stashed changes
         }
     }
 
     ts = ts.sort(t_sort)
 
     if (ts.length != 2){
+<<<<<<< Updated upstream
         //console.log("TS",parameterized_conic.type,parameterized_conic.orientation,ts)
+=======
+        console.log("TS",parameterized_conic.type,parameterized_conic.orientation,ts)
+>>>>>>> Stashed changes
     }
 
     start = ts[0]
     let index = 1
     end = ts[index]
+<<<<<<< Updated upstream
     // going over duplicates
     while(index < ts.length-1 && isZero(ts[index][0]-start[0])){
         index += 1
@@ -891,11 +935,17 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
             //console.log("DN CENTER NOT ON:",center_point,polygon)
             //console.log("USING",start,end)
         }
+=======
+    while(isZero(ts[index][0]-start[0]) && index < ts.length){
+        index += 1
+        end = ts[index]
+>>>>>>> Stashed changes
     }
 
     //end = ts[ts.length-1]
 
     // take shortest way around
+<<<<<<< Updated upstream
 
     if(end[0] < 0){
         end[0] += 2*Math.PI
@@ -920,6 +970,22 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
         //console.log("SWAP",first,last,length,Math.PI )
         direction = -1
     }
+=======
+        /*
+
+    let direction = Math.abs(end[0]-start[0])>2*Math.PI-Math.abs(end[0]-start[0])
+    if (direction){
+        console.log("SWAP",Math.abs(end[0]-start[0]),2*Math.PI-Math.abs(end[0]-start[0]))
+        let temp = start
+        start = end
+        end = temp
+    }
+    
+    if(start[0] > end[0]){
+        end[0] += 2*Math.PI
+    }
+         */
+>>>>>>> Stashed changes
 
 
     if (start[0] === Infinity || start[0] === -Infinity || end[0] === Infinity || end[0] === -Infinity){

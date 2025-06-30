@@ -152,10 +152,14 @@ export function initEvents(canvas) {
             let int = parseInt(event.key);
             console.log(int);
             if (int !== NaN && int <= canvas.sites.length && int >= 1) {
-               canvas.brute_force_voronoi.voronoi.degree = int;
-               console.log(canvas.brute_force_voronoi.voronoi.degree);
+               if(canvas.brute_force_voronoi){
+                  canvas.brute_force_voronoi.voronoi.degree = int;
+                  console.log(canvas.brute_force_voronoi.voronoi.degree);
+                  canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
+               }
+               
                canvas.changeFastVoronoiDegree(int)
-               canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
+               
                canvas.drawAll();
             }
          }

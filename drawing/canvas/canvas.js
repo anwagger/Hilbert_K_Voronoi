@@ -50,7 +50,7 @@ export class Canvas {
       this.calculate_fast_voronoi = false;
       this.voronois = null
       this.voronoi_diagram = null;
-
+      
       this.draggingPoint = null;
 
       this.globalScale = 1.0;
@@ -367,11 +367,16 @@ export class Canvas {
       }
    }
 
-   recalculateFastVoronoi(degree = 1){
+   recalculateFastVoronoi(degree = null){
+
       if (this.calculate_fast_voronoi){
          let {voronois:voronois} = createVoronoiFromCanvas(this)
          // change for degree!
          this.voronois = voronois
+         if(!degree){
+            console.log("diag",this.voronoi_diagram)
+            degree = this.voronoi_diagram.voronoi.degree
+         }
          this.changeFastVoronoiDegree(degree)
          console.log("DRAWABLE VORONOI",this.voronoi_diagram)
       }

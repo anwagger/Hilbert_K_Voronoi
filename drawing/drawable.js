@@ -336,6 +336,23 @@ export class DrawableConicSegment {
 
     let start = this.conic_segment.start
     
+<<<<<<< Updated upstream
+=======
+    // for debugging!
+    
+    /**
+    let degen = this.conic_segment.parameterized_conic.type === "D" && this.conic_segment.parameterized_conic.orientation === "N"
+    if (degen){
+      start = 0
+      dt = 2*Math.PI/num_of_points//2*Math.PI/num_of_points
+    }
+       */
+    
+      
+    
+
+
+>>>>>>> Stashed changes
     let c_s = this.conic_segment
 
     for (let i = 0; i <= num_of_points - 1; i++) {
@@ -363,15 +380,22 @@ export class DrawableConicSegment {
     p2.draw(ctx)
      */
 
+<<<<<<< Updated upstream
     
     // bisector bounding box
     /*
+=======
+>>>>>>> Stashed changes
     ctx.beginPath();
     ctx.setLineDash([1, 3]); 
     ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
     ctx.stroke(); 
     ctx.setLineDash([]); 
+<<<<<<< Updated upstream
     **/
+=======
+  
+>>>>>>> Stashed changes
 
   }
   /*

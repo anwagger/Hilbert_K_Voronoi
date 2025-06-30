@@ -378,8 +378,12 @@ export function n3lognVoronoi(boundary,points){
 
     // combine the cells into diagrams
     let voronois = []
-    for(let d = 1; d < n; d++){
-        let voronoi = new VoronoiDiagram(boundary,voronoi_lists[d-1],d,null)
+    for(let d = 1; d <= n; d++){
+        let cells = voronoi_lists[d-1]
+        if(!cells){
+            cells = []
+        }
+        let voronoi = new VoronoiDiagram(boundary,cells,d,null)
         let partition_tree = new PartitionTree(voronoi,boundary)
         console.log(partition_tree)
         voronoi.partition_tree = partition_tree
