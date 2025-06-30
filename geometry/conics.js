@@ -109,6 +109,7 @@ export function intersectConicSegments(c_s1,c_s2){
 
 export function approximateConicSegmentIntersection(c_s1,c_s2){
 
+    let intersections = [] 
     if (!intersectBounds(c_s1.bound,c_s2.bound)){
         return false
     }
@@ -128,7 +129,9 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
     let sensitivity = 1e-10
 
     if (Math.abs(range1) <= sensitivity && Math.abs(range2) <= sensitivity){
-        return new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2)
+        intersections.push(new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2))
+        return intersections
+        // return new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2)
     }
 
     let sub_cs1 = []
@@ -151,12 +154,17 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
             if (intersectBounds(sub_cs1[i].bound,sub_cs2[j].bound)){
                 let intersection = approximateConicSegmentIntersection(sub_cs1[i],sub_cs2[j])
                 if (intersection){
-                    return intersection
+                    intersections = intersections.concat(intersection)
+                    //return intersection
                 }
             }
         }
     }
-    return false
+    if (intersections.length > 0){
+        return intersections
+    }else{
+        return false
+    }
 }
 
 export function parameterizeConic(conic){
@@ -920,7 +928,8 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     start = ts[0]
     let index = 1
     end = ts[index]
-    while(index < ts.length && isZero(ts[index][0]-start[0])){
+    // going over duplicates
+    while(index < ts.length-1 && isZero(ts[index][0]-start[0])){
         index += 1
         end = ts[index]
     }

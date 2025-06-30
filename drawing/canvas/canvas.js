@@ -332,11 +332,12 @@ export class Canvas {
             let b1 = this.bisectors[i].bisector
             let b2 = this.bisectors[j].bisector
             console.log("INTERSECT")
-            let intersection = intersectBisectors(b1,b2)
+            let intersection = intersectBisectors(this.boundary.polygon,b1,b2)
             console.log("DONE INTERSECT",intersection)
 
             if (intersection){
                this.bisector_intersections.push(new DrawablePoint(intersection))
+               this.bisector_intersections[this.bisector_intersections.length-1].color = "red"
             }
          }
       }

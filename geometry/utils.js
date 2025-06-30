@@ -271,6 +271,15 @@ export function inBound(point,bound){
   return point.x <= bound.right && point.x >= bound.left && point.y <= bound.top && point.y >= bound.bottom
 }
 
+export function boundOfBounds(b1,b2){
+  return new Bound(
+    Math.max(b1.top,b2.top),
+    Math.min(b1.bottom,b2.bottom),
+    Math.min(b1.left,b2.left),
+    Math.max(b1.right,b2.right),
+  )
+}
+
 export function computeBoundingBox(polygon) {
         let min_x = Infinity;
         let max_x = -Infinity;

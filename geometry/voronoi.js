@@ -181,7 +181,7 @@ export function n3lognVoronoi(boundary,points){
     for(let i = 0; i < n; i++){
         for(let j = i+1; j < n; j++){
             for(let k = j+1; k < n; k++){
-                let c = calculateCircumcenter(bisectors[i][j],bisectors[j][k],bisectors[i][k])
+                let c = calculateCircumcenter(boundary, bisectors[i][j],bisectors[j][k],bisectors[i][k])
                 if(c){
                     let data = {
                         i:i,
@@ -241,7 +241,7 @@ export function n3lognVoronoi(boundary,points){
                     circumcenter_data[k][i][j] = data
                     circumcenter_data[k][j][i] = data
                 }else{
-                    console.log("NO CIRCUMCENTER")
+                    console.log("NO CIRCUMCENTER",i,j,k)
                 }
             }
         }

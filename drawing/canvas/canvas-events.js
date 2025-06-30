@@ -157,6 +157,7 @@ export function initEvents(canvas) {
             if (int !== NaN && int <= canvas.sites.length && int >= 1) {
                canvas.brute_force_voronoi.voronoi.degree = int;
                console.log(canvas.brute_force_voronoi.voronoi.degree);
+               canvas.changeFastVoronoiDegree(int)
                canvas.drawAll();
                canvas.brute_force_voronoi.drawBruteForce(canvas,false);
             }
@@ -186,8 +187,6 @@ export function initEvents(canvas) {
          const voronoi = new DrawableBruteForceVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
          canvas.brute_force_voronoi = voronoi;
          voronoi.drawBruteForce(canvas);
-
-         canvas.calculate_fast_voronoi = true
       } else {
          alert("Invalid degree :((((");
       }
@@ -196,7 +195,6 @@ export function initEvents(canvas) {
    document.getElementById("calculateFastVoronoi").addEventListener('change', (event) => {
       const input = document.getElementById('voronoiDegree').value;
       const degree = parseInt(input);
-      console.log("CAL")
       canvas.setFastVoronoi(event,degree);
    });
    
