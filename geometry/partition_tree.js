@@ -1,5 +1,5 @@
 import { Bound } from "./primitives.js";
-import { computeBoundingBox, computeClosestBound, intersectBounds } from "./utils.js";
+import { computeBoundingBox, computeMedianBound, intersectBounds } from "./utils.js";
 import { calculateVoronoiCellBounds, VoronoiCell } from "./voronoi.js";
 
 const Partition_Node_Type = {
@@ -44,30 +44,36 @@ export class PartitionTree {
         // gets all of the voronoi bounds and puts them into a hashmap corresponding to their index
         for (let i = 0; i < voronoi.cells.length; i++) {
             let c = voronoi.cells[i]
+            // each cell made of bisector segments
+            // each bisector segment has a bisector, start, end and bound
             voronoi_bounds.set(i, c.bound);
         }
 
         // we use this to find which bound has the closest 
         let middle_x = Math.floor((bound.right + bound.left) / 2);
         console.log(middle_x)
-        let x = computeClosestBound(voronoi_bounds.values(), middle_x);
+        let x = computeMedianBound(voronoi_bounds.values());
         console.log(x)
 
         this.root = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
-        let left_bound = new Bound(bound.left,x,bound.top,bound.bottom);
-        let right_bound = new Bound(x,bound.right,bound.top,bound.bottom);
+        let left_bound = new Bound(bound.top,bound.bottom,bound.left, x);
+        let right_bound = new Bound(bound.top,bound.bottom,x,bound.right);
 
         let keys = voronoi_bounds.keys();
         let left_voronoi_bounds = new Map();
         let right_voronoi_bounds = new Map();
 
         for (let k of keys) {
+            console.log(k)
             let b = voronoi_bounds.get(k);
+            console.log(b)
             if (intersectBounds(voronoi_bounds.get(k),left_bound)) {
+                console.log("meow")
                 left_voronoi_bounds.set(k,b);
             }
 
             if (intersectBounds(voronoi_bounds.get(k), right_bound)) {
+                console.log("meow2")
                 right_voronoi_bounds.set(k,b);
             }
         }
@@ -93,7 +99,7 @@ export class PartitionTree {
         if (type === Partition_Node_Type.X) {
             // see what bisector has the most median x in the current bound
             let middle_x = Math.floor((bound.left + bound.right) / 2);
-            let x = computeClosestBound(voronoi_bounds, middle_x);
+            let x = computeMedianBound(voronoi_bounds);
 
             let node = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
 
@@ -134,7 +140,7 @@ export class PartitionTree {
             // nearly identical to the x case, just shrinks the bound vertically instead of horizontally
         } else if (type === Partition_Node_Type.Y) {
             let middle_y = Math.floor((bound.top + bound.bottom) / 2);
-            let y = computeClosestBound(voronoi_bounds, middle_y);
+            let y = computeMedianBound(voronoi_bounds, true);
 
             let node = new PartitionTreeNode(Partition_Node_Type.Y, {y: y});
             let top_bound = new Bound(bound.left,bound.right,y,bound.bottom);
@@ -171,7 +177,9 @@ export class PartitionTree {
             }
         // cell case
         } else {
-            let k = [...voronoi_bounds.keys()]; // turns cell indexes into an array
+            console.log(voronoi_bounds.keys())
+            let k = [...voronoi_bounds.keys()];
+            console.log(k[0]) // turns cell indexes into an array
             let outside = k.length > 1 ? k.slice(1) : null;
             let data = {index: k[0], outside: outside};
             return new PartitionTreeNode(Partition_Node_Type.CELL,data);

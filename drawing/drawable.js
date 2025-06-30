@@ -377,12 +377,15 @@ export class DrawableConicSegment {
     // bisector bounding box
     /*
 
+    
     ctx.beginPath();
     ctx.setLineDash([1, 3]); 
     ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
     ctx.stroke(); 
     ctx.setLineDash([]); 
     */
+    
+
   }
   /*
   drawStraight(ctx,num_of_points) {

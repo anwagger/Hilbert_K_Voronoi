@@ -264,6 +264,12 @@ export function convexHull(points) {
 
 
 export function intersectBounds(b1,b2){
+    console.log(b1)
+    console.log(b2)
+    console.log(b1.top >= b2.bottom)
+    console.log(b1.bottom <= b2.top)
+    console.log(b1.left <= b2.right)
+    console.log(b1.right >= b2.left)
     return b1.top >= b2.bottom && b1.bottom <= b2.top && b1.left <= b2.right && b1.right >= b2.left
 }
 
@@ -291,16 +297,25 @@ export function computeBoundingBox(polygon) {
             min_y = Math.min(min_y, p.y);
             max_y = Math.max(max_y, p.y);
         }
-        return new Bound(min_x,max_x,min_y,max_y);
+        return new Bound(max_y,min_y,max_x,min_x);
     }
 
-export function computeClosestBound(bounds, point) {
-    let curr = 0;
+export function computeMedianBound(bounds, vertical = false) {
+    let bs = [];
     for (let b of bounds) {
-      curr = Math.min(Math.abs(curr - point), Math.abs(b.left - point), Math.abs(b.right - point));
+      if (vertical) {
+        bs.push(b.bottom);
+        bs.push(b.top)
+      } else {
+        bs.push(b.left);
+        bs.push(b.right);
+      }
     }
 
-    return curr;
+    console.log(bs)
+    bs.sort();
+    console.log(bs)
+    return bs[Math.ceil((bs.length - 1) / 2)];
 }
 
 export function cleanArray(arr){
