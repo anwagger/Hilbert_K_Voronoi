@@ -153,11 +153,9 @@ export function calculateSectorTesting(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_en
     // calculate needed bounding cones for calculating sectors
     let sector_bounding_polygons = []
 
-    //let cone1_1_points = [h_p1.point,p1_lines[0].end,p1_lines[1].end]
-    //sector_bounding_polygons.push(new Polygon(convexHull(cone1_1_points)))
+    
     sector_bounding_polygons.push(makeBoundingCone(boundary,h_p1,p1_enter,false))
-    //let cone1_2_points = [h_p1.point,p1_lines[2].start,p1_lines[3].start]
-    //sector_bounding_polygons.push(new Polygon(convexHull(cone1_2_points)))
+    
     sector_bounding_polygons.push(makeBoundingCone(boundary,h_p1,p1_exit,true))
     let p2_lines = [
         new Segment(h_p2.point,h_p2.spokes[p2_enter].segment.end),
@@ -167,12 +165,9 @@ export function calculateSectorTesting(boundary,h_p1,h_p2,p1_enter,p1_exit,p2_en
         new Segment(h_p2.spokes[(p2_exit+1) % boundary.points.length].segment.start,h_p2.point),
     ]
 
-    //let cone2_1_points = [h_p2.point,p2_lines[0].end,p2_lines[1].end]
-    //sector_bounding_polygons.push(new Polygon(convexHull(cone2_1_points)))
-    sector_bounding_polygons.push(makeBoundingCone(boundary,h_p2,p2_enter,false))
-    //let cone2_2_points = [h_p2.point,p2_lines[2].start,p2_lines[3].start]
 
-    //sector_bounding_polygons.push(new Polygon(convexHull(cone2_2_points)))
+    sector_bounding_polygons.push(makeBoundingCone(boundary,h_p2,p2_enter,false))
+    
     sector_bounding_polygons.push(makeBoundingCone(boundary,h_p2,p2_exit,true))
 
     let intersections = []

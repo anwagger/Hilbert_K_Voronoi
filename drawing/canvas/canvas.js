@@ -89,7 +89,6 @@ export class Canvas {
         let deleteSiteIndex = []
         this.sites.forEach((site,i) => {
          if(pointOnPolygon(site.drawable_point.point,this.boundary.polygon) || !pointInPolygon(site.drawable_point.point,this.boundary.polygon) || !pointInPolygon(site.drawable_point.point,this.absolute_border.polygon)){
-            console.log("delete",i,site)
             deleteSiteIndex.push(i)
          }
         });
@@ -343,9 +342,7 @@ export class Canvas {
          for(let j = i+1; j < this.bisectors.length; j++){
             let b1 = this.bisectors[i].bisector
             let b2 = this.bisectors[j].bisector
-            console.log("INTERSECT")
             let intersection = intersectBisectors(this.boundary.polygon,b1,b2)
-            console.log("DONE INTERSECT",intersection)
 
             if (intersection){
                this.bisector_intersections.push(new DrawablePoint(intersection))
@@ -372,7 +369,6 @@ export class Canvas {
 
    changeFastVoronoiDegree(degree){
       if(this.calculate_fast_voronoi){
-         console.log("DEGREE",degree,this.voronois)
          if (this.voronois[degree-1]){
             this.voronoi_diagram = new DrawableVoronoiDiagram(this.voronois[degree-1])
          }else{
@@ -389,16 +385,13 @@ export class Canvas {
          // change for degree!
          this.voronois = voronois
          if(!degree){
-            console.log("diag",this.voronoi_diagram)
             degree = this.voronoi_diagram.voronoi.degree
          }
          this.changeFastVoronoiDegree(degree)
-         console.log("DRAWABLE VORONOI",this.voronoi_diagram)
       }
    }
    recalculateBruteForceVoronoi(){
       if (this.brute_force_voronoi){
-         console.log("THS",this)
          this.brute_force_voronoi.calculateBruteForce(this)
       }
    }

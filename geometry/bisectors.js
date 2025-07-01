@@ -172,11 +172,12 @@ export function calculateCircumcenter(boundary,b1,b2,b3){
     if (i12 && i13){
         let circumcenter = new Point((i12.x + i13.x)/2,(i12.y + i13.y)/2)
         if(
-            euclideanDistance(i12,i13)**2 <= sensitivity){
-                return circumcenter
-            }else{
-                console.log("TOOOOO FARRR",i12,i13,euclideanDistance(i12,i13)**2)
-            }
+            euclideanDistance(i12,i13)**2 <= sensitivity
+        ){
+            return circumcenter
+        }else{
+            console.log("TOOOOO FARRR",i12,i13,euclideanDistance(i12,i13)**2)
+        }
     }    
 }
 

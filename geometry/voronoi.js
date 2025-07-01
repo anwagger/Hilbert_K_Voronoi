@@ -409,7 +409,7 @@ export function n3lognVoronoi(boundary,points){
         }
         let voronoi = new VoronoiDiagram(boundary,cells,d,null)
         let partition_tree = new PartitionTree(voronoi,boundary)
-        console.log(partition_tree)
+        //console.log(partition_tree)
         voronoi.partition_tree = partition_tree
         voronois.push(voronoi)
     }
