@@ -137,13 +137,18 @@ export function createVoronoiFromCanvas(canvas){
 export function n3lognVoronoi(boundary,points){
 
     const n = points.length
+
+    console.time("spokes")
     // calculate spokes
     let h_points = []
     for(let i = 0; i < n; i++){
         h_points.push(calculateHilbertPoint(boundary,points[i]))
     }
 
+    console.timeEnd("spokes")
 
+
+    console.time("bisectors")
     // calculate bisectors
     let bisectors = matrix(n,n,null)
     for(let i = 0; i < n; i++){
@@ -153,9 +158,11 @@ export function n3lognVoronoi(boundary,points){
             bisectors[j][i] = bisector
         }
     }
+    console.timeEnd("bisectors")
 
     //console.log("BISECTORS:",bisectors)
 
+    console.time("point order")
     // get ordering of other points
     let point_orders = []
     let distances = matrix(n,n,0)
@@ -173,9 +180,11 @@ export function n3lognVoronoi(boundary,points){
         const sort_orders = (a,b) => distances[i][a] - distances[i][b]
         point_orders[i].sort(sort_orders)
     }
+    console.timeEnd("point order")
 
     //console.log("POINT ORDERS:",point_orders)
     
+    console.time("circumcenters")
     // calculate circumcenters
     let circumcenter_data = matrix3D(n,n,n,false)
     for(let i = 0; i < n; i++){
@@ -249,9 +258,11 @@ export function n3lognVoronoi(boundary,points){
             }
         }
     }
+    console.timeEnd("circumcenters")
 
     //console.log("CIRCUMCENTERS:",circumcenter_data)
 
+    console.time("bisector classification")
     // classify each segment of the bisectors
     let bisector_classifications = matrix(n,n,false)
     // this can be made a self-balancing binary search tree to guarentee lg(n)
@@ -346,10 +357,12 @@ export function n3lognVoronoi(boundary,points){
             }
         }
     }
+    console.timeEnd("bisector classification")
 
     //console.log("CLASSIFICATION",bisector_classifications)
     //console.log("CELL MAP",voronoi_cell_map)
 
+    console.time("voronoi creation")
     // list of voronoi cells for each degree
     let voronoi_lists = []
     for(let i = 0; i < n; i++){
@@ -388,6 +401,7 @@ export function n3lognVoronoi(boundary,points){
         voronoi.partition_tree = partition_tree
         voronois.push(voronoi)
     }
+    console.timeEnd("voronoi creation")
 
     //console.log("VORONOIS",voronois)
 

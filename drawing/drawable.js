@@ -96,7 +96,6 @@ export class DrawablePolygon {
         }
         else { 
           point.showInfo = false; 
-          point.deleteInfoBox()
         }
         point.draw(ctx); 
       });
@@ -469,7 +468,6 @@ export class DrawableBruteForceVoronoi {
   }
 
   calculateBruteForce(canvas){
-    console.log("CNVAS",canvas)
     const grid = this.voronoi.bruteForce(canvas);
     this.grid = grid;
     this.calculateBruteForceImage(canvas)

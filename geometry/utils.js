@@ -264,12 +264,6 @@ export function convexHull(points) {
 
 
 export function intersectBounds(b1,b2){
-    console.log(b1)
-    console.log(b2)
-    console.log(b1.top >= b2.bottom)
-    console.log(b1.bottom <= b2.top)
-    console.log(b1.left <= b2.right)
-    console.log(b1.right >= b2.left)
     return b1.top >= b2.bottom && b1.bottom <= b2.top && b1.left <= b2.right && b1.right >= b2.left
 }
 

@@ -243,8 +243,12 @@ export class Canvas {
    }
 
    setSiteShowInfo(event, idx) {
-        this.sites[idx].drawable_point.showInfo = event.target.checked;
-        this.drawAll();
+      let site = this.sites[idx]
+      site.drawable_point.showInfo = event.target.checked;
+      if (!site.drawable_point.showInfo){
+         site.drawable_point.deleteInfoBox();
+      }
+      this.drawAll();
    }
 
    setPolygonShowCentroid() {
@@ -293,10 +297,8 @@ export class Canvas {
 
                }
             }else{
-               console.log("DELETE")
                this.bisectors.forEach((bisector,b) => {
                   if ((bisector.p1 === p1 && bisector.p2 === p2) || (bisector.p1 === p2 && bisector.p2 === p1)){
-                     console.log("DELETE B",p1,p2)
                      this.deleteBisector(b)
                   }
                })
@@ -653,7 +655,9 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       this.sites.forEach((site) => {
          site.draw(this.ctx)
-         if (site.drawable_point.showInfo) site.drawable_point.drawInfoBox(this, this.dpr); 
+         if (site.drawable_point.showInfo){
+            site.drawable_point.drawInfoBox(this, this.dpr); 
+         } 
       })
 
       this.drawSelectBox()

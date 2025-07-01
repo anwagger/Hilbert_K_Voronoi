@@ -649,7 +649,7 @@ export class ParameterizedConic {
             inverse should then be easy*
         */
 
-        let parallel = this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.NONE
+        let parallel = false//this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.NONE
        let sin = Math.sin(this.angle)
        let cos = Math.cos(this.angle)
        // reverse rotation?

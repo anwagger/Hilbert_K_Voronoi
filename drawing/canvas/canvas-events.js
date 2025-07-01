@@ -63,20 +63,11 @@ export function initEvents(canvas) {
    });
 
    document.getElementById('siteShowInfo').addEventListener('change', (event) => {
-      if (event.target.checked){
-         canvas.sites.forEach((site, idx) =>{
-            if (site.selected) {
-               canvas.setSiteShowInfo(event, idx);
-            }
-         });
-      }else{
-         canvas.sites.forEach((site) =>{
-            if (site.selected) {
-               site.drawable_point.deleteInfoBox();
-            }
-         });
-      }
-      
+      canvas.sites.forEach((site, idx) =>{
+         if (site.selected) {
+            canvas.setSiteShowInfo(event, idx);
+         }
+      });
    });
 
    document.querySelectorAll('input[name="polygonType"]').forEach(radio => {
