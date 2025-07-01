@@ -191,14 +191,14 @@ export function parameterizeConic(conic){
         if (hor_parallel){ //parallel lines
             orientation = Conic_Orientation.HORIZONTAL
             // makes the lower-number ts much more reasonably compact, negative values are non-existant though...
-            parameterization.x_mult = 1000
+            parameterization.x_mult = 2000
             parameterization.x_const = 0
             parameterization.y_mult = Math.sqrt((-F+(E*E)/(4*C))/C)
             parameterization.y_const = -E/(2*C)
         }else if(ver_parallel){ 
             orientation = Conic_Orientation.VERTICAL
             // makes the lower-number ts much more reasonably compact, negative values are non-existant though...
-            parameterization.y_mult = 1000
+            parameterization.y_mult = 2000
             parameterization.y_const = 0
             parameterization.x_mult = Math.sqrt((-F+(D*D)/(4*A))/A)
             parameterization.x_const = -D/(2*A)
@@ -207,7 +207,7 @@ export function parameterizeConic(conic){
             orientation = Conic_Orientation.NONE
             // has a gap near the cross, but HOPEFULLY, shouldn't be an issue, otherwise I will cry (or more likely guarentee it works for positive X)
             // new formulation fills in the gaps?
-            parameterization.x_mult = 1000
+            parameterization.x_mult = 2000
             parameterization.x_const = -D/(2*A)
             parameterization.y_mult = Math.sqrt(A/-C)
             parameterization.y_const = -E/(2*C)

@@ -13,7 +13,8 @@ import { pointInPolygon,
     calculateHilbertDistance,
     pushOrCreateInObject,
     convexHull,
-    thompsonMetric} from "./utils.js";
+    thompsonMetric,
+    computeBoundingBox} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -67,8 +68,16 @@ export class VoronoiDiagram {
         const sites = canvas.sites;
         const points = this.boundary.points;
         const sensitivity = 1e-3;
-        for (let x = 0; x < height; x++) {
-            for (let y = 0; y < width; y++) {
+
+        let polygon_bound = computeBoundingBox(this.boundary)
+
+        let low_x = Math.floor(Math.max(0,polygon_bound.left))
+        let low_y = Math.floor(Math.max(0,polygon_bound.bottom))
+        let high_x = Math.ceil(Math.min(width,polygon_bound.right))
+        let high_y = Math.ceil(Math.max(height,polygon_bound.top))
+
+        for (let x = low_x; x < high_x; x++) {
+            for (let y = low_y; y < high_y; y++) {
                 let pairs = [];
                 const point = new Point(x,y);
                 if(pointInPolygon(point,this.boundary) && !pointOnPolygon(point,this.boundary)) {
