@@ -90,19 +90,10 @@ export class DrawablePolygon {
     ctx.setLineDash([]) 
     if (this.show_vertices) {
       this.points.forEach((point) => {
-        // point.setRadius(this.radius);
-        if (this.showInfo) { 
-          point.showInfo = true; 
-        }
-        else { 
-          point.showInfo = false; 
-        }
         point.draw(ctx); 
       });
     }
   }
-
-
 }
 
 export class DrawableSegment {

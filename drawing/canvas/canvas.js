@@ -238,8 +238,16 @@ export class Canvas {
 
 
    setPolygonShowInfo(event) {
-        this.boundary.showInfo = event.target.checked;
-        this.drawAll();
+      this.boundary.showInfo = event.target.checked;
+      this.boundary.points.forEach((point) => {
+         if (this.boundary.showInfo) { 
+            point.showInfo = true; 
+         }else { 
+            point.showInfo = false; 
+            point.deleteInfoBox()
+         }
+      });
+      this.drawAll();
    }
 
    setSiteShowInfo(event, idx) {
@@ -638,7 +646,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
 
       this.boundary.points.forEach((point) => {
-         if (this.boundary.showInfo){
+         if (point.showInfo){
             point.drawInfoBox(this, this.dpr); 
          }
       })

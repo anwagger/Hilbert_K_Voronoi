@@ -396,9 +396,9 @@ export function n3lognVoronoi(boundary,points){
             cells = []
         }
         let voronoi = new VoronoiDiagram(boundary,cells,d,null)
-        let partition_tree = new PartitionTree(voronoi,boundary)
-        console.log(partition_tree)
-        voronoi.partition_tree = partition_tree
+        //let partition_tree = new PartitionTree(voronoi,boundary)
+        //console.log(partition_tree)
+        //voronoi.partition_tree = partition_tree
         voronois.push(voronoi)
     }
     console.timeEnd("voronoi creation")
