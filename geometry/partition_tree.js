@@ -39,7 +39,6 @@ export class PartitionTree {
     constructor(voronoi,polygon) {
         let bound = computeBoundingBox(polygon);
         let voronoi_bounds = new Map(); // map will store indices as keys and corresponding bounds as values
-        console.log(voronoi.cells)
         
         // gets all of the voronoi bounds and puts them into a hashmap corresponding to their index
         for (let i = 0; i < voronoi.cells.length; i++) {
@@ -49,41 +48,39 @@ export class PartitionTree {
             voronoi_bounds.set(i, c.bound);
         }
 
-        // we use this to find which bound has the closest 
+        // was trying to do smth with each bisectors bound instead of just getting the median
+        /*
         let middle_x = Math.floor((bound.right + bound.left) / 2);
         console.log(middle_x)
+        */
         let x = computeMedianBound(voronoi_bounds.values());
-        console.log(x)
 
         this.root = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
+
         let left_bound = new Bound(bound.top,bound.bottom,bound.left, x);
-        let right_bound = new Bound(bound.top,bound.bottom,x,bound.right);
+        let right_bound = new Bound(bound.top,bound.bottom,x, bound.right);
 
         let keys = voronoi_bounds.keys();
         let left_voronoi_bounds = new Map();
         let right_voronoi_bounds = new Map();
 
         for (let k of keys) {
-            console.log(k)
             let b = voronoi_bounds.get(k);
-            console.log(b)
             if (intersectBounds(voronoi_bounds.get(k),left_bound)) {
-                console.log("meow")
                 left_voronoi_bounds.set(k,b);
             }
 
             if (intersectBounds(voronoi_bounds.get(k), right_bound)) {
-                console.log("meow2")
                 right_voronoi_bounds.set(k,b);
             }
         }
 
 
         if (left_voronoi_bounds.size <= 3) {
-                this.root.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
-            } else {
-                this.root.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
-            }
+            this.root.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
+        } else {
+            this.root.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
+        }
 
         if (right_voronoi_bounds.size <= 3) {
             this.root.right = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
@@ -99,7 +96,7 @@ export class PartitionTree {
         if (type === Partition_Node_Type.X) {
             // see what bisector has the most median x in the current bound
             let middle_x = Math.floor((bound.left + bound.right) / 2);
-            let x = computeMedianBound(voronoi_bounds);
+            let x = computeMedianBound(voronoi_bounds.values());
 
             let node = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
 
@@ -140,7 +137,8 @@ export class PartitionTree {
             // nearly identical to the x case, just shrinks the bound vertically instead of horizontally
         } else if (type === Partition_Node_Type.Y) {
             let middle_y = Math.floor((bound.top + bound.bottom) / 2);
-            let y = computeMedianBound(voronoi_bounds, true);
+            let y = computeMedianBound(voronoi_bounds.values(), true);
+
 
             let node = new PartitionTreeNode(Partition_Node_Type.Y, {y: y});
             let top_bound = new Bound(bound.left,bound.right,y,bound.bottom);
@@ -177,9 +175,7 @@ export class PartitionTree {
             }
         // cell case
         } else {
-            console.log(voronoi_bounds.keys())
-            let k = [...voronoi_bounds.keys()];
-            console.log(k[0]) // turns cell indexes into an array
+            let k = [...voronoi_bounds.keys()]; // turns cell indexes into an array
             let outside = k.length > 1 ? k.slice(1) : null;
             let data = {index: k[0], outside: outside};
             return new PartitionTreeNode(Partition_Node_Type.CELL,data);

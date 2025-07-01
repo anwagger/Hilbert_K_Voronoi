@@ -330,7 +330,7 @@ export function computeBoundingBox(polygon) {
             min_y = Math.min(min_y, p.y);
             max_y = Math.max(max_y, p.y);
         }
-        return new Bound(max_y,min_y,max_x,min_x);
+        return new Bound(max_y,min_y,min_x,max_x);
     }
 
 export function computeMedianBound(bounds, vertical = false) {
@@ -345,10 +345,12 @@ export function computeMedianBound(bounds, vertical = false) {
       }
     }
 
-    console.log(bs)
     bs.sort();
-    console.log(bs)
-    return bs[Math.ceil((bs.length - 1) / 2)];
+    if (bs.length % 2 === 0) {
+      return (bs[Math.floor((bs.length - 1) / 2)] + bs[Math.ceil((bs.length - 1) / 2)]) / 2;
+    } 
+    
+    return bs[Math.floor((bs.length - 1) / 2)];
 }
 
 export function cleanArray(arr){
