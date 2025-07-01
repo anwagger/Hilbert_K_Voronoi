@@ -306,9 +306,7 @@ export function computeMedianBound(bounds, vertical = false) {
       }
     }
 
-    console.log(bs)
     bs.sort();
-    console.log(bs)
     if (bs.length % 2 === 0) {
       return (bs[Math.floor((bs.length - 1) / 2)] + bs[Math.ceil((bs.length - 1) / 2)]) / 2;
     } 
