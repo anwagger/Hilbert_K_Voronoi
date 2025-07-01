@@ -51,8 +51,47 @@ export function calculateHilbertDistance(boundary,point1,point2){
   if (count === 2) {
     const first = euclideanDistance(point1, ints[0]) < euclideanDistance(point2, ints[0])? ints[0]:ints[1];
     const last = euclideanDistance(point1, ints[0]) < euclideanDistance(point2, ints[0])? ints[1]:ints[0];
-    let hilbert = 0;
     return hilbertMetric(first, point1, point2, last);
+  }
+  return NaN
+}
+
+export function thompsonMetric(edge1, point1, point2, edge2) {
+  let funk1 = halfCrossRatio(point1, point2, edge2);
+  let funk2 = halfCrossRatio(point2, point1, edge1);
+  return Math.log((funk1 > funk2? funk1:funk2));
+}
+
+export function calculateThompsonDistance(boundary,point1,point2){
+  const mid = new Segment(point1,point2);
+  const points = boundary.points;
+  const ints = [];
+  let count = 0;
+  for (let p = 0; p < points.length; p++) {
+      const p2 = (p + 1) % points.length;
+      const seg = new Segment(points[p], points[p2]);
+      const i = intersectSegmentsAsLines(mid, seg);
+      if (i !== null) {
+      //println("GOOD",mid.start,mid.end,i,seg.start,seg.end,pointSegDistance(i,seg));
+          if (isZero(pointSegDistance(i, seg))) {
+              if (count > 0) {
+                  if (isZero(euclideanDistance(i, ints[0]))) {
+                      // replace point as to not have
+                      count--;
+                  }
+              }
+              ints[count] = i;
+              count++;
+          }
+      }
+
+      if (count > 1) break;
+  }
+
+  if (count === 2) {
+    const first = euclideanDistance(point1, ints[0]) < euclideanDistance(point2, ints[0])? ints[0]:ints[1];
+    const last = euclideanDistance(point1, ints[0]) < euclideanDistance(point2, ints[0])? ints[1]:ints[0];
+    return thompsonMetric(first, point1, point2, last);
   }
   return NaN
 }

@@ -12,7 +12,8 @@ import { pointInPolygon,
     matrix3D,
     calculateHilbertDistance,
     pushOrCreateInObject,
-    convexHull} from "./utils.js";
+    convexHull,
+    thompsonMetric} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -107,9 +108,20 @@ export class VoronoiDiagram {
                             if (count == 2) {
                                 const first = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[0]:ints[1];
                                 const last = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[1]:ints[0];
-                                let hilbert = 0;
-                                hilbert = hilbertMetric(first, p, point, last);
-                                pairs.push(new Pair(s, hilbert));
+                                let distance = 0;
+                                switch(this.metric){
+                                    case "hilbert":
+                                        distance = hilbertMetric(first, p, point, last);
+                                    break;
+                                    case "euclidean":
+                                        distance = euclideanDistance(p, point);
+                                    break;
+                                    case "thompson":
+                                        distance = thompsonMetric(first, p, point, last);
+                                    break;
+                                }
+                                
+                                pairs.push(new Pair(s, distance));
                             }
                         }
                     }

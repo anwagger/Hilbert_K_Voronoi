@@ -193,6 +193,16 @@ export function initEvents(canvas) {
       const degree = parseInt(input);
       canvas.setFastVoronoi(event,degree);
    });
+
+   document.getElementById('brute-force-metric-select').addEventListener('change', (event) => {
+      if(canvas.brute_force_voronoi){
+         console.log("CHANGE METRIC",canvas.brute_force_voronoi.metric, event.target.value)
+         canvas.brute_force_voronoi.voronoi.metric = event.target.value
+         canvas.recalculateBruteForceVoronoi()
+      canvas.drawAll()
+      }
+      
+   });
    
 
    let canvasElement = canvas.canvas

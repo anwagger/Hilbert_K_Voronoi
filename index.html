@@ -261,10 +261,22 @@
           <input style="width: 20px; height: 20px;" type="checkbox" id="calculateFastVoronoi" class="checkbox-input">
           <span class="checkbox-background"> Calculate Fast Voronoi</span>
         </div>
-        <div>
+        <div style="position: relative; margin: 10px;">
           <br>
           Degree: <input type="text" id="voronoiDegree" name="voronoiDegree" value="1">
         </div>
+        <form id="modeCollapsible">
+          <div style="position: relative; margin: 10px;">
+            Brute Force Metric: 
+            <span>
+              <select id="brute-force-metric-select" name="brute-force-metric-select">
+                  <option value="hilbert">Hilbert</option>
+                  <option value="euclidean">Euclidean</option>
+                  <option value="thompson">Thompson</option>
+              </select>
+            </span>
+          </div>
+        </form>
       </div>
     </div>
     <div id="canvasContainer">

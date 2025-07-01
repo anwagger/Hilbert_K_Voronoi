@@ -1,6 +1,6 @@
 import {calculateConicSegmentBounds, intersectConicSegments } from "./conics.js"
 import { Bound, Point } from "./primitives.js"
-import { boundOfBounds, euclideanDistance, inBound, isBetween, isLeZero, isZero, pointInPolygon, pointOnPolygon } from "./utils.js"
+import { boundOfBounds, convexHull, euclideanDistance, inBound, isBetween, isLeZero, isZero, pointInPolygon, pointOnPolygon } from "./utils.js"
 
 export class Bisector {
     constructor(conic_segments){
@@ -107,6 +107,38 @@ export function calculateBisectorSegmentBounds(bisector,start,end){
     return bound
 }
 
+export function checkIfBisectorsIntersect(b1,b2){
+    let b1_start = b1.getPointFromT(0)
+    let b1_end = b1.getPointFromT(b1.conic_segments.length)
+    let b2_start = b2.getPointFromT(0)
+    let b2_end = b2.getPointFromT(b2.conic_segments.length)
+
+    if(
+        isZero(euclideanDistance(b1_start,b2_start)) 
+        || 
+        isZero(euclideanDistance(b1_start,b2_end))
+        ||
+        isZero(euclideanDistance(b1_end,b2_start)) 
+        || 
+        isZero(euclideanDistance(b1_end,b2_end))
+    ){
+        return 0
+    }
+
+    let point_map = new Map()
+    point_map.set(b1_start,1)
+    point_map.set(b1_end,1)
+    point_map.set(b2_start,2)
+    point_map.set(b2_end,2)
+
+    let bisector_ends = convexHull([b1_start,b1_end,b2_start,b2_end])
+    if(point_map.get(bisector_ends[0]) != point_map.get(bisector_ends[1])){
+        return 1
+    }else{
+        return -1
+    }
+}
+
 export function intersectBisectors(boundary,b1,b2){
     let intersections = []
     for(let i = 0; i < b1.conic_segments.length; i++){
@@ -127,8 +159,14 @@ export function intersectBisectors(boundary,b1,b2){
     return false
 }
 
-export function calculateCircumcenter2(boundary,b1,b2,b3){
+export function calculateCircumcenter(boundary,b1,b2,b3){
+    if (checkIfBisectorsIntersect(b1,b2) === -1){
+        return false
+    }
     let i12 = intersectBisectors(boundary,b1,b2)
+    if (checkIfBisectorsIntersect(b1,b3) === -1){
+        return false
+    }
     let i13 = intersectBisectors(boundary,b1,b3)
     let sensitivity = 1e-2
     if (i12 && i13){
@@ -142,9 +180,18 @@ export function calculateCircumcenter2(boundary,b1,b2,b3){
     }    
 }
 
-export function calculateCircumcenter(boundary,b1,b2,b3){
+export function calculateCircumcenter3(boundary,b1,b2,b3){
+    if (checkIfBisectorsIntersect(b1,b2) === -1){
+        return false
+    }
     let i12 = intersectBisectors(boundary,b1,b2)
+    if (checkIfBisectorsIntersect(b2,b3) === -1){
+        return false
+    }
     let i23 = intersectBisectors(boundary,b2,b3)
+    if (checkIfBisectorsIntersect(b2,b3) === -1){
+        return false
+    }
     let i13 = intersectBisectors(boundary,b1,b3)
     let sensitivity = 1e-2
     //console.log("CALCULATING CIRCUMCENRER!")

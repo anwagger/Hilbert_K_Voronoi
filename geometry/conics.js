@@ -924,6 +924,16 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
 
     //end = ts[ts.length-1]
 
+    if(!end){
+        console.log("NO END")
+        console.log("START",start)
+        console.log("END",end)
+        console.log("TS",ts)
+        console.log("POINTS",points)
+        console.log("POLYGON",polygon)
+        console.log(parameterized_conic)
+    }
+
     // take shortest way around
     if(end[0] < 0){
         end[0] += 2*Math.PI
