@@ -188,16 +188,7 @@ export function parameterizeConic(conic){
      let hor_parallel = (isZero(A) && isZero(D))
      let crossed = isZero((D*D/(4*A)) + (E*E/(4*C)) - F)
         let d = B*B-4*A*C
-        if (crossed){ // intersecting lines
-            
-            orientation = Conic_Orientation.NONE
-            // has a gap near the cross, but HOPEFULLY, shouldn't be an issue, otherwise I will cry (or more likely guarentee it works for positive X)
-            // new formulation fills in the gaps?
-            parameterization.x_mult = 1000
-            parameterization.x_const = -D/(2*A)
-            parameterization.y_mult = Math.sqrt(A/-C)
-            parameterization.y_const = -E/(2*C)
-        }else if (hor_parallel){ //parallel lines
+        if (hor_parallel){ //parallel lines
             orientation = Conic_Orientation.HORIZONTAL
             // makes the lower-number ts much more reasonably compact, negative values are non-existant though...
             parameterization.x_mult = 1000
@@ -211,6 +202,15 @@ export function parameterizeConic(conic){
             parameterization.y_const = 0
             parameterization.x_mult = Math.sqrt((-F+(D*D)/(4*A))/A)
             parameterization.x_const = -D/(2*A)
+        }else if (crossed){ // intersecting lines
+            
+            orientation = Conic_Orientation.NONE
+            // has a gap near the cross, but HOPEFULLY, shouldn't be an issue, otherwise I will cry (or more likely guarentee it works for positive X)
+            // new formulation fills in the gaps?
+            parameterization.x_mult = 1000
+            parameterization.x_const = -D/(2*A)
+            parameterization.y_mult = Math.sqrt(A/-C)
+            parameterization.y_const = -E/(2*C)
         }else{// point
 
         }
@@ -649,7 +649,7 @@ export class ParameterizedConic {
             inverse should then be easy*
         */
 
-        let parallel = false//this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.HORIZONTAL
+        let parallel = this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.NONE
        let sin = Math.sin(this.angle)
        let cos = Math.cos(this.angle)
        // reverse rotation?

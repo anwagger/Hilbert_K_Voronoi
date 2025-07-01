@@ -55,6 +55,7 @@ export class Bisector {
                 }
             }
         }
+        console.log("NOTING RETURNED!")
     }
 }
 

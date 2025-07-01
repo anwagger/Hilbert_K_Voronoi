@@ -43,6 +43,8 @@ canvasElement.onscroll = (event) => {
 }
 
 */
+
+/*
 function testBisector(boundary,point1,point2){
     let drawable_point1 = new DrawablePoint(point1);
     let drawable_point2 = new DrawablePoint(point2);
@@ -226,12 +228,10 @@ function test_render(){
 
     }
 
-/*  
 for(let i = 0; i < gons.length; i++){
     let gon = new DrawablePolygon(gons[i],colors[i]);
     gon.draw(ctx);
 }
-    */
 
 //drawable_sector.draw(ctx);
 
@@ -239,7 +239,6 @@ for(let i = 0; i < gons.length; i++){
     //draw_conic.draw(ctx,50)
     //draw_conic2.draw(ctx,50)
 
-    /**
     for (let i = 0; i < draw_conics.length; i++){
         draw_sectors[i].draw(ctx)
         draw_conics[i].draw(ctx,50)
@@ -250,7 +249,7 @@ for(let i = 0; i < gons.length; i++){
         d_p.color = "yellow"
         d_p.draw(ctx)
     }
-    */
+    
          draw_conic.draw(ctx,50)
          draw_xs.forEach((d_p) => {            
             d_p.draw(ctx)
@@ -260,3 +259,4 @@ for(let i = 0; i < gons.length; i++){
 }
 
         test_render()
+*/

@@ -280,7 +280,8 @@ export class DrawableBisectorSegment {
 
      // bisector bounding box
     
-    /**
+    
+     /*
     let b_s = this.bisector_segment
     ctx.beginPath();
     ctx.setLineDash([5, 5]); 
@@ -375,14 +376,15 @@ export class DrawableConicSegment {
 
     
     // bisector bounding box
-    /*
+    
 
+    /**
     ctx.beginPath();
     ctx.setLineDash([1, 3]); 
     ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
     ctx.stroke(); 
     ctx.setLineDash([]); 
-    */
+     */
   }
   /*
   drawStraight(ctx,num_of_points) {
@@ -551,6 +553,14 @@ export class DrawableVoronoiCell {
     this.drawable_bisector_segments.forEach((b_s,i) =>{
       b_s.draw(ctx)
     })
+    /**
+    let v_c = this.voronoi_cell
+    ctx.beginPath();
+    ctx.setLineDash([5, 5]); 
+    ctx.rect(CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.top),CAMERA.x(v_c.bound.right) - CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.bottom) - CAMERA.y(v_c.bound.top))
+    ctx.stroke(); 
+    ctx.setLineDash([]); 
+     */
   }
 }
 

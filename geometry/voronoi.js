@@ -244,7 +244,7 @@ export function n3lognVoronoi(boundary,points){
                     circumcenter_data[k][i][j] = data
                     circumcenter_data[k][j][i] = data
                 }else{
-                    console.log("NO CIRCUMCENTER",i,j,k)
+                    //console.log("NO CIRCUMCENTER",i,j,k)
                 }
             }
         }
@@ -286,7 +286,7 @@ export function n3lognVoronoi(boundary,points){
             let degree = 1
             // bitstring of which points are in the cell
             let hash = 0
-            console.log("making initial degree for",i,j,"orders:",ordered_points,"first circ:",ordered_circumcenters[0])
+            //console.log("making initial degree for",i,j,"orders:",ordered_points,"first circ:",ordered_circumcenters[0])
 
             for(let p = 0; p < ordered_points.length; p++){
                 if(ordered_points[p] != i && ordered_points[p] != j){
@@ -296,7 +296,7 @@ export function n3lognVoronoi(boundary,points){
                     break;
                 }
             }
-            console.log("INITIAL HASH:",hash,"AND DEGREE",degree)            
+            //console.log("INITIAL HASH:",hash,"AND DEGREE",degree)            
             // put bisector segment in cell map with the hash
             let value = {
                     i:i,

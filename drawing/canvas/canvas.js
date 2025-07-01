@@ -2,9 +2,9 @@ import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSp
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point } from "../../geometry/primitives.js";
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon} from "../../geometry/utils.js"
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
-import { createVoronoiFromCanvas } from "../../geometry/voronoi.js";
+import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -50,7 +50,7 @@ export class Canvas {
       this.calculate_fast_voronoi = false;
       this.voronois = null
       this.voronoi_diagram = null;
-      
+
       this.draggingPoint = null;
 
       this.globalScale = 1.0;
@@ -88,7 +88,7 @@ export class Canvas {
         }
         let deleteSiteIndex = []
         this.sites.forEach((site,i) => {
-         if(!pointInPolygon(site.drawable_point.point,this.boundary.polygon) || !pointInPolygon(site.drawable_point.point,this.absolute_border.polygon)){
+         if(pointOnPolygon(site.drawable_point.point,this.boundary.polygon) || !pointInPolygon(site.drawable_point.point,this.boundary.polygon) || !pointInPolygon(site.drawable_point.point,this.absolute_border.polygon)){
             console.log("delete",i,site)
             deleteSiteIndex.push(i)
          }
@@ -177,7 +177,7 @@ export class Canvas {
       
       let point = new Point(CAMERA.ix(x), CAMERA.iy(y))
 
-      if (pointInPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.absolute_border.polygon)){
+      if (!pointOnPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.absolute_border.polygon)){
          let site = new Site(new DrawablePoint(point))
          this.sites.push(site);
          site.setColor(this.getNewColor(this.sites))
@@ -363,7 +363,12 @@ export class Canvas {
    changeFastVoronoiDegree(degree){
       if(this.calculate_fast_voronoi){
          console.log("DEGREE",degree,this.voronois)
-         this.voronoi_diagram = new DrawableVoronoiDiagram(this.voronois[degree-1])
+         if (this.voronois[degree-1]){
+            this.voronoi_diagram = new DrawableVoronoiDiagram(this.voronois[degree-1])
+         }else{
+            this.voronoi_diagram = new DrawableVoronoiDiagram(new VoronoiDiagram(this.boundary.polygon,[],1))
+         }
+         
       }
    }
 
@@ -440,7 +445,7 @@ export class Canvas {
       const {x, y} = this.getMousePos(event);
       const mouse = new Point(CAMERA.ix(x),CAMERA.iy(y))
       if(this.draggingPoint != null){
-         if(pointInPolygon(mouse,this.boundary.polygon) && pointInPolygon(mouse,this.absolute_border.polygon)){
+         if(!pointOnPolygon(mouse,this.boundary.polygon) && pointInPolygon(mouse,this.boundary.polygon) && pointInPolygon(mouse,this.absolute_border.polygon)){
             let site = this.sites[this.draggingPoint]
             site.drawable_point.point.x = mouse.x
             site.drawable_point.point.y = mouse.y
@@ -496,6 +501,7 @@ export class Canvas {
       }
    });
       this.sites = cleanArray(this.sites) // removes any null elts from array
+      this.recalculateAll()
       this.drawAll();
    }
 
