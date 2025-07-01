@@ -49,24 +49,28 @@ export class PartitionTree {
             voronoi_bounds.set(i, c.bound);
         }
 
-        // we use this to find which bound has the closest 
+        // was trying to do smth with each bisectors bound instead of just getting the median
+        /*
         let middle_x = Math.floor((bound.right + bound.left) / 2);
         console.log(middle_x)
+        */
         let x = computeMedianBound(voronoi_bounds.values());
         console.log(x)
 
         this.root = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
+
         let left_bound = new Bound(bound.top,bound.bottom,bound.left, x);
-        let right_bound = new Bound(bound.top,bound.bottom,x,bound.right);
+        let right_bound = new Bound(bound.top,bound.bottom,x, bound.right);
+        console.log(left_bound)
+        console.log(right_bound)
+
 
         let keys = voronoi_bounds.keys();
         let left_voronoi_bounds = new Map();
         let right_voronoi_bounds = new Map();
 
         for (let k of keys) {
-            console.log(k)
             let b = voronoi_bounds.get(k);
-            console.log(b)
             if (intersectBounds(voronoi_bounds.get(k),left_bound)) {
                 console.log("meow")
                 left_voronoi_bounds.set(k,b);
@@ -177,9 +181,8 @@ export class PartitionTree {
             }
         // cell case
         } else {
-            console.log(voronoi_bounds.keys())
-            let k = [...voronoi_bounds.keys()];
-            console.log(k[0]) // turns cell indexes into an array
+            let k = [...voronoi_bounds.keys()]; // turns cell indexes into an array
+            console.log(k[0]) 
             let outside = k.length > 1 ? k.slice(1) : null;
             let data = {index: k[0], outside: outside};
             return new PartitionTreeNode(Partition_Node_Type.CELL,data);
