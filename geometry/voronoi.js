@@ -14,7 +14,8 @@ import { pointInPolygon,
     pushOrCreateInObject,
     convexHull,
     thompsonMetric,
-    computeBoundingBox} from "./utils.js";
+    computeBoundingBox,
+    manhattanMetric} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -127,6 +128,8 @@ export class VoronoiDiagram {
                                     break;
                                     case "thompson":
                                         distance = thompsonMetric(first, p, point, last);
+                                    case "manhattan":
+                                        distance = manhattanMetric(p,point);
                                     break;
                                 }
                                 
