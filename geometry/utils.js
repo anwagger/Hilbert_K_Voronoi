@@ -527,6 +527,7 @@ export function getVoronoiColor(canvas,cell,degree) {
       } else {
         return{r:0,g:0,b:0};
       }
+    break;
     case "k":
       let r = 0;
       let g = 0;
@@ -536,12 +537,15 @@ export function getVoronoiColor(canvas,cell,degree) {
         const site = canvas.sites[s];
         if(site) {
           const hex = colorNameToHex(site.color);
-          const { r1, g1, b1 } = hexToRgb(hex);
+          const { r:r1, g:g1, b:b1 } = hexToRgb(hex);
           r += r1;
           g += g1;
           b += b1;
         }
       }
+      r = r/degree;
+      g = g/degree;
+      b = b/degree;
       return {r:r,g:g,b:b};
   }     
 } 

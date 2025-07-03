@@ -128,6 +128,7 @@ export class VoronoiDiagram {
                                     break;
                                     case "thompson":
                                         distance = thompsonMetric(first, p, point, last);
+                                    break;
                                     case "manhattan":
                                         distance = manhattanMetric(p,point);
                                     break;
