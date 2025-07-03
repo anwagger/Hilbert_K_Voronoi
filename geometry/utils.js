@@ -514,3 +514,34 @@ export function pushOrCreateInObject(obj,index,value){
   }
   obj[index].push(value)
 }
+
+export function getVoronoiColor(canvas,cell,degree) {
+  switch(canvas.brute_force_voronoi.voronoi.mode) {
+    case "kth":
+      const s = cell[degree - 1].index;
+      const site = canvas.sites[s];
+      if (site) {
+        const hex = colorNameToHex(site.color);
+        let { r, g, b } = hexToRgb(hex);
+        return {r:r,g:g,b:b};
+      } else {
+        return{r:0,g:0,b:0};
+      }
+    case "k":
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      for (let d = 0; d < degree; d++) {
+        const s = cell[d].index;
+        const site = canvas.sites[s];
+        if(site) {
+          const hex = colorNameToHex(site.color);
+          const { r1, g1, b1 } = hexToRgb(hex);
+          r += r1;
+          g += g1;
+          b += b1;
+        }
+      }
+      return {r:r,g:g,b:b};
+  }     
+} 

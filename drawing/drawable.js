@@ -9,7 +9,8 @@ hexToRgb,
 computeBoundingBox,
 calculateHilbertDistance,
 isBetween,
-pointInPolygon} from "../geometry/utils.js";
+pointInPolygon,
+getVoronoiColor} from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -459,7 +460,7 @@ export class DrawableBruteForceVoronoi {
     this.brute_force = true;
     this.voronoi = voronoi;
     this.grid = [];
-    this.update = false
+    this.update = false;
   }
 
   calculateBruteForce(canvas){
@@ -486,26 +487,22 @@ export class DrawableBruteForceVoronoi {
         for (let y = 0; y < height; y++) {
             const cell = grid[x]?.[y];
             if (Array.isArray(cell) && cell.length > degree - 1) {
-                const s = cell[degree - 1].index;
-                const site = canvas.sites[s];
-                if (site) {
-                    const hex = colorNameToHex(site.color);
-                    const { r, g, b } = hexToRgb(hex);
-                    const i = (y * width + x) * 4;
-                    image_data.data[i] = r;
-                    image_data.data[i + 1] = g;
-                    image_data.data[i + 2] = b;
-                    image_data.data[i + 3] = 150;
-                }
-            }
+              let {r:r,g:g,b:b} = getVoronoiColor(canvas,cell,degree);
+              const i = (y * width + x) * 4;
+              image_data.data[i] = r;
+              image_data.data[i + 1] = g;
+              image_data.data[i + 2] = b;
+              image_data.data[i + 3] = 150;
+            }   
         }
+      canvas.voronoi_image = image_data;
     }
-    canvas.voronoi_image = image_data;
   }
 
-  
+
+
   // andrew im ngl i vibecoded part of this because i was confused abt the camera it makes sense to me though
-    drawBruteForce(canvas,recalculate = false, degree = true) {
+    drawBruteForce(canvas) {
         // temp canvas stuff gemini suggested for drawing to scale, might be a better way this is p slow rn
         const width = 1000;
         const height = 1000;

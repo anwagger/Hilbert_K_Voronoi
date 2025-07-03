@@ -160,6 +160,17 @@ export function initEvents(canvas) {
                canvas.changeFastVoronoiDegree(int)
                
                canvas.drawAll();
+            } else {
+               if (event.key === "k") {
+                  if (canvas.brute_force_voronoi.voronoi.mode === "kth") {
+                     canvas.brute_force_voronoi.voronoi.mode = "k";
+                  } else if (canvas.brute_force_voronoi.voronoi.mode === "k") {
+                     canvas.brute_force_voronoi.voronoi.mode = "kth";
+                  }
+                  canvas.brute_force_voronoi.calculateBruteForceImage(canvas);
+                  canvas.drawAll();
+
+               }
             }
          }
    });
