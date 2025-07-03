@@ -1,5 +1,5 @@
 import { Point, Segment,Bound } from "./primitives.js"
-import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon } from "./utils.js"
+import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon, boundArea } from "./utils.js"
 
 export class Conic {
     constructor(equation){
@@ -104,15 +104,19 @@ fff*135 + (fgg)*(146+236+245)
 */
 
 export function intersectConicSegments(c_s1,c_s2){
+    //console.log("INTERSECTING:",c_s1.parameterized_conic.type,c_s1.parameterized_conic.orientation,"AND",c_s2.parameterized_conic.type,c_s2.parameterized_conic.orientation)
     return approximateConicSegmentIntersection(c_s1,c_s2);
 }
 
-export function approximateConicSegmentIntersection(c_s1,c_s2){
+export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
 
     let intersections = [] 
     if (!intersectBounds(c_s1.bound,c_s2.bound)){
         return false
     }
+
+    let bound_area1 = boundArea(c_s1.bound)
+    let bound_area2 = boundArea(c_s2.bound)
 
     let split = 2
 
@@ -141,21 +145,25 @@ export function approximateConicSegmentIntersection(c_s1,c_s2){
         let start1 = first1 + range1*i/split
         let end1 = first1 + range1*(i+1)/split
         let bound1 = calculateConicSegmentBounds(c_s1.parameterized_conic,start1,end1,c_s1.direction)
+        
         sub_cs1.push(new ConicSegment(c_s1.parameterized_conic,start1,end1,bound1,c_s1.direction))
+
+        
         let start2 = first2 + range2*i/split
         let end2 = first2 + range2*(i+1)/split
-        let bound2 = calculateConicSegmentBounds(c_s2.parameterized_conic,start2,end2,c_s2.direction)
+        let bound2 = calculateConicSegmentBounds(c_s2.parameterized_conic,start2,end2,c_s2.direction,depth)
+        
         sub_cs2.push(new ConicSegment(c_s2.parameterized_conic,start2,end2,bound2,c_s2.direction))
+
     }
 
 
     for (let i = 0; i < split; i++){
         for (let j = 0; j < split; j++){
             if (intersectBounds(sub_cs1[i].bound,sub_cs2[j].bound)){
-                let intersection = approximateConicSegmentIntersection(sub_cs1[i],sub_cs2[j])
+                let intersection = approximateConicSegmentIntersection(sub_cs1[i],sub_cs2[j],depth+1)
                 if (intersection){
                     intersections = intersections.concat(intersection)
-                    //return intersection
                 }
             }
         }
@@ -325,8 +333,8 @@ export class ParameterizedConic {
         let xi_func = (x) => [Infinity]
         let yi_func = (y) => [Infinity]
 
-        let dx_func = () => [Infinity]
-        let dy_func = () => [Infinity]
+        let dx_func = () => []
+        let dy_func = () => []
         // get x and y for 
         switch (this.type){
             
@@ -703,8 +711,8 @@ export class ParameterizedConic {
         }
         // TODO: FIX PARALLEL LIKE YOU DID WITH CROSSED
 
-        console.log("MISS?",this.type,this.orientation,point,this)
-        return null
+        console.log("MISS? Skip:",skipOn,this.type,this.orientation,point,this)
+        return NaN
     }
 
 }

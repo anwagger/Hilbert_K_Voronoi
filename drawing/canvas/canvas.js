@@ -51,6 +51,9 @@ export class Canvas {
       this.voronois = null
       this.voronoi_diagram = null;
 
+      this.hilbert_image = null;
+      this.draw_hilbert_image = false;
+
       this.draggingPoint = null;
 
       this.globalScale = 1.0;
@@ -396,6 +399,21 @@ export class Canvas {
       }
    }
 
+   recalculateHilbertImage(){
+      if(this.hilbert_image){
+         this.hilbert_image.renderHilbertImage()
+      }
+   }
+
+   setHilbertImagePoint(event){
+      const {x,y} = this.getMousePos(event)
+      if(this.hilbert_image){
+         let pointer = new Point(CAMERA.ix(x),CAMERA.iy(y))
+         this.hilbert_image.pointer = pointer
+         this.recalculateHilbertImage()
+      }
+   }
+
 
    deselectSites(){
       this.draggingPoint = null
@@ -566,6 +584,7 @@ export class Canvas {
 
       this.recalculateFastVoronoi()
       this.recalculateBruteForceVoronoi()
+      this.recalculateHilbertImage()
       
    }
 
@@ -644,6 +663,13 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
          }
       })
       this.boundary.draw(this.ctx);
+
+      if(this.draw_hilbert_image && this.hilbert_image){
+         this.hilbert_image.draw(this.ctx)
+         //let pointer = new DrawablePoint(this.hilbert_image.pointer)
+         //pointer.draw(ctx)
+
+      }
 
       if (this.calculate_fast_voronoi){
          this.voronoi_diagram.draw(this.ctx)

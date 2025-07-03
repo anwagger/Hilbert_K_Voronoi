@@ -1,11 +1,15 @@
 import { ConicSegment,calculateConicSegmentBounds } from "../geometry/conics.js";
-import { Polygon, Segment } from "../geometry/primitives.js";
+import { Point, Polygon, Segment } from "../geometry/primitives.js";
 import { createSegmentsFromPoints,
   convexHull, 
   intersectSegments, 
   intersectSegmentsAsLines,
 colorNameToHex,
-hexToRgb } from "../geometry/utils.js";
+hexToRgb, 
+computeBoundingBox,
+calculateHilbertDistance,
+isBetween,
+pointInPolygon} from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -459,6 +463,7 @@ export class DrawableBruteForceVoronoi {
   }
 
   calculateBruteForce(canvas){
+    this.voronoi.boundary = canvas.boundary.polygon
     const grid = this.voronoi.bruteForce(canvas);
     this.grid = grid;
     this.calculateBruteForceImage(canvas)
@@ -569,5 +574,98 @@ export class DrawableVoronoiDiagram {
     this.drawable_cells.forEach((cell,i) => {
       cell.draw(ctx)
     })
+  }
+}
+
+export class HilbertImage {
+  constructor(boundary, image, scale = 100,looping = true){
+    this.boundary = boundary
+    this.image = image
+    this.scale = scale
+    this.looping = looping
+    this.pointer = new Point(0,0)
+    this.loadImageData()
+  }
+
+  loadImageData(){
+    let polygon_bound = computeBoundingBox(this.boundary)
+
+    //this.image.style.objectFit = "fill"
+    this.image.width = polygon_bound.right - polygon_bound.left 
+    this.image.height = polygon_bound.top - polygon_bound.bottom
+    const imgCanvas = document.createElement('canvas');
+    imgCanvas.width = this.image.width;
+    imgCanvas.height = this.image.height;
+    const imgCtx = imgCanvas.getContext('2d');
+    imgCtx.drawImage(this.image,0,0,this.image.width,this.image.height);
+    this.image_data = imgCtx.getImageData(0,0,this.image.width, this.image.height);
+        console.log("IMAGE",this.image,this.image.width,this.image.height,this.image_data)
+
+  }
+
+  renderHilbertImage(){
+    
+    const width = 1000;
+    const height = 1000;
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    let image_data = tempCtx.createImageData(width, height);
+
+    let polygon_bound = computeBoundingBox(this.boundary)
+    
+    let low_x = Math.floor(Math.max(0,polygon_bound.left))
+    let low_y = Math.floor(Math.max(0,polygon_bound.bottom))
+    let high_x = Math.ceil(Math.min(width,polygon_bound.right))
+    let high_y = Math.ceil(Math.min(height,polygon_bound.top))
+    console.log("RENDERING",low_x,high_x,low_y,high_y)
+    for (let x = low_x; x < high_x; x++) {
+      for (let y = low_y; y < high_y; y++) {
+        let point = new Point(x, y);
+        if (pointInPolygon(point, this.boundary)) {
+          
+          let hilbert = this.scale*calculateHilbertDistance(this.boundary, this.pointer, point);
+          let angle = Math.atan2(y-this.pointer.y, x-this.pointer.x);
+          let newX = ((this.pointer.x-low_x) + Math.cos(angle) * hilbert);
+          let newY = ((this.pointer.y-low_y) + Math.sin(angle) * hilbert);
+          if (this.looping) {
+            newX = Math.abs((newX + Math.ceil(this.scale)*this.image.width) % this.image.width);
+            newY = Math.abs((newY + Math.ceil(this.scale)*this.image.height) % this.image.height);
+          }
+          if (isBetween(0, this.image.width-1, newX) && isBetween(0, this.image.height-1, newY)) {
+            const i = (y * width + x) * 4;
+            const new_i = (Math.floor(newY) * this.image.width + Math.floor(newX)) * 4
+
+            image_data.data[i] = this.image_data.data[new_i];
+            image_data.data[i + 1] = this.image_data.data[new_i+1];
+            image_data.data[i + 2] = this.image_data.data[new_i+2];
+            image_data.data[i + 3] = this.image_data.data[new_i+3];
+          }
+        }
+      }
+    }
+    this.hilbert_image_data = image_data
+  }
+
+  draw(ctx){
+    const width = 1000;
+    const height = 1000;
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.putImageData(this.hilbert_image_data, 0, 0);
+    const drawWidth = CAMERA.x(width) - CAMERA.x(0);
+    const drawHeight = CAMERA.y(height) - CAMERA.y(0);
+    console.log(this.image_data,this.image.width,this.image.height)
+    ctx.drawImage(
+        tempCanvas,               
+        CAMERA.x(0),              
+        CAMERA.y(0),          
+        drawWidth,                
+        drawHeight              
+    );
   }
 }

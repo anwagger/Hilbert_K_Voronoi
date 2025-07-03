@@ -301,13 +301,36 @@ export function convexHull(points) {
   return lower.concat(upper);
 }
 
+export function boundArea(bound){
+  return (bound.right - bound.left) * (bound.top - bound.bottom)
+}
+
 
 export function intersectBounds(b1,b2){
     return b1.top >= b2.bottom && b1.bottom <= b2.top && b1.left <= b2.right && b1.right >= b2.left
 }
 
 export function inBound(point,bound){
-  return point.x <= bound.right && point.x >= bound.left && point.y <= bound.top && point.y >= bound.bottom
+  let inside = isLeZero(point.x - bound.right) && isLeZero(bound.left - point.x) && isLeZero(point.y - bound.top) && isLeZero(bound.bottom - point.y)
+  if(inside){
+    return true
+  }else{
+    // helps in an edge case!
+    let emptyX = isZero(bound.left - bound.right)
+    let emptyY = isZero(bound.top - bound.bottom)
+    if(emptyX || emptyY){
+      let onDegen = (
+        (emptyX && (isZero(point.x - bound.left) || isZero(point.x - bound.left)))
+          ||
+        (emptyY && (isZero(point.y - bound.top) || isZero(point.y - bound.bottom)))
+      )
+      return onDegen
+    }else{
+      return false
+    }
+    
+  }
+  
 }
 
 export function boundOfBounds(b1,b2){

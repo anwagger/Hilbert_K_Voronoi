@@ -1,7 +1,7 @@
 import { Point } from "../../geometry/primitives.js";
 import { cleanArray, pointInPolygon } from "../../geometry/utils.js";
 import { VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
-import { CAMERA, DrawableBruteForceVoronoi } from "../drawable.js";
+import { CAMERA, DrawableBruteForceVoronoi, HilbertImage } from "../drawable.js";
 
 // from nithins
 export function initEvents(canvas) {
@@ -17,6 +17,8 @@ export function initEvents(canvas) {
       document.getElementById('siteContainer').style.display = canvas.mode === "site" ? 'block' : 'none';
       document.getElementById('zoomContainer').style.display = canvas.mode === "view" ? 'block' : 'none';
       document.getElementById('voronoiContainer').style.display = canvas.mode === "voronoi" ? 'block' : 'none';
+      document.getElementById('imageContainer').style.display = canvas.mode === "image" ? 'block' : 'none';
+
    }
 
 
@@ -91,7 +93,13 @@ export function initEvents(canvas) {
          if(!event.shiftKey){
             canvas.addSite(event)
          }
-      } 
+      } else if(canvas.mode == 'image'){
+         if(canvas.hilbert_image){
+
+            canvas.setHilbertImagePoint(event)
+            canvas.drawAll()
+         }
+      }
    });
 
    // changes position of all selected sites
@@ -203,6 +211,42 @@ export function initEvents(canvas) {
       }
       
    });
+
+   document.getElementById('hilbert-image-select').addEventListener('change', (event) => {
+      let files = event.target.files
+      if(files.length > 0){
+         const file = files[0];
+         const reader = new FileReader();
+         let img = new Image();
+         reader.addEventListener(
+            "load",
+            () => {
+               // convert image file to base64 string
+               img.src = reader.result;
+               canvas.hilbert_image = new HilbertImage(canvas.boundary.polygon,img,300,true)
+               canvas.recalculateHilbertImage()
+            },
+            false,
+         );
+
+         if (file) {
+            reader.readAsDataURL(file);
+         }
+      }
+   });
+
+   document.getElementById('drawHilbertImage').addEventListener('change', (event) => {
+      if(event.target.checked){
+         canvas.draw_hilbert_image = true
+         if (canvas.hilbert_image) {
+            canvas.drawAll()
+         }
+      }else{
+         canvas.draw_hilbert_image = false
+         canvas.drawAll()
+      }
+      
+   })
    
 
    let canvasElement = canvas.canvas
