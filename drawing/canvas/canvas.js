@@ -2,7 +2,7 @@ import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSp
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point } from "../../geometry/primitives.js";
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames} from "../../geometry/utils.js"
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 export class Canvas {
@@ -65,6 +65,8 @@ export class Canvas {
          "red","orange","gold","green","blue","purple",
          "pink","brown","black","gray","cyan","lime"
       ];
+
+      this.usedColors = [];
 
       this.selectionAnchor = new Point(0,0);
       this.selectionPointer = new Point(0,0);
@@ -163,15 +165,16 @@ export class Canvas {
       return { x: sceneX, y: sceneY };
    }
 
-   getNewColor(list){
-      let colors = this.colorPool.filter((c) => {
-         return list.filter((s) => s.color === c).length == 0
-      })
-      if (colors.length === 0){
-         colors = [...this.colorPool]
+   getNewColor(){
+      // gets random color, converts Math.random to an index of the colours map
+      let idx = Math.floor(Math.random() * colorNames.length);
+      if (this.usedColors().length == colorNames.length) {
+         this.usedColors = [];
       }
-      let i = Math.floor(colors.length * Math.random())
-      return colors[i]
+      while(this.usedColors.includes(colorNames[idx])) {
+         idx = Math.floor(Math.random() * colorNames.length);
+      }
+      return colorNames[idx];
    }
 
    addSite(event){
