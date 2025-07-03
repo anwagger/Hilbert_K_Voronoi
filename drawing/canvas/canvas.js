@@ -168,7 +168,7 @@ export class Canvas {
    getNewColor(){
       // gets random color, converts Math.random to an index of the colours map
       let idx = Math.floor(Math.random() * colorNames.length);
-      if (this.usedColors().length == colorNames.length) {
+      if (this.usedColors.length == colorNames.length) {
          this.usedColors = [];
       }
       while(this.usedColors.includes(colorNames[idx])) {
