@@ -53,6 +53,9 @@ export class PartitionTree {
         let middle_x = Math.floor((bound.right + bound.left) / 2);
         console.log(middle_x)
         */
+
+        // using the approach of median the tree gets stuck in infinite recursion, im going to likely have to 
+        // do something that uses the bisectors bounds tbhtbh
         let x = computeMedianBound(voronoi_bounds.values());
 
         this.root = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
@@ -101,8 +104,8 @@ export class PartitionTree {
             let node = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
 
             // splits bounding box up into a left and right
-            let left_bound = new Bound(bound.left,x,bound.top,bound.bottom);
-            let right_bound = new Bound(x,bound.right,bound.top,bound.bottom);
+            let left_bound = new Bound(bound.top,bound.bottom,bound.left, x);
+            let right_bound = new Bound(bound.top,bound.bottom,x, bound.right);
            
             // get how many cells the left and right bounds intersect with
             let keys = voronoi_bounds.keys();
@@ -141,8 +144,8 @@ export class PartitionTree {
 
 
             let node = new PartitionTreeNode(Partition_Node_Type.Y, {y: y});
-            let top_bound = new Bound(bound.left,bound.right,y,bound.bottom);
-            let bottom_bound = new Bound(bound.left,bound.right,bound.top,y);
+            let top_bound = new Bound(y, bound.bottom, bound.left, bound.right);
+            let bottom_bound = new Bound(bound.top, y, bound.left, bound.right);
            
             // get how many cells the left and right bounds intersect with
             let keys = voronoi_bounds.keys();
