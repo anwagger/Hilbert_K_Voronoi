@@ -17,7 +17,8 @@ import { pointInPolygon,
     computeBoundingBox,
     manhattanMetric,
     weakFunk,
-    randomMetric} from "./utils.js";
+    randomMetric,
+    quasiMetric} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -140,6 +141,9 @@ export class VoronoiDiagram {
                                     case "reverse funk":
                                         distance = weakFunk(point,p,last);
                                     break;
+                                    case "quasi":
+                                        distance = quasiMetric(first,p,point,last);
+                                    break;    
                                     case "random":
                                         distance = randomMetric(first,p,point,last);
                                 }

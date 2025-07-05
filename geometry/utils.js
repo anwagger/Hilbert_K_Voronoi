@@ -58,12 +58,20 @@ export function randomMetric(edge1,point1,point2,edge2) {
   } else if (rand === 2) {
     return thompsonMetric(edge1, point1, point2, edge2);
   } else {
-    return  manhattanMetric(point1,point2);
+    return manhattanMetric(point1,point2);
   } 
 }
 
 export function manhattanMetric(point1, point2) {
   return Math.abs(point1.x - point2.x) + Math.abs(point1.y - point2.y);
+}
+
+export function quasiMetric(edge1,point1,point2,edge2) {
+  if ((point1.x + point2.y) > (point2.x + point1.y)) {
+    return euclideanDistance(point1,point2);
+  } else {
+    return hilbertMetric(edge1,point1,point2,edge2);
+  }
 }
 
 export function calculateHilbertDistance(boundary,point1,point2){
