@@ -15,7 +15,9 @@ import { pointInPolygon,
     convexHull,
     thompsonMetric,
     computeBoundingBox,
-    manhattanMetric} from "./utils.js";
+    manhattanMetric,
+    weakFunk,
+    randomMetric} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -132,6 +134,14 @@ export class VoronoiDiagram {
                                     case "manhattan":
                                         distance = manhattanMetric(p,point);
                                     break;
+                                    case "funk":
+                                        distance = weakFunk(p,point,first);
+                                    break;
+                                    case "reverse funk":
+                                        distance = weakFunk(point,p,last);
+                                    break;
+                                    case "random":
+                                        distance = randomMetric(first,p,point,last);
                                 }
                                 
                                 pairs.push(new Pair(s, distance));

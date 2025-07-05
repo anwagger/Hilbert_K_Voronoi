@@ -49,6 +49,19 @@ export function hilbertMetric(edge1, point1, point2, edge2){
     return 0.5 * Math.log(crossRatio(edge1,point1,point2,edge2))
 }
 
+export function randomMetric(edge1,point1,point2,edge2) {
+  const rand = Math.round(Math.random() * 3);
+  if (rand === 0) {
+    return hilbertMetric(edge1, point1, point2, edge2);
+  } else if (rand === 1) {
+    return euclideanDistance(point1, point2);
+  } else if (rand === 2) {
+    return thompsonMetric(edge1, point1, point2, edge2);
+  } else {
+    return  manhattanMetric(point1,point2);
+  } 
+}
+
 export function manhattanMetric(point1, point2) {
   return Math.abs(point1.x - point2.x) + Math.abs(point1.y - point2.y);
 }
