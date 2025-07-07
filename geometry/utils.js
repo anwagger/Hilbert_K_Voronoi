@@ -490,9 +490,9 @@ export function matrix3D( rows, cols,height, defaultValue){
 
 // credit: https://stackoverflow.com/questions/1573053/javascript-function-to-convert-color-names-to-hex-codes
 // wont need this if we standardize color names but andrew started with text so its just convenient to use this rn lowkey
-export function colorNameToHex(colour)
+export function colorNameToHex(color)
 {
-    const colours = {"aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff",
+    const colors = {"aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff",
     "beige":"#f5f5dc","bisque":"#ffe4c4","black":"#000000","blanchedalmond":"#ffebcd","blue":"#0000ff","blueviolet":"#8a2be2","brown":"#a52a2a","burlywood":"#deb887",
     "cadetblue":"#5f9ea0","chartreuse":"#7fff00","chocolate":"#d2691e","coral":"#ff7f50","cornflowerblue":"#6495ed","cornsilk":"#fff8dc","crimson":"#dc143c","cyan":"#00ffff",
     "darkblue":"#00008b","darkcyan":"#008b8b","darkgoldenrod":"#b8860b","darkgray":"#a9a9a9","darkgreen":"#006400","darkkhaki":"#bdb76b","darkmagenta":"#8b008b","darkolivegreen":"#556b2f",
@@ -517,9 +517,12 @@ export function colorNameToHex(colour)
     "wheat":"#f5deb3","white":"#ffffff","whitesmoke":"#f5f5f5",
     "yellow":"#ffff00","yellowgreen":"#9acd32"};
 
-    if (typeof colours[colour.toLowerCase()] != 'undefined')
-        return colours[colour.toLowerCase()];
-
+    if (typeof colors[color.toLowerCase()] != 'undefined'){
+      return colors[color.toLowerCase()];
+    }
+    if (color.substring(0,1) === "#"){
+      return color
+    }
     return false;
 }
 

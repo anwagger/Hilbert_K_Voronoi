@@ -652,10 +652,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
       
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-      if(this.brute_force_voronoi){
-         this.brute_force_voronoi.drawBruteForce(this,false);  
-         this.brute_force_voronoi.update = false
-      }
+      
 
       this.absolute_border.draw(this.ctx);
 
@@ -671,7 +668,11 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
          this.hilbert_image.draw(this.ctx)
          //let pointer = new DrawablePoint(this.hilbert_image.pointer)
          //pointer.draw(ctx)
+      }
 
+      if(this.brute_force_voronoi){
+         this.brute_force_voronoi.drawBruteForce(this,false);  
+         this.brute_force_voronoi.update = false
       }
 
       if (this.calculate_fast_voronoi){

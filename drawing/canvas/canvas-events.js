@@ -242,6 +242,7 @@ export function initEvents(canvas) {
 
          if (file) {
             reader.readAsDataURL(file);
+         }else{
          }
       }
    });

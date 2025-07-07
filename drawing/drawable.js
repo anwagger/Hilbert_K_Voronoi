@@ -593,10 +593,11 @@ export class HilbertImage {
     const imgCanvas = document.createElement('canvas');
     imgCanvas.width = this.image.width;
     imgCanvas.height = this.image.height;
-    const imgCtx = imgCanvas.getContext('2d');
+    const imgCtx = imgCanvas.getContext('2d',{willReadFrequently:true,desynchronized:true,preserveDrawingBuffer:true});
     imgCtx.drawImage(this.image,0,0,this.image.width,this.image.height);
     this.image_data = imgCtx.getImageData(0,0,this.image.width, this.image.height);
-        console.log("IMAGE",this.image,this.image.width,this.image.height,this.image_data)
+    
+    console.log("IMAGE",this.image,this.image.width,this.image.height,this.image_data)
 
   }
 
