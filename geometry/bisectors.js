@@ -2,30 +2,41 @@ import {calculateConicSegmentBounds, intersectConicSegments } from "./conics.js"
 import { Bound, Point } from "./primitives.js"
 import { boundOfBounds, convexHull, euclideanDistance, inBound, isBetween, isLeZero, isZero, pointInPolygon, pointOnPolygon } from "./utils.js"
 
+// bisectors are just lists of conic segments
 export class Bisector {
     constructor(conic_segments){
         this.conic_segments = conic_segments
     }
 
+    // takes in a t, where t indexes into the conic segments
+    // the integer part of t is the number of the conic segment
+    // the decimal part is the percentage of the way through each conic segment
     getPointFromT(t){
+        // edge case of the very end of the bisector
         if(t == this.conic_segments.length){
             let c_s = this.conic_segments[this.conic_segments.length-1]
             return c_s.parameterized_conic.getPointFromT(c_s.end)
         }
+        // get conic segment to check
         let c_s = this.conic_segments[Math.floor(t)]
+        // get the relative t for the conic segment
         let percentage = t - Math.floor(t)
         let range = c_s.getRange()
         return c_s.parameterized_conic.getPointFromT(c_s.start + range * percentage)
     }
 
+    // takes in a point and returns the bisector t
     getTofPoint(point){
         for(let c = 0; c < this.conic_segments.length; c++){
             let c_s = this.conic_segments[c]
+            // simple bounds check initially
             if(inBound(point,c_s.bound)){
+                // check if the point if valid for the segment
                 let t = c_s.parameterized_conic.getTOfPoint(point,true) // force point to be on
                 if(t){
+                    // convert conic segment t to bisector t
                     let range = c_s.getRange()
-                    // suspect ...
+                    // puts the t between 0 and 2PI
                     if (t < 0){
                         t += 2*Math.PI
                     }
@@ -43,7 +54,7 @@ export class Bisector {
                             t += 2*Math.PI
                         }
                     }
-                    // t = c_s.start + pct * range
+                    // turn the t into a percentage of the way through the conic segment
                     let percentage = (t - c_s.start)/range//1 - (t - c_s.start)/range
                     if(isLeZero(percentage-1) && isLeZero(-percentage)){
                         return c + percentage
@@ -59,6 +70,7 @@ export class Bisector {
     }
 }
 
+// A bisector with t bounds put in place
 export class BisectorSegment {
     constructor(bisector,start,end,bound){
         this.bisector = bisector
@@ -67,12 +79,11 @@ export class BisectorSegment {
         this.bound = bound
     }
 }
-
+// get the bounding box for a bisector given t bounds
 export function calculateBisectorSegmentBounds(bisector,start,end){
     let conic_segments = bisector.conic_segments
     // find the extremes of each of the bounds of the conic_segments
 
-    // issue here!
     let bound = new Bound(-Infinity,Infinity,Infinity,-Infinity)
 
     for (let i = Math.floor(start); i < Math.ceil(end); i++){
@@ -83,9 +94,6 @@ export function calculateBisectorSegmentBounds(bisector,start,end){
         let end_percentage = 1
         let range = conic_segment.getRange()
 
-
-        
-        // issues for sub-single segment bisectors :(
         if (i < start) {
 
             start_percentage = (start % 1)
@@ -95,24 +103,32 @@ export function calculateBisectorSegmentBounds(bisector,start,end){
             end_percentage = (end % 1)
             
         }
-        
+
+        // get start and end t for each conic segment
         let start_t = conic_segment.start + range * start_percentage
         let end_t = conic_segment.start + range * end_percentage
 
         
         segment_bound = calculateConicSegmentBounds(conic_segment.parameterized_conic,start_t,end_t,conic_segment.direction)
 
+        // combine bounds
         bound = boundOfBounds(bound,segment_bound)
     }
     return bound
 }
 
+// A quick check to test if bisectors intersect
+// if bisectors end at the same point, the result is inconclusive
+// 1: they intersect
+// -1: they don't intersect
+// 0: inconclusive 
 export function checkIfBisectorsIntersect(b1,b2){
     let b1_start = b1.getPointFromT(0)
     let b1_end = b1.getPointFromT(b1.conic_segments.length)
     let b2_start = b2.getPointFromT(0)
     let b2_end = b2.getPointFromT(b2.conic_segments.length)
 
+    // one of the ends are identical between bisectors
     if(
         isZero(euclideanDistance(b1_start,b2_start)) 
         || 
@@ -131,7 +147,9 @@ export function checkIfBisectorsIntersect(b1,b2){
     point_map.set(b2_start,2)
     point_map.set(b2_end,2)
 
+    // get a convex hull of the end-points of the bisectors. 
     let bisector_ends = convexHull([b1_start,b1_end,b2_start,b2_end])
+    // if adjacent points on the convex hull are from the same bisector, they don't intersect
     if(point_map.get(bisector_ends[0]) != point_map.get(bisector_ends[1])){
         return 1
     }else{
@@ -139,8 +157,11 @@ export function checkIfBisectorsIntersect(b1,b2){
     }
 }
 
+// calculate bisectors' intersection
 export function intersectBisectors(boundary,b1,b2){
     let intersections = []
+    // go through each conic segment
+    // possible to narrow it down through binary search?
     for(let i = 0; i < b1.conic_segments.length; i++){
         for(let j = 0; j < b2.conic_segments.length; j++){
             let intersection = intersectConicSegments(b1.conic_segments[i],b2.conic_segments[j])
@@ -150,6 +171,7 @@ export function intersectBisectors(boundary,b1,b2){
             }
         }
     }
+    // make sure intersections are valid!
     for(let i = 0; i < intersections.length; i++){
         let intersection = intersections[i]
         if(pointInPolygon(intersection,boundary) && !pointOnPolygon(intersection,boundary)){
@@ -159,7 +181,10 @@ export function intersectBisectors(boundary,b1,b2){
     return false
 }
 
+// calculate the circumcenter between 3 bisectors
 export function calculateCircumcenter(boundary,b1,b2,b3){
+    // quick check to avoid work if possible
+    // only need to intersect twice to get the circumcenter
     if (checkIfBisectorsIntersect(b1,b2) === -1){
         return false
     }
@@ -169,6 +194,7 @@ export function calculateCircumcenter(boundary,b1,b2,b3){
     }
     let i13 = intersectBisectors(boundary,b1,b3)
     let sensitivity = 1e-2
+    // if both intersections exist, check if they're close enough and get the avg
     if (i12 && i13){
         let circumcenter = new Point((i12.x + i13.x)/2,(i12.y + i13.y)/2)
         if(
@@ -181,6 +207,8 @@ export function calculateCircumcenter(boundary,b1,b2,b3){
     }    
 }
 
+
+// similar to above, but does all three intersections
 export function calculateCircumcenter3(boundary,b1,b2,b3){
     if (checkIfBisectorsIntersect(b1,b2) === -1){
         return false

@@ -1,6 +1,7 @@
 import { Point, Segment,Bound } from "./primitives.js"
 import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon, boundArea } from "./utils.js"
 
+// just stores the equation
 export class Conic {
     constructor(equation){
         const {A,B,C,D,E,F} = equation
@@ -16,6 +17,7 @@ export class Conic {
         return {A:this.A,B:this.B,C:this.C,D:this.D,E:this.E,F:this.F}
     }
 
+    // checks where a conic intersects a line
     intersectLine(segment){
         // nithin's code
         let x1 = segment.start.x;
@@ -46,9 +48,11 @@ export class Conic {
         return intersections
     }
 
+    // intersects a conic with a line segment
     intersectSegment(segment){
         let intersections = this.intersectLine(segment)
         let valid_intersections = []
+        // check if intersections with the line are valid for the segment
         for (let p of intersections){
             
             if (isBetween(segment.start.x,segment.end.x,p.x) 
@@ -61,9 +65,11 @@ export class Conic {
         return valid_intersections 
     }
 
+    // intersect a conic with a polygon
     intersectPolygon(polygon){
         let points = polygon.points
         let segment_intersections = []
+        // compile segment intersections for each segment
         for (let i = 0; i < points.length; i++){
             let i2 = (i+1) % points.length
             let intersections = this.intersectSegment(new Segment(points[i],points[i2]))
@@ -73,7 +79,7 @@ export class Conic {
     }
 }
 
-
+// unused, but might be helpful in faster conic-conic intersection
 export function conicToMatrix(conic){
     let {A,B,C,D,E,F} = conic.getEquation()
     return [
@@ -103,13 +109,38 @@ fff*135 +(fgg)*146 +(gfg)*236 + (ggf)*245 - (gff)*235 - (fgf)*145 - (ffg)*136 - 
 fff*135 + (fgg)*(146+236+245)  
 */
 
+// turns a conic equation into an equivalent shape but B = 0
+// different rotation, same shape
+// much easier to work with
+export function unrotateConic(c){
+    
+    let conic_p = new Conic(0,0,0,0,0,0);
+
+    const theta = 0.5 * Math.atan2(c.B,c.A-c.C)
+
+    const c_t = Math.cos(theta)
+    const s_t = Math.sin(theta)
+
+    conic_p.A = c.A*(c_t*c_t) + c.B*c_t*s_t + c.C*(s_t*s_t)
+    conic_p.B = 0
+    conic_p.C = c.A * (s_t*s_t) - c.B * c_t * s_t + c.C*(c_t*c_t)
+    conic_p.D = c.D * c_t + c.E * s_t
+    conic_p.E = -c.D*s_t + c.E * c_t
+    conic_p.F = c.F
+
+    return {conic_p:conic_p,theta:theta}
+}
+
+// wrapper function for intersecting conic segments
 export function intersectConicSegments(c_s1,c_s2){
     //console.log("INTERSECTING:",c_s1.parameterized_conic.type,c_s1.parameterized_conic.orientation,"AND",c_s2.parameterized_conic.type,c_s2.parameterized_conic.orientation)
     return approximateConicSegmentIntersection(c_s1,c_s2);
 }
 
+// recursive brute force approach to intersecting conic segments
 export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
 
+    // quick bounds check
     let intersections = [] 
     if (!intersectBounds(c_s1.bound,c_s2.bound)){
         return false
@@ -121,6 +152,7 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
     let split = 2
 
     // bad :(
+    // calculate where to parameterize each conic
     let range1 = c_s1.getRange()
     let first1 = c_s1.start//Math.min(c_s1.start,c_s1.end)
 
@@ -132,6 +164,7 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
 
     let sensitivity = 1e-10
 
+    // if the range for each conic is small enough, we found the intersection!
     if (Math.abs(range1) <= sensitivity && Math.abs(range2) <= sensitivity){
         intersections.push(new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2))
         return intersections
@@ -141,6 +174,7 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
     let sub_cs1 = []
     let sub_cs2 = []
 
+    // split the conic into pieces and check if they can intersect 
     for (let i = 0; i < split; i++){
         let start1 = first1 + range1*i/split
         let end1 = first1 + range1*(i+1)/split
@@ -160,6 +194,7 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
 
     for (let i = 0; i < split; i++){
         for (let j = 0; j < split; j++){
+            // if the pieces intersect, recurse
             if (intersectBounds(sub_cs1[i].bound,sub_cs2[j].bound)){
                 let intersection = approximateConicSegmentIntersection(sub_cs1[i],sub_cs2[j],depth+1)
                 if (intersection){
@@ -175,9 +210,9 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
     }
 }
 
+// classify the conic type and get equation coefficients 
 export function parameterizeConic(conic){
     let {conic_p:straight_conic, theta:angle} = unrotateConic(conic)
-
 
     let type = getConicType(straight_conic)
     let orientation = Conic_Orientation.NONE
@@ -192,10 +227,9 @@ export function parameterizeConic(conic){
     // For this, the edge case is if the line is fully vertical or horizontal
     if (type == Conic_Type.DEGENERATE){
         
-     let ver_parallel = (isZero(C) && isZero(E))
-     let hor_parallel = (isZero(A) && isZero(D))
-     let crossed = isZero((D*D/(4*A)) + (E*E/(4*C)) - F)
-        let d = B*B-4*A*C
+        let ver_parallel = (isZero(C) && isZero(E))
+        let hor_parallel = (isZero(A) && isZero(D))
+        let crossed = isZero((D*D/(4*A)) + (E*E/(4*C)) - F)
         if (hor_parallel){ //parallel lines
             orientation = Conic_Orientation.HORIZONTAL
             // makes the lower-number ts much more reasonably compact, negative values are non-existant though...
@@ -224,6 +258,7 @@ export function parameterizeConic(conic){
         }
 
     }else if (type == Conic_Type.PARABOLA){
+        // NOT USED!
         // was A, switched
         if (C === 0){
             orientation = Conic_Orientation.VERTICAL
@@ -289,7 +324,7 @@ export function parameterizeConic(conic){
     return new ParameterizedConic(type,orientation,angle,conic,straight_conic,parameterization)
 }
 
-// still figuring this out
+// A conic with a lot more information to aid in calculating points and such
 export class ParameterizedConic {
     constructor(type,orientation,angle,conic,straight_conic,parameterization){
         this.type = type
@@ -314,7 +349,7 @@ export class ParameterizedConic {
         this.getPointFromTStraight = this.getUnrotatedFunction()
     }
 
-    // takes the culaculated parameterized conic and returns an x and y function for t
+    // takes the culaculated parameterized conic and returns functions to go from point -> t and visa versa 
     getVariableFunctions(center = false){
         const sin = Math.sin(this.angle)
         const cos = Math.cos(this.angle)
@@ -389,32 +424,6 @@ export class ParameterizedConic {
                         
                     break;
                     case Conic_Orientation.NONE:
-                        /*
-                        x_func = (t) => {
-                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
-                                return (this.x_mult*Math.sin(t) + x_off)
-                            }else{
-                                return (-this.x_mult*Math.sin(t) + x_off)
-                            }
-                        }
-                        y_func = (t) => {
-                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
-                                return this.y_mult*(this.x_mult*Math.sin(t))+y_off
-                            }else{
-                                return this.y_mult*(this.x_mult*Math.sin(t))+y_off
-                            }   
-                        }
-                        xi_func = (x) => {
-                            let asin = -Math.asin((x - x_off)/this.x_mult)
-                            return [asin < 0 ? asin+2*Math.PI: asin,asin+Math.PI]
-                        }
-                        yi_func = (y) => {
-                            let asin = Math.asin((y - y_off)/(this.x_mult*this.y_mult))
-                            return [
-                                asin < 0 ? asin+2*Math.PI: asin,-asin+Math.PI
-                            ]
-                        }
-                         */
                         x_func = (t) => {
                             if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
                                 return (this.x_mult*Math.sin(t) + x_off)
@@ -630,6 +639,7 @@ export class ParameterizedConic {
         return (t)=> {
             let x_t = this.x_func(t)
             let y_t = this.y_func(t)
+            // since the x_func is for the straight conic, we rotate it back
             return new Point(cos*x_t - sin*y_t,cos*y_t + sin*x_t)
         }  
     }
@@ -649,23 +659,22 @@ export class ParameterizedConic {
         return isZero(closeness**2)
     }
 
+    // gets the t value of a given point 
     getTOfPoint(point,skipOn = false){
-        // TODO
-        /*
-            parameterize the unrotated conic
-            rotate point to be in live with unrotated conic
-            inverse should then be easy*
-        */
 
+        // for debugging
         let parallel = false//this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.NONE
-       let sin = Math.sin(this.angle)
-       let cos = Math.cos(this.angle)
-       // reverse rotation?
-       let x = cos* point.x + sin * point.y
-       let y = cos*point.y - sin * point.x
+        
+        let sin = Math.sin(this.angle)
+        let cos = Math.cos(this.angle)
+        // reverse rotation to get equivalent point on straightened conic
+        let x = cos* point.x + sin * point.y
+        let y = cos*point.y - sin * point.x
 
+        // sometimes we don't want the sanity check, since it has to be pretty exact
         if (this.isOn(point) || skipOn){
 
+            // inverse 
             let x_ts = this.xi_func(x)
             let y_ts = this.yi_func(y)
             
@@ -674,6 +683,7 @@ export class ParameterizedConic {
                 console.log("PARA",point,x_ts,y_ts)
             }
             
+            // for each of the possible ts, check if the points match
             for (let i = 0; i < x_ts.length; i++){
                 for (let j = 0; j < y_ts.length; j++){
                     let p_x = this.getPointFromT(x_ts[i])
@@ -695,7 +705,6 @@ export class ParameterizedConic {
                     }else{
                     }
 
-                    //if (Math.abs(x_ts[i]- y_ts[j]) <= 1e-10){
                     if (is_valid){
                         return x_ts[i] != Infinity?x_ts[i]:y_ts[j]
                     }
@@ -720,8 +729,6 @@ export class ParameterizedConic {
 
 
 /*
-
-
 parameterize the unrotated conic
 rotate point to be in live with unrotated conic (reverse the angle: [cx + sy , cy - sx])
 inverse should then be easy
@@ -786,14 +793,11 @@ const Conic_Orientation = {
     NONE: "N"
 }
 
+// classify the conic's type and orientation
 export function getConicType(conic){
     const {A:A,B:B,C:C,D:D,E:E,F:F} = conic.getEquation()
     
     const beta =  (A*C-B*B/4)*F + (B*E*D-C*D*D-A*E*E)/4
-
-    // there's an issue here!
-    // percision!
-    // non-degen
     
     /**
      assume B=0
@@ -817,10 +821,9 @@ export function getConicType(conic){
             return Conic_Type.ELLIPSE
         }
     }
-    
-    
 }
 
+// get the conic representing a bisector between two sites within a certain sector
 export function bisectorConicFromSector(boundary,sector){
     let points = boundary.points
 
@@ -850,6 +853,7 @@ export function bisectorConicFromSector(boundary,sector){
     return conic
 }
 
+// gets the bounding t values of a conic inside a polyogn
 export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,start_point = null){
 
     let intersections = parameterized_conic.conic.intersectPolygon(polygon)
@@ -862,6 +866,7 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     //testing
     let points = []
 
+    // for each intersection, get the t value
     for (let segment_num = 0; segment_num < intersections.length; segment_num++){
         for (let i = 0; i < intersections[segment_num].length; i++) {
             let point = intersections[segment_num][i]
@@ -874,24 +879,13 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     let start = [Infinity,-1]
     let end = [-Infinity,-1] 
 
-    /**
-    for (let i = 0; i < ts.length; i++){
-        let t = ts[i]
-        if (t[0] < start[0]){
-            start = t
-        // used to be just if
-        }else if(t[0] > end[0]){
-            end = t
-        }
-    }
-    */
-
+    // sort the points by their t value if there is no start point
     let t_sort = (a,b) =>{
         return a[0] - b[0]
     }
 
 
-    
+    // if there is a start point, order them by distance to start point
 
     if(start_point != null){
         t_sort = (a,b) => {
@@ -906,6 +900,8 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
 
     }
 
+    // determine the start and end t values
+    // might need a second look
     start = ts[0]
     let index = 1
     end = ts[index]
@@ -915,6 +911,8 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
         end = ts[index]
     }
 
+    // special case for crossed lines
+    // specifically the case where the center-point is on the polygon
     if (parameterized_conic.type ==Conic_Type.DEGENERATE && parameterized_conic.orientation == Conic_Orientation.NONE){
         let center_point = parameterized_conic.getPointFromT(0)
         if(pointOnPolygon(center_point,polygon)){
@@ -950,6 +948,8 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
         start[0] += 2*Math.PI
     }
 
+    // calculate the final t bounds and if there direction to go is different than
+    // just substracting the bounds
     let direction = 1
     let first = start//start[0] < end[0]?start:end
     let last = end//start[0] < end[0]?end:start
@@ -960,6 +960,8 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     }
 
     let change_direction = length >Math.PI
+    // not necessarily if the parameterization goes positive or negative, but if it is opposite
+    // of the "normal" direction given the bounds
     if (change_direction){
 
         // come back to this!
@@ -978,25 +980,7 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     return {start_t: start[0],start_segment:start[1],start_point:start[2],end_t:end[0],end_segment:end[1],end_point:end[2],direction:direction,points:points}
 }
 
-export function unrotateConic(c){
-    
-    let conic_p = new Conic(0,0,0,0,0,0);
-
-    const theta = 0.5 * Math.atan2(c.B,c.A-c.C)
-
-    const c_t = Math.cos(theta)
-    const s_t = Math.sin(theta)
-
-    conic_p.A = c.A*(c_t*c_t) + c.B*c_t*s_t + c.C*(s_t*s_t)
-    conic_p.B = 0
-    conic_p.C = c.A * (s_t*s_t) - c.B * c_t * s_t + c.C*(c_t*c_t)
-    conic_p.D = c.D * c_t + c.E * s_t
-    conic_p.E = -c.D*s_t + c.E * c_t
-    conic_p.F = c.F
-
-    return {conic_p:conic_p,theta:theta}
-}
-
+// a parameterized conic with t bounds
 export class ConicSegment {
     constructor(parameterized_conic,start,end,bound,direction = 0){
         this.parameterized_conic = parameterized_conic
@@ -1006,6 +990,8 @@ export class ConicSegment {
         this.direction = direction
     }
 
+    // calculate the length of the parameterization
+    // might need a second look
     getRange(){
 
         //let opposite = (this.direction == 1 && this.start > this.end) || (this.direction == -1 && this.start < this.end)
@@ -1025,16 +1011,19 @@ export class ConicSegment {
     }
 }
 
+// given a t-bounded conic, get bounding box
 export function calculateConicSegmentBounds(parameterized_conic,start,end,direction = 0){   
     let start_p = parameterized_conic.getPointFromT(start)
     let end_p = parameterized_conic.getPointFromT(end)
 
     let opposite = (direction == 1 && start > end) || (direction == -1 && start < end)
 
+    // intial bound guess is based on the start and end points
     let bound = new Bound(Math.max(start_p.y,end_p.y),Math.min(start_p.y,end_p.y),Math.min(start_p.x,end_p.x),Math.max(start_p.x,end_p.x))
 
     let d0_x = parameterized_conic.dx_func()
     
+    // The only other possible extrema are when the x and y partial are 0
     for (let i = 0; i < d0_x.length; i++){
         let t = d0_x[i]
         // fix?
