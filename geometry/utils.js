@@ -408,6 +408,38 @@ export function computeBoundingBox(polygon) {
         return new Bound(max_y,min_y,min_x,max_x);
     }
 
+export function computeClosestBound(bounds, point, vertical = false) {
+    let minDistance = Infinity;
+    let closestCoord = point; 
+
+    for (const b of bounds) {
+        if (vertical) {
+            const distTop = Math.abs(b.top - point);
+            if (distTop < minDistance) {
+                minDistance = distTop;
+                closestCoord = b.top;
+            }
+            const distBottom = Math.abs(b.bottom - point);
+            if (distBottom < minDistance) {
+                minDistance = distBottom;
+                closestCoord = b.bottom;
+            }
+        } else { 
+            const distLeft = Math.abs(b.left - point);
+            if (distLeft < minDistance) {
+                minDistance = distLeft;
+                closestCoord = b.left;
+            }
+            const distRight = Math.abs(b.right - point);
+            if (distRight < minDistance) {
+                minDistance = distRight;
+                closestCoord = b.right;
+            }
+        }
+    }
+    return closestCoord;
+}
+
 export function computeMedianBound(bounds, vertical = false) {
     let bs = [];
     for (let b of bounds) {

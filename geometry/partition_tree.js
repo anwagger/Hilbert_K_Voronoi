@@ -1,5 +1,5 @@
 import { Bound } from "./primitives.js";
-import { computeBoundingBox, computeMedianBound, intersectBounds } from "./utils.js";
+import { computeBoundingBox, computeClosestBound, intersectBounds } from "./utils.js";
 import { calculateVoronoiCellBounds, VoronoiCell } from "./voronoi.js";
 
 const Partition_Node_Type = {
@@ -49,14 +49,13 @@ export class PartitionTree {
         }
 
         // was trying to do smth with each bisectors bound instead of just getting the median
-        /*
+
         let middle_x = Math.floor((bound.right + bound.left) / 2);
-        console.log(middle_x)
-        */
+
 
         // using the approach of median the tree gets stuck in infinite recursion, im going to likely have to 
         // do something that uses the bisectors bounds tbhtbh
-        let x = computeMedianBound(voronoi_bounds.values());
+        let x = computeClosestBound(voronoi_bounds.values(),middle_x);
 
         this.root = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
 
@@ -99,7 +98,9 @@ export class PartitionTree {
         if (type === Partition_Node_Type.X) {
             // see what bisector has the most median x in the current bound
             let middle_x = Math.floor((bound.left + bound.right) / 2);
-            let x = computeMedianBound(voronoi_bounds.values());
+            let bound_arr = Array.from(voronoi_bounds.values());
+            bound_arr.push(bound);
+            let x = computeClosestBound(bound_arr, middle_x);
 
             let node = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
 
@@ -124,14 +125,14 @@ export class PartitionTree {
             }
 
             // we now know there are only 3 or less cells a point can be in if its left to the median
-            if (left_voronoi_bounds.size <= 3) {
+            if (left_voronoi_bounds.size <= 3 || x === bound.left || x === bound.right) {
                 node.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
             } else {
                 node.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
             }
 
             // same with right
-            if (right_voronoi_bounds.size <= 3) {
+            if (right_voronoi_bounds.size <= 3 || x === bound.left || x === bound.right) {
                 node.right = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
             } else {
                 node.right = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
@@ -140,7 +141,9 @@ export class PartitionTree {
             // nearly identical to the x case, just shrinks the bound vertically instead of horizontally
         } else if (type === Partition_Node_Type.Y) {
             let middle_y = Math.floor((bound.top + bound.bottom) / 2);
-            let y = computeMedianBound(voronoi_bounds.values(), true);
+            let bound_arr = Array.from(voronoi_bounds.values());
+            bound_arr.push(bound);
+            let y = computeClosestBound(bound_arr, middle_y, true);
 
 
             let node = new PartitionTreeNode(Partition_Node_Type.Y, {y: y});
@@ -164,14 +167,14 @@ export class PartitionTree {
             }
 
             // we now know there are only 3 cells a point can be in if its above our current median
-            if (top_voronoi_bounds.size <= 3) {
+            if (top_voronoi_bounds.size <= 3 || y === bound.bottom || y === bound.top) {
                 node.above = this.createTree(Partition_Node_Type.CELL, top_voronoi_bounds, top_bound);
             } else {
                 node.above = this.createTree(Partition_Node_Type.X, top_voronoi_bounds, top_bound);
             }
 
             // same with right
-            if (bottom_voronoi_bounds.size <= 3) {
+            if (bottom_voronoi_bounds.size <= 3 || y === bound.top || y === bound.bottom) {
                 node.below = this.createTree(Partition_Node_Type.CELL, bottom_voronoi_bounds, bottom_bound);
             } else {
                 node.below = this.createTree(Partition_Node_Type.X, bottom_voronoi_bounds, bottom_bound);

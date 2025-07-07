@@ -546,14 +546,14 @@ export class DrawableVoronoiCell {
     this.drawable_bisector_segments.forEach((b_s,i) =>{
       b_s.draw(ctx)
     })
-    /**
+    /*
     let v_c = this.voronoi_cell
     ctx.beginPath();
     ctx.setLineDash([5, 5]); 
     ctx.rect(CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.top),CAMERA.x(v_c.bound.right) - CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.bottom) - CAMERA.y(v_c.bound.top))
     ctx.stroke(); 
     ctx.setLineDash([]); 
-     */
+    */
   }
 }
 
