@@ -710,6 +710,7 @@ export class ParameterizedConic {
                     }
                 }
             }
+            console.log("NO HITS:",x_ts,y_ts,point)
         }else{
             console.log("INVALID POINT",point,this)
             let x = point.x
@@ -827,7 +828,6 @@ export function getConicType(conic){
 export function bisectorConicFromSector(boundary,sector){
     let points = boundary.points
 
-    let seg = new Segment(points[sector.p1_enter],points[(sector.p1_enter+1) % points.length])
     const {a:a1,b:a2,c:a3} = lineEquation(new Segment(points[sector.p1_enter],points[(sector.p1_enter+1) % points.length]))
     const {a:b1,b:b2,c:b3} = lineEquation(new Segment(points[sector.p1_exit],points[(sector.p1_exit+1) % points.length]))
     const {a:c1,b:c2,c:c3} = lineEquation(new Segment(points[sector.p2_enter],points[(sector.p2_enter+1) % points.length]))
@@ -872,7 +872,12 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
             let point = intersections[segment_num][i]
             points.push(point)
             // keep track of t and which segment it collided with
-            ts.push([parameterized_conic.getTOfPoint(point),segment_num,point])
+            let t = parameterized_conic.getTOfPoint(point)
+            ts.push([t,segment_num,point])
+            if(isNaN(t)){
+                console.log("NOT ON CONIC",polygon,intersections)
+            }
+
         }
     }
 

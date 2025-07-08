@@ -100,6 +100,7 @@ export class Canvas {
         for (let i = 0; i < deleteSiteIndex.length; i++){
             this.deleteSite(deleteSiteIndex[i])
         }
+        this.reindexBisectors()
         this.sites = cleanArray(this.sites)
         this.recalculateAll()
         this.drawAll();
@@ -325,6 +326,29 @@ export class Canvas {
       this.drawAll();
    }
 
+   // run after deleting sites, but before cleaning!
+   reindexBisectors(){
+      let indexMap = []
+      let index = 0
+      for(let i = 0; i < this.sites.length; i++){
+         if(this.sites[i]){
+            indexMap.push(index)
+            index ++
+         }else{
+            indexMap.push(-1)
+         }
+      }
+      for(let b = 0; b < this.bisectors.length; b++){
+         let draw_bisector = this.bisectors[b]
+         draw_bisector.p1 = indexMap[draw_bisector.p1]
+         draw_bisector.p2 = indexMap[draw_bisector.p2]
+         if(draw_bisector.p1 === -1 || draw_bisector.p2 === -1){
+            this.bisectors[b] = null
+         }
+      }
+      this.bisectors = cleanArray(this.bisectors)
+   }
+
    recalculateBisector(b){
       let draw_bisector = this.bisectors[b]
       let boundary = this.boundary.polygon
@@ -404,6 +428,9 @@ export class Canvas {
 
    recalculateHilbertImage(){
       if(this.hilbert_image){
+         if(!this.hilbert_image.image_data){
+            this.hilbert_image.loadImageData()
+         }
          this.hilbert_image.renderHilbertImage()
       }
    }
@@ -520,10 +547,11 @@ export class Canvas {
    }
    deleteSelectedSites(){
       this.sites.forEach((s,idx) => {
-      if (s.selected) {
-         this.deleteSite(idx)
-      }
-   });
+         if (s.selected) {
+            this.deleteSite(idx)
+         }
+      });
+      this.reindexBisectors()
       this.sites = cleanArray(this.sites) // removes any null elts from array
       this.recalculateAll()
       this.drawAll();
@@ -533,7 +561,7 @@ export class Canvas {
       let site = this.sites[idx]
       for(let b = 0; b < this.bisectors.length; b++ ){
          let bisector = this.bisectors[b]
-         if(bisector.p1 == idx || bisector.p2 == idx){
+         if(bisector.p1 === idx || bisector.p2 === idx){
             this.bisectors[b] = null
          }
       }

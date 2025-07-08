@@ -251,6 +251,9 @@ export function initEvents(canvas) {
       if(event.target.checked){
          canvas.draw_hilbert_image = true
          if (canvas.hilbert_image) {
+            if(!canvas.hilbert_image.image_data){
+               canvas.hilbert_image.loadImageData()
+            }
             canvas.drawAll()
          }
       }else{

@@ -581,7 +581,7 @@ export class HilbertImage {
     this.scale = scale
     this.looping = looping
     this.pointer = new Point(0,0)
-    this.loadImageData()
+    //this.loadImageData()
   }
 
   loadImageData(){
@@ -596,7 +596,6 @@ export class HilbertImage {
     const imgCtx = imgCanvas.getContext('2d',{willReadFrequently:true,desynchronized:true,preserveDrawingBuffer:true});
     imgCtx.drawImage(this.image,0,0,this.image.width,this.image.height);
     this.image_data = imgCtx.getImageData(0,0,this.image.width, this.image.height);
-    
     console.log("IMAGE",this.image,this.image.width,this.image.height,this.image_data)
 
   }
@@ -618,7 +617,6 @@ export class HilbertImage {
     let low_y = Math.floor(Math.max(0,polygon_bound.bottom))
     let high_x = Math.ceil(Math.min(width,polygon_bound.right))
     let high_y = Math.ceil(Math.min(height,polygon_bound.top))
-    console.log("RENDERING",low_x,high_x,low_y,high_y)
     for (let x = low_x; x < high_x; x++) {
       for (let y = low_y; y < high_y; y++) {
         let point = new Point(x, y);
