@@ -18,7 +18,8 @@ import { pointInPolygon,
     manhattanMetric,
     weakFunk,
     randomMetric,
-    quasiMetric} from "./utils.js";
+    quasiMetric,
+    getDistanceFromMetric} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -121,33 +122,7 @@ export class VoronoiDiagram {
                             if (count == 2) {
                                 const first = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[0]:ints[1];
                                 const last = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[1]:ints[0];
-                                let distance = 0;
-                                switch(this.metric){
-                                    case "hilbert":
-                                        distance = hilbertMetric(first, p, point, last);
-                                    break;
-                                    case "euclidean":
-                                        distance = euclideanDistance(p, point);
-                                    break;
-                                    case "thompson":
-                                        distance = thompsonMetric(first, p, point, last);
-                                    break;
-                                    case "manhattan":
-                                        distance = manhattanMetric(p,point);
-                                    break;
-                                    case "funk":
-                                        distance = weakFunk(p,point,first);
-                                    break;
-                                    case "reverse funk":
-                                        distance = weakFunk(point,p,last);
-                                    break;
-                                    case "quasi":
-                                        distance = quasiMetric(first,p,point,last);
-                                    break;    
-                                    case "random":
-                                        distance = randomMetric(first,p,point,last);
-                                }
-                                
+                                let distance = getDistanceFromMetric(this.metric,p,point,first,last);
                                 pairs.push(new Pair(s, distance));
                             }
                         }

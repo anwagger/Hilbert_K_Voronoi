@@ -5,6 +5,7 @@ import { Polygon,Point } from "../../geometry/primitives.js";
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames} from "../../geometry/utils.js"
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
+import { KCluster } from "../../geometry/clustering.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -186,7 +187,9 @@ export class Canvas {
       if (!pointOnPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.absolute_border.polygon)){
          let site = new Site(new DrawablePoint(point))
          this.sites.push(site);
-         site.setColor(this.getNewColor(this.sites))
+         let color = this.getNewColor(this.sites)
+         console.log("COLOR: ",color)
+         site.setColor(color)
          // calculate the new point
          this.recalculateSite(this.sites.length-1)
          this.recalculateFastVoronoi()
@@ -616,6 +619,14 @@ export class Canvas {
       this.recalculateFastVoronoi()
       this.recalculateBruteForceVoronoi()
       this.recalculateHilbertImage()
+
+      let points = []
+      for(let i = 0; i < this.sites.length; i++){
+         points.push(this.sites[i].drawable_point.point)
+      }
+
+      let k_cluster = new KCluster(this.boundary.polygon,3,points)
+      console.log("K CLUSTER",k_cluster) 
       
    }
 

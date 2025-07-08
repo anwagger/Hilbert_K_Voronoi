@@ -134,12 +134,17 @@ export function unrotateConic(c){
 // wrapper function for intersecting conic segments
 export function intersectConicSegments(c_s1,c_s2){
     //console.log("INTERSECTING:",c_s1.parameterized_conic.type,c_s1.parameterized_conic.orientation,"AND",c_s2.parameterized_conic.type,c_s2.parameterized_conic.orientation)
+    count = 0
     return approximateConicSegmentIntersection(c_s1,c_s2);
 }
 
 // recursive brute force approach to intersecting conic segments
+let count = 0
 export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
 
+    count++
+
+    
     // quick bounds check
     let intersections = [] 
     if (!intersectBounds(c_s1.bound,c_s2.bound)){
@@ -148,6 +153,7 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
 
     let bound_area1 = boundArea(c_s1.bound)
     let bound_area2 = boundArea(c_s2.bound)
+
 
     let split = 2
 
@@ -163,6 +169,11 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
     let mid_point2 = c_s2.parameterized_conic.getPointFromT(first2+range2/2)
 
     let sensitivity = 1e-10
+
+    if(count > 100000){
+        console.log("EHLLL{","Depth",depth,"count",count,"Ranges: ",range1,range2,"Areas: ",bound_area1,bound_area2)
+    }
+
 
     // if the range for each conic is small enough, we found the intersection!
     if (Math.abs(range1) <= sensitivity && Math.abs(range2) <= sensitivity){
@@ -229,7 +240,7 @@ export function parameterizeConic(conic){
         
         let ver_parallel = (isZero(C) && isZero(E))
         let hor_parallel = (isZero(A) && isZero(D))
-        let crossed = isZero((D*D/(4*A)) + (E*E/(4*C)) - F)
+        let crossed = isZero(((D*D/(4*A)) + (E*E/(4*C)) - F)/10)
         if (hor_parallel){ //parallel lines
             orientation = Conic_Orientation.HORIZONTAL
             // makes the lower-number ts much more reasonably compact, negative values are non-existant though...
@@ -808,7 +819,7 @@ export function getConicType(conic){
      */
 
      let parallel = (isZero(A) && isZero(D)) || (isZero(C) && isZero(E))
-     let crossed = isZero((D*D/(4*A)) + (E*E/(4*C)) - F)
+     let crossed = isZero(((D*D/(4*A)) + (E*E/(4*C)) - F))
 
     if (isZero(beta) || parallel || crossed){
         return Conic_Type.DEGENERATE
