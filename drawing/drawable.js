@@ -416,7 +416,6 @@ export class DrawableConicSegment {
      **/
 }
  
-
 export class Site {
   constructor(drawable_point, drawable_spokes, radius = 8) {
     this.draw_spokes = false
@@ -664,4 +663,19 @@ export class HilbertImage {
         drawHeight              
     );
   }
+}
+
+export class DrawableBall {
+  constructor(ball, color = "black") {
+    this.ball = ball;
+    this.color = color;
+    this.polygon = new DrawablePolygon(ball.polygon)
+  }
+
+  draw(ctx) {
+    this.polygon.draw(ctx);
+  }
+
+  // draw should be dif types of lines/transparency for different types of balls. 
+  // solid for hilbert, dashed for forward, more opaque for reverse, idk for thompson mayb inverse color?
 }

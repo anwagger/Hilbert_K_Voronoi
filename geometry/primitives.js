@@ -1,5 +1,4 @@
-import { createSegmentsFromPoints,convexHull } from "./utils.js";
-
+import { createSegmentsFromPoints,convexHull, getPointsOnHilbertBall, getPointsOnForwardFunkBall, getPointsOnReverseFunkBall, createPolygonIntersection } from "./utils.js";
 export class Point {
     constructor(x,y){
         this.x = x;
@@ -44,6 +43,39 @@ export class Spoke {
     }
 }
 
+export const Ball_Types = {
+    HILBERT: 0,
+    WEAK_FUNK: 1,
+    REVERSE_FUNK: 2,
+    THOMPSON: 3
+};
+export class Ball {
+    constructor(hilbert_point, type, radius = 1) {
+        this.point = hilbert_point;
+        this.type = type;
+        this.radius = radius;
+        this.polygon = this.getPointsOnBall();
+    }
+
+    getPointsOnBall() {
+        switch(this.type) {
+            case Ball_Types.HILBERT:
+                return new Polygon(getPointsOnHilbertBall(this.point,this.radius));
+            case Ball_Types.WEAK_FUNK:
+                return new Polygon(getPointsOnForwardFunkBall(this.point, this.radius));
+            case Ball_Types.REVERSE_FUNK:
+                return new Polygon(getPointsOnReverseFunkBall(this.point, this.radius));
+            case Ball_Types.THOMPSON:
+                let pointsOnBall1 = getPointsOnReverseFunkBall(this, this.ballRadius);
+                let polygon1 = new ConvexPolygon(pointsOnBall1, this.boundaryColor, penWidth);
+
+                let pointsOnBall2 = getPointsOnForwardFunkBall(this, this.ballRadius);      
+                let polygon2 = new ConvexPolygon(pointsOnBall2, this.boundaryColor, penWidth);
+
+                return createPolygonIntersection(polygon1, polygon2);
+        }
+    }
+}
 
 export class Sector {
     constructor(polygon, p1,p2,p1_enter,p1_exit,p2_enter,p2_exit,edge_spokes){

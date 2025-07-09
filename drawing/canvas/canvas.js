@@ -45,6 +45,7 @@ export class Canvas {
       this.segments = [];
       this.bisectors = [];
       this.bisector_intersections = [];
+      this.balls = [];
       this.brute_force_voronoi = null;
       this.voronoi_image = null;
 
@@ -732,6 +733,10 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
       })
 
       this.drawSelectBox()
+
+      this.balls.forEach((b) => {
+         b.draw(this.ctx);
+      })
  
    }
 

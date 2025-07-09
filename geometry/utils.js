@@ -1,4 +1,4 @@
-import {Bound, Point, Segment} from "./primitives.js"
+import {Bound, Point, Segment, Polygon} from "./primitives.js"
 
 export const colors = {"aqua":"#00ffff","aquamarine":"#7fffd4",
     "bisque":"#ffe4c4","black":"#000000","blue":"#0000ff","blueviolet":"#8a2be2","brown":"#a52a2a","burlywood":"#deb887",
@@ -69,6 +69,55 @@ export function quasiMetric(edge1,point1,point2,edge2) {
   } else {
     return hilbertMetric(edge1,point1,point2,edge2);
   }
+}
+
+// Following spoke and ball functions were from Nithins code
+export function getPointOnSpoke(A, C, D, r) {
+    const scalar = 1 / (1 + (norm(C, D) / norm(A, C)) * Math.exp(2 * r));
+    const dx = D.x - A.x;
+    const dy = D.y - A.y;
+    return new Point(scalar * dx + A.x, scalar * dy + A.y)
+}
+
+export function getPointsOnHilbertBall(center, radius) {
+  let points = [];
+  center.spokes.forEach(({ A, C, D }) => {
+    points.push(getPointOnSpoke(A, C, D, radius));
+    points.push(getPointOnSpoke(D, C, A, radius));
+  });
+  return convexHull(points);
+}
+
+export function getPointOnSpokeForward(C, A, r) {
+  const scalar = 1 / Math.exp(r);
+  const dx = C.x - A.x;
+  const dy = C.y - A.y;
+  return new Point(scalar * dx + A.x, scalar * dy + A.y)
+}
+
+export function getPointOnSpokeReverse(C, A, r) {
+  const scalar = Math.exp(r);
+  const dx = C.x - A.x;
+  const dy = C.y - A.y;
+  return new Point(scalar * dx + A.x, scalar * dy + A.y)
+}
+
+export function getPointsOnForwardFunkBall(center, radius) {
+  let points = [];
+  center.spokes.forEach(({ A, C, D }) => {
+    // points.push(getPointOnSpokeForward(C, A, radius));
+    points.push(getPointOnSpokeForward(C, A, radius));
+
+  });
+  return convexHull(points);
+}
+
+export function getPointsOnReverseFunkBall(center, radius) {
+  let points = [];
+  center.spokes.forEach(({ A, C, D }) => {
+    points.push(getPointOnSpokeReverse(C, A, radius));
+  });
+  return convexHull(points);
 }
 
 export function calculateHilbertDistance(boundary,point1,point2){
@@ -171,6 +220,73 @@ export function pointSegDistance(point, segment) {
   const qy = y1 + t * (y2 - y1);
 
   return Math.hypot(px - qx, py - qy);                    
+}
+
+export function areParallel(segment1, segment2) {
+  let deltaX1 = segment1.end.x - segment1.start.x;
+  let deltaY1 = segment1.end.y - segment1.start.y;
+  let deltaX2 = segment2.end.x - segment2.start.x;
+  let deltaY2 = segment2.end.y - segment2.start.y;
+    
+  // Check if both segments are vertical
+  if (deltaX1 === 0 && deltaX2 === 0) return true;
+    
+  // Check if one segment is vertical and the other is not
+  if ((deltaX1 === 0 && deltaX2 !== 0) || (deltaX1 !== 0 && deltaX2 === 0)) return false;
+    
+  // Calculate slopes
+  let slope1 = deltaY1 / deltaX1;
+  let slope2 = deltaY2 / deltaX2;
+    
+  return Math.abs(slope1 - slope2) < 1e-9; // Consider slopes equal if difference is less than a small epsilon
+}
+
+export function arePointsEqual(point1, point2, epsilon = 1e-9) {
+      return Math.abs(point1.x - point2.x) < epsilon && Math.abs(point1.y - point2.y) < epsilon;
+}
+
+export function intersectWithPolygon(polygon1, polygon2) {
+  let intersections = [];
+    
+  for (let edge1 of polygon1.segments) {
+    for (let edge2 of polygon2.segments) {
+      if (areParallel(edge1, edge2)) continue;
+      let intersection = intersectSegments(edge1, edge2);
+      if (intersection) {
+        if (!intersections.some(point => arePointsEqual(point, intersection))) {
+          intersections.push(intersection);
+        }
+      }
+    }
+  }
+
+  return intersections;
+}
+
+export function createPolygonIntersection(polygon1, polygon2) {
+  let intersectionPoints = intersectWithPolygon(polygon1, polygon2);
+
+  polygon1.vertices.forEach(vertex => {
+  // if .includes doesnt compare structural equality then i need to change that
+    if (polygon2.points.includes(vertex) || pointOnPolygon(vertex, polygon2)) {
+      if (!intersectionPoints.some(point => arePointsEqual(point, vertex))) {
+        intersectionPoints.push(vertex);
+      }
+    }
+  });
+      
+  polygon2.vertices.forEach(vertex => {
+    if (polygon1.points.includes(vertex) || pointOnPolygon(vertex,polygon1)) {
+      if (!intersectionPoints.some(point => arePointsEqual(point, vertex))) {
+        intersectionPoints.push(vertex);
+      }
+    }
+  });
+      
+  if (intersectionPoints.length < 3) return null;
+  let newPolygon = new Polygon(intersectionPoints)
+      
+  return newPolygon;
 }
 
 export function intersectSegmentsAsLines(s1, s2) {

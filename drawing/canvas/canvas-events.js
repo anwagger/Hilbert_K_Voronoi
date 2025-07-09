@@ -15,6 +15,7 @@ export function initEvents(canvas) {
       
       document.getElementById('polygonContainer').style.display = (canvas.mode === "boundary") ? 'block' : 'none';
       document.getElementById('siteContainer').style.display = canvas.mode === "site" ? 'block' : 'none';
+      document.getElementById('ballContainer').style.display = canvas.mode === "balls" ? 'block' : 'none';
       document.getElementById('zoomContainer').style.display = canvas.mode === "view" ? 'block' : 'none';
       document.getElementById('voronoiContainer').style.display = canvas.mode === "voronoi" ? 'block' : 'none';
       document.getElementById('imageContainer').style.display = canvas.mode === "image" ? 'block' : 'none';

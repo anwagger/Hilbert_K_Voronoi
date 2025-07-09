@@ -15,6 +15,7 @@
                 <select id="mode-select" name="mode-select">
                     <option value="boundary">Set Boundary</option>
                     <option value="site">Insert Sites</option>
+                    <option value="balls">Balls</option>
                     <option value="view">Zoom</option>
                     <option value="voronoi">Voronoi</option>
                     <option value="image">Hilbert Images</option>
@@ -247,6 +248,13 @@
             </div>
         </div>
 
+      <div id="ballContainer">
+        <input type="checkbox" id="hilbertBall" name="hilbertBall" value="Hilbert">
+        <input type="checkbox" id="weakFunkBall" name="weakFunkBall" value="Weak Funk">
+        <input type="checkbox" id="reverseFunkBall" name="reverseFunkBall" value="Reverse Funk">
+        <input type="checkbox" id="thompsonBall" name="thompsonBall" value="Thompson">
+      </div>
+
 
       <div id="zoomContainer">
         <input type="range" id="zoomRange" name="zoomRange" min="0.1" max="5" value="1" step="0.1"/>
@@ -284,6 +292,7 @@
           </div>
         </form>
       </div>
+
       <div id="imageContainer">
         <div style="position: relative; margin: 10px;">
           <label for="image">Choose an image (PNG or JPEG):</label>
