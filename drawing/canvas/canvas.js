@@ -369,7 +369,7 @@ export class Canvas {
    }
 
    calculateBisectorIntersections(){
-      
+      /** 
       this.bisector_intersections = []
       for(let i = 0; i < this.bisectors.length; i++){
          for(let j = i+1; j < this.bisectors.length; j++){
@@ -383,6 +383,7 @@ export class Canvas {
             }
          }
       }
+         */
    }
 
    setFastVoronoi(event,degree){

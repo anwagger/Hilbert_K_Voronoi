@@ -88,26 +88,6 @@ export function conicToMatrix(conic){
         [D/2,E/2,F]
     ]
 }
-/*
-assume 
-
-A B D
-B C E
-D E F
-
-DET(f*C1 + g*C2) = 0
-
-(fA+gA) * det(fC+gC,fE+gE,fE+gE,fF+gF)
--(fB+gB) * det(fB+gB,fE+gE,fD+gD,fF+gF)
-+(fD+gD) * det(fB+gB,fC+gC,fD+gD,fE+gE) = 0
-
-A' * det(C',E',E',F') - B' * det(B',E',D',F') + D' * det(B',C',D',E') = 0
-A'*(C'E'-E'F') - B'(B'D'-E'F') + D'(B'D'-C'E') = 0
-ACE - AEF - BBD + BEF + DBD - BCE = 0
-(f1-g2)(f3-g4)(f5-g6)
-fff*135 +(fgg)*146 +(gfg)*236 + (ggf)*245 - (gff)*235 - (fgf)*145 - (ffg)*136 - (ggg)*246
-fff*135 + (fgg)*(146+236+245)  
-*/
 
 // turns a conic equation into an equivalent shape but B = 0
 // different rotation, same shape
@@ -170,16 +150,16 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
 
     let sensitivity = 1e-10
 
-    if(count > 100000){
-        console.log("EHLLL{","Depth",depth,"count",count,"Ranges: ",range1,range2,"Areas: ",bound_area1,bound_area2)
-    }
-
 
     // if the range for each conic is small enough, we found the intersection!
     if (Math.abs(range1) <= sensitivity && Math.abs(range2) <= sensitivity){
         intersections.push(new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2))
         return intersections
         // return new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2)
+    }
+
+    if(count > 100000){
+        console.log("EHLLL{","Depth",depth,"count",count,"Ranges: ",range1,range2,"Areas: ",bound_area1,bound_area2,"TYPES",c_s1.parameterized_conic.type,c_s1.parameterized_conic.orientation,c_s2.parameterized_conic.type,c_s2.parameterized_conic.orientation)
     }
 
     let sub_cs1 = []
@@ -819,7 +799,7 @@ export function getConicType(conic){
      */
 
      let parallel = (isZero(A) && isZero(D)) || (isZero(C) && isZero(E))
-     let crossed = isZero(((D*D/(4*A)) + (E*E/(4*C)) - F))
+     let crossed = isZero(((D*D/(4*A)) + (E*E/(4*C)) - F)/10)
 
     if (isZero(beta) || parallel || crossed){
         return Conic_Type.DEGENERATE

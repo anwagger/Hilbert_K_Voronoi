@@ -29,10 +29,11 @@ class Pair {
 }
 
 export class VoronoiCell {
-    constructor(contained_sites,bisector_segments, bound){
+    constructor(contained_sites,bisector_segments,bisector_data, bound){
         this.bisector_segments = bisector_segments
         this.bound = bound
         this.contained_sites = contained_sites
+        this.bisector_data = bisector_data
     }
 }
 
@@ -201,11 +202,13 @@ export function n3lognVoronoi(boundary,points){
     console.time("circumcenters")
     // calculate circumcenters
     let circumcenter_data = matrix3D(n,n,n,false)
+    let circumcenters = []
     for(let i = 0; i < n; i++){
         for(let j = i+1; j < n; j++){
             for(let k = j+1; k < n; k++){
                 let c = calculateCircumcenter(boundary, bisectors[i][j],bisectors[j][k],bisectors[i][k])
                 if(c){
+                    circumcenters.push(c)
                     let data = {
                         i:i,
                         j:j,
@@ -386,7 +389,7 @@ export function n3lognVoronoi(boundary,points){
     for(let v in voronoi_cell_map){
         let bisector_segments_data = voronoi_cell_map[v]
         let degree = bisector_segments_data[0].degree
-        let voronoi_cell = new VoronoiCell(v,[],null)
+        let voronoi_cell = new VoronoiCell(v,[],[],null)
         for(let d = 0; d < bisector_segments_data.length; d++){
             let i = bisector_segments_data[d].i
             let j = bisector_segments_data[d].j
@@ -395,6 +398,7 @@ export function n3lognVoronoi(boundary,points){
             let bound = calculateBisectorSegmentBounds(bisectors[i][j],start,end)
             let bisector_segment = new BisectorSegment(bisectors[i][j],start,end,bound)
             voronoi_cell.bisector_segments.push(bisector_segment)
+            voronoi_cell.bisector_data.push([i,j])
         }
         voronoi_cell.bound = calculateVoronoiCellBounds(voronoi_cell.bisector_segments)
         voronoi_lists[degree-1].push(voronoi_cell)
@@ -419,5 +423,5 @@ export function n3lognVoronoi(boundary,points){
 
     //console.log("VORONOIS",voronois)
 
-    return {voronois: voronois,classification:bisector_classifications}
+    return {voronois: voronois,classification:bisector_classifications,circumcenters:circumcenters}
 }
