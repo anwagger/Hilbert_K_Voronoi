@@ -102,6 +102,7 @@ export class PartitionTree {
             bound_arr.push(bound);
             let x = computeClosestBound(bound_arr, middle_x);
 
+
             let node = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
 
             // splits bounding box up into a left and right
@@ -137,6 +138,7 @@ export class PartitionTree {
             } else {
                 node.right = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
             }
+            return node;
 
             // nearly identical to the x case, just shrinks the bound vertically instead of horizontally
         } else if (type === Partition_Node_Type.Y) {
@@ -179,6 +181,7 @@ export class PartitionTree {
             } else {
                 node.below = this.createTree(Partition_Node_Type.X, bottom_voronoi_bounds, bottom_bound);
             }
+            return node;
         // cell case
         } else {
             let k = [...voronoi_bounds.keys()]; // turns cell indexes into an array
