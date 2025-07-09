@@ -425,7 +425,7 @@ export class Site {
     this.drawable_spokes = drawable_spokes
     this.radius = radius;
     this.selected = false
-
+    this.balls = []
   }
 
   setColor(color){
@@ -444,6 +444,9 @@ export class Site {
           this.drawSelectionRing(ctx);
         }
         this.drawable_point.draw(ctx);
+        this.balls.forEach((b) => {
+          b.draw(ctx);
+        })
     }
 
   drawSelectionRing(ctx){

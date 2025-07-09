@@ -63,12 +63,18 @@ export function manhattanMetric(point1, point2) {
   return Math.abs(point1.x - point2.x) + Math.abs(point1.y - point2.y);
 }
 
+
+// this is lowk made up it looks fun tho
 export function quasiMetric(edge1,point1,point2,edge2) {
   if ((point1.x + point2.y) > (point2.x + point1.y)) {
     return euclideanDistance(point1,point2);
   } else {
     return hilbertMetric(edge1,point1,point2,edge2);
   }
+}
+
+export function chebyshevMetric(point1,point2) {
+  return Math.max(Math.abs(point2.x - point1.x), Math.abs(point2.y - point1.y))
 }
 
 // Following spoke and ball functions were from Nithins code
@@ -761,6 +767,9 @@ export function getDistanceFromMetric(metric,p,point,first,last){
     break;
     case "manhattan":
         distance = manhattanMetric(p,point);
+    break;
+    case "chebyshev":
+        distance = chebyshevMetric(p,point);
     break;
     case "funk":
         distance = weakFunk(p,point,first);
