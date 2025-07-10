@@ -147,7 +147,7 @@ export function initEvents(canvas) {
 
    document.addEventListener('keydown', (event) => {
       const activeElement = document.activeElement;
-      if (activeElement && (activeElement.tagName !== 'INPUT' || activeElement.id === 'voronoiDegree')) {
+      if (activeElement && activeElement.tagName !== 'INPUT') {
          if (event.key === 'Delete') {
             canvas.deleteSelectedSites()
          } else if (canvas.mode === "voronoi") {
@@ -214,6 +214,20 @@ export function initEvents(canvas) {
       const input = document.getElementById('voronoiDegree').value;
       const degree = parseInt(input);
       canvas.setFastVoronoi(event,degree);
+   });
+
+   document.getElementById('voronoiDegree').addEventListener('change', (event) => {
+      const input = event.target.value;
+      const degree = parseInt(input);
+      if (degree > canvas.sites.length) {
+         alert("Invalid degree :((((");
+      } else {
+         canvas.brute_force_voronoi.voronoi.degree = degree;
+         canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
+         canvas.changeFastVoronoiDegree(degree)
+                     
+         canvas.drawAll();
+      }
    });
 
    document.getElementById('brute-force-metric-select').addEventListener('change', (event) => {
