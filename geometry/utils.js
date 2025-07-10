@@ -77,6 +77,14 @@ export function chebyshevMetric(point1,point2) {
   return Math.max(Math.abs(point2.x - point1.x), Math.abs(point2.y - point1.y))
 }
 
+
+// yes i know p should be only an integer and anything less than 1 doesnt make it a valid metric space but shhhhh 
+export function minkowskiMetric(point1, point2, p) {
+    return (((Math.abs(point2.x - point1.x)**p) + (Math.abs(point2.y - point1.y)**p))**(1/p))
+  
+  //return (Math.abs(point2.x - point1.x)**p) + (Math.abs(point2.y - point1.y)**p)
+}
+
 // Following spoke and ball functions were from Nithins code
 export function getPointOnSpoke(A, C, D, r) {
     const scalar = 1 / (1 + (norm(C, D) / norm(A, C)) * Math.exp(2 * r));
@@ -752,7 +760,7 @@ export function getVoronoiColor(canvas,cell,degree) {
   }     
 } 
 
-export function getDistanceFromMetric(metric,p,point,first,last){
+export function getDistanceFromMetric(metric,p,point,first,last,minkowski_p=2){
   // order: first p point last
   let distance = 0
   switch(metric){
@@ -770,6 +778,9 @@ export function getDistanceFromMetric(metric,p,point,first,last){
     break;
     case "chebyshev":
         distance = chebyshevMetric(p,point);
+    break;
+    case "minkowski":
+        distance = minkowskiMetric(p,point,minkowski_p);
     break;
     case "funk":
         distance = weakFunk(p,point,first);

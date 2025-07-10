@@ -146,6 +146,8 @@ export function initEvents(canvas) {
    });
 
    document.addEventListener('keydown', (event) => {
+      const activeElement = document.activeElement;
+      if (activeElement && (activeElement.tagName !== 'INPUT' || activeElement.id === 'voronoiDegree')) {
          if (event.key === 'Delete') {
             canvas.deleteSelectedSites()
          } else if (canvas.mode === "voronoi") {
@@ -157,9 +159,9 @@ export function initEvents(canvas) {
                   console.log(canvas.brute_force_voronoi.voronoi.degree);
                   canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
                }
-               
+                  
                canvas.changeFastVoronoiDegree(int)
-               
+                  
                canvas.drawAll();
             } else {
                if (event.key === "k") {
@@ -170,10 +172,10 @@ export function initEvents(canvas) {
                   }
                   canvas.brute_force_voronoi.calculateBruteForceImage(canvas);
                   canvas.drawAll();
-
+                  }
                }
             }
-         }
+        }
    });
 
    document.getElementById('zoomRange').addEventListener('change', (event) => {
@@ -216,13 +218,37 @@ export function initEvents(canvas) {
 
    document.getElementById('brute-force-metric-select').addEventListener('change', (event) => {
       if(canvas.brute_force_voronoi){
+         if (event.target.value === 'minkowski') {
+            console.log(canvas.brute_force_voronoi.voronoi.p)
+            document.getElementById('minkowskiDiv').style.display = 'block';
+            canvas.brute_force_voronoi.voronoi.p = document.getElementById('minkowskiVal').value;
+         } else {
+            document.getElementById('minkowskiDiv').style.display = 'none';
+         }
          console.log("CHANGE METRIC",canvas.brute_force_voronoi.metric, event.target.value)
          canvas.brute_force_voronoi.voronoi.metric = event.target.value
          canvas.recalculateBruteForceVoronoi()
-      canvas.drawAll()
+         canvas.drawAll()
       }
       
    });
+
+   document.getElementById('minkowskiVal').addEventListener('change', (event) => {
+      if (canvas.brute_force_voronoi.voronoi) {
+         canvas.brute_force_voronoi.voronoi.p = event.target.value;
+         canvas.recalculateBruteForceVoronoi();
+         canvas.drawAll();
+      }
+   })
+
+   document.getElementById('minkowskiAmount').addEventListener('change', (event) => {
+      if (canvas.brute_force_voronoi.voronoi) {
+         canvas.brute_force_voronoi.voronoi.p = event.target.value;
+         document.getElementById('minkowskiVal').value = event.target.value;
+         canvas.recalculateBruteForceVoronoi();
+         canvas.drawAll();
+      }
+   })
 
    document.getElementById('hilbert-image-select').addEventListener('change', (event) => {
       let files = event.target.files

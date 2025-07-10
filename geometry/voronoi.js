@@ -63,6 +63,7 @@ export class VoronoiDiagram {
         this.partition_tree = partition_tree
         this.metric = "hilbert"; // might make this an enum later idk
         this.mode = "kth"; // can be "kth" or "k"
+        this.p = 2; // for minkowski, defaults to euclidean
     }
 
     // just works for hilbert rn, needs cases for when metric isnt hilbert
@@ -123,7 +124,7 @@ export class VoronoiDiagram {
                             if (count == 2) {
                                 const first = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[0]:ints[1];
                                 const last = euclideanDistance(p, ints[0]) < euclideanDistance(point, ints[0])? ints[1]:ints[0];
-                                let distance = getDistanceFromMetric(this.metric,p,point,first,last);
+                                let distance = getDistanceFromMetric(this.metric,p,point,first,last,this.p);
                                 pairs.push(new Pair(s, distance));
                             }
                         }

@@ -292,6 +292,7 @@
                   <option value="thompson">Thompson</option>
                   <option value="manhattan">Manhattan</option>
                   <option value="chebyshev">Chebyshev</option>
+                  <option value="minkowski">Minkowski</option>
                   <option value="funk">Weak Funk</option>
                   <option value="reverse funk">Reverse Funk</option>
                   <option value="quasi">Quasi</option>
@@ -300,6 +301,11 @@
             </span>
           </div>
         </form>
+        <div id="minkowskiDiv" style="display: none;">
+          <input type="range" id="minkowskiVal" min="-5" max="5" value="2" step = "0.01" oninput="minkowskiAmount.value=minkowskiVal.value"/>
+          <label for="minkowskiVal">Minkowski P Value</label><br>
+          <input type="text" id="minkowskiAmount" name="minkowskiAmount"/>
+        </div>
       </div>
 
       <div id="imageContainer">
