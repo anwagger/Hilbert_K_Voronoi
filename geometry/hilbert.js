@@ -31,7 +31,8 @@ export function calculateSpokes(boundary,point){
         for (let j = 1; j < n_points-1; j++){
             let i2 = (i + j)%n_points
 
-            let boundary_segment = new Segment(points[i2],points[(i2+1)%n_points])
+            let boundary_segment = new Segment(points[i2],points[(i2+1)%n_points]);
+
             
             let intersection = intersectSegmentsAsLines(partial_spoke,boundary_segment); 
             
@@ -43,7 +44,7 @@ export function calculateSpokes(boundary,point){
                     &&
                     isBetween(boundary_segment.start.y,boundary_segment.end.y,intersection.y)
                 ){
-                    spokes.push(new Spoke(new Segment(points[i],intersection),i,i2));
+                    spokes.push(new Spoke(new Segment(points[i],intersection),i,i2,point));
                     break;
                 }
             }

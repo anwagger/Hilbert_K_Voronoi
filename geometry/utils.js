@@ -87,6 +87,9 @@ export function minkowskiMetric(point1, point2, p) {
 
 // Following spoke and ball functions were from Nithins code
 export function getPointOnSpoke(A, C, D, r) {
+  console.log(A)
+  console.log(C)
+  console.log(D)
     const scalar = 1 / (1 + (euclideanDistance(C, D) / euclideanDistance(A, C)) * Math.exp(2 * r));
     const dx = D.x - A.x;
     const dy = D.y - A.y;
@@ -95,9 +98,9 @@ export function getPointOnSpoke(A, C, D, r) {
 
 export function getPointsOnHilbertBall(center, radius, polygon) {
   let points = [];
-  center.spokes.forEach(({ segment, front, back }) => {
-    points.push(getPointOnSpoke(polygon.points[front], polygon.points[back], segment.end, radius));
-    points.push(getPointOnSpoke(segment.end, polygon.points[back], polygon.points[front], radius));
+  center.spokes.forEach(({ segment:segment, point:point }) => {
+    points.push(getPointOnSpoke(segment.start, point, segment.end, radius));
+    points.push(getPointOnSpoke(segment.end, point, segment.start, radius));
   });
   return convexHull(points);
 }
@@ -118,9 +121,9 @@ export function getPointOnSpokeReverse(C, A, r) {
 
 export function getPointsOnForwardFunkBall(center, radius, polygon) {
   let points = [];
-  center.spokes.forEach(({ front:front, back:back }) => {
+  center.spokes.forEach(({ segment:segment, point:point }) => {
     // points.push(getPointOnSpokeForward(C, A, radius));
-    points.push(getPointOnSpokeForward(polygon.points[back], polygon.points[front], radius));
+    points.push(getPointOnSpokeForward(point, segment.start, radius));
 
   });
   return convexHull(points);
@@ -128,8 +131,8 @@ export function getPointsOnForwardFunkBall(center, radius, polygon) {
 
 export function getPointsOnReverseFunkBall(center, radius, polygon) {
   let points = [];
-  center.spokes.forEach(({ front:front, back:back, D }) => {
-    points.push(getPointOnSpokeReverse(polygon.points[back], polygon.points[front], radius));
+  center.spokes.forEach(({ segment:segment, point:point }) => {
+    points.push(getPointOnSpokeReverse(point, segment.start, radius));
   });
   return convexHull(points);
 }
@@ -282,7 +285,7 @@ export function createPolygonIntersection(polygon1, polygon2) {
 
   polygon1.points.forEach(p => {
   // if .includes doesnt compare structural equality then i need to change that
-    if (polygon2.points.includes(p) || pointOnPolygon(p, polygon2)) {
+    if (polygon2.includes(p) || pointOnPolygon(p, polygon2) || pointInPolygon(p,polygon2)) {
       if (!intersectionPoints.some(point => arePointsEqual(point, p))) {
         intersectionPoints.push(p);
       }
@@ -290,7 +293,7 @@ export function createPolygonIntersection(polygon1, polygon2) {
   });
       
   polygon2.points.forEach(p => {
-    if (polygon1.points.includes(p) || pointOnPolygon(p,polygon1)) {
+    if (polygon1.includes(p) || pointOnPolygon(p,polygon1) || pointInPolygon(p,polygon1)) {
       if (!intersectionPoints.some(point => arePointsEqual(point, p))) {
         intersectionPoints.push(p);
       }
@@ -298,6 +301,7 @@ export function createPolygonIntersection(polygon1, polygon2) {
   });
       
   if (intersectionPoints.length < 3) return null;
+  intersectionPoints = convexHull(intersectionPoints);
   let newPolygon = new Polygon(intersectionPoints)
       
   return newPolygon;

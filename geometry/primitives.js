@@ -45,10 +45,11 @@ export class Bound {
     }
 }
 export class Spoke {
-    constructor(segment,front,back){
+    constructor(segment,front,back, point, closest_intersection){
         this.segment = segment
         this.front = front // point
         this.back = back // segment from index - index+1
+        this.point = point
     }
 }
 
@@ -79,7 +80,7 @@ export class Ball {
                 let pointsOnBall1 = getPointsOnReverseFunkBall(this.point, this.radius, this.boundary);
                 let polygon1 = new Polygon(pointsOnBall1)
 
-                let pointsOnBall2 = getPointsOnForwardFunkBall(this.point, this.radius, this.boundary);      
+                let pointsOnBall2 = getPointsOnForwardFunkBall(this.point, this.radius, this.boundary);    
                 let polygon2 = new Polygon(pointsOnBall2);
 
                 console.log(createPolygonIntersection(polygon1, polygon2))
