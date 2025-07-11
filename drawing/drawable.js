@@ -1,5 +1,6 @@
 import { ConicSegment,calculateConicSegmentBounds } from "../geometry/conics.js";
-import { Point, Polygon, Segment } from "../geometry/primitives.js";
+import { calculateHilbertPoint } from "../geometry/hilbert.js";
+import { Ball, Point, Polygon, Segment } from "../geometry/primitives.js";
 import { createSegmentsFromPoints,
   convexHull, 
   intersectSegments, 
@@ -672,11 +673,18 @@ export class DrawableBall {
   constructor(ball, color = "black") {
     this.ball = ball;
     this.color = color;
-    this.polygon = new DrawablePolygon(ball.polygon)
+    this.polygon = new DrawablePolygon(this.ball.polygon,this.color)
+
   }
 
   draw(ctx) {
     this.polygon.draw(ctx);
+  }
+
+  recalculateBall(p) {
+    let pointWithSpokes = calculateHilbertPoint(this.ball.boundary, p);
+    this.ball = new Ball(pointWithSpokes, this.ball.type, this.ball.boundary);
+    this.polygon = new DrawablePolygon(this.ball.polygon,this.color)
   }
 
   // draw should be dif types of lines/transparency for different types of balls. 

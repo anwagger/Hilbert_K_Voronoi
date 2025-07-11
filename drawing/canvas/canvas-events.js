@@ -1,7 +1,8 @@
-import { Point } from "../../geometry/primitives.js";
+import { calculateBisector, calculateHilbertPoint, HilbertPoint } from "../../geometry/hilbert.js";
+import { Ball, Ball_Types, Point } from "../../geometry/primitives.js";
 import { cleanArray, pointInPolygon } from "../../geometry/utils.js";
 import { VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
-import { CAMERA, DrawableBruteForceVoronoi, HilbertImage } from "../drawable.js";
+import { CAMERA, DrawableBall, DrawableBruteForceVoronoi, HilbertImage } from "../drawable.js";
 
 // from nithins
 export function initEvents(canvas) {
@@ -178,6 +179,53 @@ export function initEvents(canvas) {
         }
    });
 
+   document.getElementById('addBalls').addEventListener('click', () => { 
+      const hilbert = document.getElementById('hilbertBall');
+      const funk = document.getElementById('weakFunkBall');
+      const reverse = document.getElementById('reverseFunkBall');
+      const thompson = document.getElementById('thompsonBall');
+      for (let s of canvas.sites) {
+         if (s.selected) {
+            let pointWithSpokes = calculateHilbertPoint(canvas.boundary.polygon,s.drawable_point.point);
+
+            if (hilbert.checked) {
+               const ball = new Ball(pointWithSpokes,Ball_Types.HILBERT, canvas.boundary.polygon);
+               s.balls.push(new DrawableBall(ball,s.color));
+            }
+
+            if (funk.checked) {
+               const ball = new Ball(pointWithSpokes,Ball_Types.WEAK_FUNK, canvas.boundary.polygon);
+               s.balls.push(new DrawableBall(ball,s.color))
+            }
+
+            if (reverse.checked) {
+               const ball = new Ball(pointWithSpokes,Ball_Types.REVERSE_FUNK, canvas.boundary.polygon);
+               s.balls.push(new DrawableBall(ball,s.color))
+            }
+
+            if (thompson.checked) {
+               const ball = new Ball(pointWithSpokes,Ball_Types.THOMPSON, canvas.boundary.polygon);
+               s.balls.push(new DrawableBall(ball,s.color))
+            }
+         }
+      }
+
+      canvas.drawAll();
+
+   });
+
+   document.getElementById('deleteBalls').addEventListener('click', () => {
+      for (let s of canvas.sites) {
+         if (s.selected) {
+            s.balls = []
+         }
+      }
+
+      canvas.drawAll();
+   });
+
+
+
    document.getElementById('zoomRange').addEventListener('change', (event) => {
       CAMERA.setScale(event.target.value);
       canvas.drawAll();
@@ -310,7 +358,7 @@ export function initEvents(canvas) {
    canvasElement.onmousedown = (event) => {
        CAMERA.move_lock = false
 
-       if (canvas.mode === "site" || canvas.mode === "voronoi"){
+       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls"){
          if (event.shiftKey){
             canvas.selecting = true;
             const {x,y} = canvas.getMousePos(event)

@@ -25,6 +25,15 @@ export class Polygon {
         }
     }
 
+    includes(p) {
+        this.points.forEach((p2) => {
+            if (p.x === p2.x && p.y === p2.y) {
+                return true;
+            }
+        })
+        return false;
+    }
+
 } 
 
 export class Bound {
@@ -50,28 +59,30 @@ export const Ball_Types = {
     THOMPSON: 3
 };
 export class Ball {
-    constructor(hilbert_point, type, radius = 1) {
+    constructor(hilbert_point, type, boundary, radius = 1) {
         this.point = hilbert_point;
         this.type = type;
         this.radius = radius;
+        this.boundary = boundary;
         this.polygon = this.getPointsOnBall();
     }
 
     getPointsOnBall() {
         switch(this.type) {
             case Ball_Types.HILBERT:
-                return new Polygon(getPointsOnHilbertBall(this.point,this.radius));
+                return new Polygon(getPointsOnHilbertBall(this.point,this.radius, this.boundary));
             case Ball_Types.WEAK_FUNK:
-                return new Polygon(getPointsOnForwardFunkBall(this.point, this.radius));
+                return new Polygon(getPointsOnForwardFunkBall(this.point, this.radius, this.boundary));
             case Ball_Types.REVERSE_FUNK:
-                return new Polygon(getPointsOnReverseFunkBall(this.point, this.radius));
+                return new Polygon(getPointsOnReverseFunkBall(this.point, this.radius, this.boundary));
             case Ball_Types.THOMPSON:
-                let pointsOnBall1 = getPointsOnReverseFunkBall(this, this.ballRadius);
-                let polygon1 = new ConvexPolygon(pointsOnBall1, this.boundaryColor, penWidth);
+                let pointsOnBall1 = getPointsOnReverseFunkBall(this.point, this.radius, this.boundary);
+                let polygon1 = new Polygon(pointsOnBall1)
 
-                let pointsOnBall2 = getPointsOnForwardFunkBall(this, this.ballRadius);      
-                let polygon2 = new ConvexPolygon(pointsOnBall2, this.boundaryColor, penWidth);
+                let pointsOnBall2 = getPointsOnForwardFunkBall(this.point, this.radius, this.boundary);      
+                let polygon2 = new Polygon(pointsOnBall2);
 
+                console.log(createPolygonIntersection(polygon1, polygon2))
                 return createPolygonIntersection(polygon1, polygon2);
         }
     }

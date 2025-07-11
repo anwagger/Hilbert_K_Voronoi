@@ -598,6 +598,10 @@ export class Canvas {
       if (change_bisector){
          this.calculateBisectorIntersections()
       }
+
+      site.balls.forEach((b) => {
+         b.recalculateBall(point);
+      })
       
    }
 
