@@ -603,6 +603,20 @@ export class Canvas {
          b.recalculateBall(point);
       })
       
+      
+      let points = []
+      for(let i = 0; i < this.sites.length; i++){
+         points.push(this.sites[i].drawable_point.point)
+      }
+      let k_cluster = new KCluster(this.boundary.polygon,3,points)
+      let d_ps = []
+      k_cluster.centroids.forEach((point) => {
+         let d_p = new DrawablePoint(point)
+         d_p.color = "red"
+         d_p.radius = 5
+         d_ps.push(d_p)
+      })
+      //this.bisector_intersections = d_ps
    }
 
    recalculateAll(){
@@ -624,15 +638,6 @@ export class Canvas {
       this.recalculateFastVoronoi()
       this.recalculateBruteForceVoronoi()
       this.recalculateHilbertImage()
-
-      let points = []
-      for(let i = 0; i < this.sites.length; i++){
-         points.push(this.sites[i].drawable_point.point)
-      }
-
-      let k_cluster = new KCluster(this.boundary.polygon,3,points)
-      console.log("K CLUSTER",k_cluster) 
-      
    }
 
    

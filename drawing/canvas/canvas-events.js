@@ -91,7 +91,7 @@ export function initEvents(canvas) {
    canvas.canvas.addEventListener('dblclick', (event) => {
       if (canvas.mode === 'boundary' && canvas.boundaryType === 'freeDraw'){
             canvas.addPolygonPoint(event);
-      }else if(canvas.mode === 'site'){
+      }else if(canvas.mode === 'site' || canvas.mode === 'voronoi' || canvas.mode === 'balls'){
          if(!event.shiftKey){
             canvas.addSite(event)
          }
@@ -394,7 +394,7 @@ export function initEvents(canvas) {
    canvasElement.onmouseup = (event) => {
        CAMERA.move_lock = true
 
-       if (canvas.mode === "site" || canvas.mode === "voronoi"){
+       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls"){
          if (event.shiftKey){
             canvas.selectSites()
          }else{
@@ -415,7 +415,7 @@ export function initEvents(canvas) {
    
    canvasElement.onmousemove = (event) => {
 
-      if (canvas.mode === "site" || canvas.mode === "voronoi"){
+      if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls"){
          if(event.shiftKey){
             if (canvas.selecting){
                const {x, y} = canvas.getMousePos(event);

@@ -35,6 +35,11 @@ export class VoronoiCell {
         this.contained_sites = contained_sites
         this.bisector_data = bisector_data
     }
+
+    // uses some tricks to 
+    containsPoint(point){
+        
+    }
 }
 
 export function calculateVoronoiCellBounds(bisectors){

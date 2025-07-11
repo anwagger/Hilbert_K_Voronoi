@@ -69,8 +69,11 @@ export class KCluster{
                         minIndex = i
                     }
                 }
-                this.clusters[minIndex].push(p)
-                this.clusterMap.push(minIndex)
+                if(minIndex >= 0){
+                    this.clusters[minIndex].push(p)
+                    this.clusterMap.push(minIndex)
+                }
+                
             }
             let oldCentroids = this.centroids
             this.getNewCentroids()
