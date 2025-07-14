@@ -1,5 +1,6 @@
+import { calculateHilbertPoint, HilbertPoint } from "./hilbert.js";
 import { Point, Polygon } from "./primitives.js";
-import { convexHull, createPolygonIntersection, euclideanDistance } from "./utils.js";
+import { calculateHilbertDistance, convexHull, createPolygonIntersection, euclideanDistance } from "./utils.js";
 
 export const Ball_Types = {
     HILBERT: 0,
@@ -88,4 +89,29 @@ export function getPointsOnReverseFunkBall(center, radius, polygon) {
     points.push(getPointOnSpokeReverse(point, segment.start, radius));
   });
   return convexHull(points);
+}
+
+export function calculateZRegion(boundary,h_p1,h_p2,bisector){
+    let dt = 1e-4
+    let end_point_1 = bisector.getPointFromT(dt)
+    let end_point_2 = bisector.getPointFromT(bisector.conic_segments.length-dt)
+    let dist11 = calculateHilbertDistance(boundary,end_point_1,h_p1.point)
+    let dist12 = calculateHilbertDistance(boundary,end_point_1,h_p2.point)
+
+    let dist1 = (dist11 + dist12)/2
+
+    let ball1 = new Ball(calculateHilbertPoint(boundary,end_point_1),Ball_Types.HILBERT,boundary,dist1)
+
+    let dist21 = calculateHilbertDistance(boundary,end_point_2,h_p1.point)
+    let dist22 = calculateHilbertDistance(boundary,end_point_2,h_p2.point)
+
+    let dist2 = (dist21 + dist22)/2
+
+    let ball2 = new Ball(calculateHilbertPoint(boundary,end_point_2),Ball_Types.HILBERT,boundary,dist2)
+
+    console.log("END P1 DIST: ",dist11,dist12)
+    console.log("END P2 DIST: ",dist21,dist22)
+
+    let z = createPolygonIntersection(ball1.polygon,ball2.polygon)
+    return z
 }

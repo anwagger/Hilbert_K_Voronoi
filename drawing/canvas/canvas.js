@@ -2,7 +2,7 @@ import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSp
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
-import { Ball_Types, Ball} from "../../geometry/balls.js";
+import { Ball_Types, Ball, calculateZRegion} from "../../geometry/balls.js";
 
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames} from "../../geometry/utils.js"
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
@@ -47,6 +47,7 @@ export class Canvas {
       this.segments = [];
       this.bisectors = [];
       this.bisector_intersections = [];
+      this.z_regions = [];
       this.brute_force_voronoi = null;
       this.voronoi_image = null;
 
@@ -343,12 +344,7 @@ export class Canvas {
 
                }
             }else{
-               this.bisectors.forEach((bisector,b) => {
-                  if ((bisector.p1 === p1 && bisector.p2 === p2) || (bisector.p1 === p2 && bisector.p2 === p1)){
-                     this.deleteBisector(b)
-                  }
-               })
-               this.bisectors = cleanArray(this.bisectors)
+               this.deleteBisector(p1,p2)
             }
             
             
@@ -390,12 +386,23 @@ export class Canvas {
       let h_p2 = calculateHilbertPoint(boundary,point2)
       let new_bisector = new DrawableBisector(calculateBisector(boundary,h_p1,h_p2),draw_bisector.p1,draw_bisector.p2,draw_bisector.color)
       this.bisectors[b] = new_bisector
+      
+      
+      console.log("Z-REGION")
+      this.bisector_intersections = []
+      this.bisector_intersections.push(new DrawablePolygon(calculateZRegion(this.boundary.polygon,h_p1,h_p2,new_bisector.bisector)))
    }
 
-   deleteBisector(b){
-      this.bisectors[b] = null
-      // cleaned later
+   deleteBisector(p1,p2){
+      this.bisectors.forEach((bisector,b) => {
+         if ((bisector.p1 === p1 && bisector.p2 === p2) || (bisector.p1 === p2 && bisector.p2 === p1)){
+            this.bisectors[b] = null
+         }
+      })
+      this.bisectors = cleanArray(this.bisectors)
    }
+
+
 
    calculateBisectorIntersections(){
       /** 
