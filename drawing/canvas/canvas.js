@@ -1,4 +1,4 @@
-import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall } from "../drawable.js"
+import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall, DrawableZRegion } from "../drawable.js"
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
@@ -107,6 +107,8 @@ export class Canvas {
             this.deleteSite(deleteSiteIndex[i])
         }
         this.reindexBisectors()
+        this.reindexZRegions()
+
         this.sites = cleanArray(this.sites)
         this.recalculateAll()
         this.drawAll();
@@ -129,6 +131,12 @@ export class Canvas {
       this.bisector_intersections.forEach((d_p,i) => {
          d_p.draw(this.ctx)
       })
+   }
+
+   drawZRegions() {
+      this.z_regions.forEach((z_r,i) => {
+         z_r.draw(this.ctx)
+      });
    }
 
    createNgon(n) {
@@ -387,10 +395,6 @@ export class Canvas {
       let new_bisector = new DrawableBisector(calculateBisector(boundary,h_p1,h_p2),draw_bisector.p1,draw_bisector.p2,draw_bisector.color)
       this.bisectors[b] = new_bisector
       
-      
-      console.log("Z-REGION")
-      this.bisector_intersections = []
-      this.bisector_intersections.push(new DrawablePolygon(calculateZRegion(this.boundary.polygon,h_p1,h_p2,new_bisector.bisector)))
    }
 
    deleteBisector(p1,p2){
@@ -400,6 +404,100 @@ export class Canvas {
          }
       })
       this.bisectors = cleanArray(this.bisectors)
+   }
+   
+   addZRegion(z_r,p1,p2) {
+      let c1 = this.sites[p1].color 
+      let c2 = this.sites[p2].color
+      let c3 = avgColor(c1,c2)
+
+      let d_z_r = new DrawableZRegion(z_r,p1,p2,c3)
+      this.z_regions.push(d_z_r);
+      this.drawAll();
+   }
+
+   setZRegions(event) {
+      let selectedSites = []
+      this.sites.forEach((site,i) =>{
+         if (site.selected){
+
+            selectedSites.push(i)
+         }
+      })      
+      for(let i = 0; i < selectedSites.length; i++){
+         let p1 = selectedSites[i]
+         for(let j = i+1; j < selectedSites.length; j++){
+            let p2 = selectedSites[j]
+            if (event.target.checked){
+               let needNew = true
+               this.z_regions.forEach((z_r,z) => {
+                  if ((z_r.p1 === p1 && z_r.p2 === p2) || (z_r.p1 === p2 && z_r.p2 === p1)){
+                     needNew = false
+                     this.recalculateZRegion(z)
+                  }
+               })
+               if(needNew){
+                  let boundary = this.boundary.polygon
+                  let point1 = this.sites[selectedSites[i]].drawable_point.point
+                  let point2 = this.sites[selectedSites[j]].drawable_point.point
+                  let h_p1 = calculateHilbertPoint(boundary,point1)
+                  let h_p2 = calculateHilbertPoint(boundary,point2)
+                  let bisector = calculateBisector(boundary,h_p1,h_p2)
+                  let z_r = calculateZRegion(boundary,h_p1,h_p2,bisector)
+                  this.addZRegion(z_r,p1,p2)
+
+               }
+            }else{
+               this.deleteZRegion(p1,p2)
+            }
+         }
+      }
+      this.drawAll();
+   }
+
+   // run after deleting sites, but before cleaning!
+   reindexZRegions(){
+      let indexMap = []
+      let index = 0
+      for(let i = 0; i < this.sites.length; i++){
+         if(this.sites[i]){
+            indexMap.push(index)
+            index ++
+         }else{
+            indexMap.push(-1)
+         }
+      }
+      for(let z = 0; z < this.z_regions.length; z++){
+         let d_z_r = this.z_regions[z]
+         d_z_r.p1 = indexMap[d_z_r.p1]
+         d_z_r.p2 = indexMap[d_z_r.p2]
+         if(d_z_r.p1 === -1 || d_z_r.p2 === -1){
+            this.z_regions[z] = null
+         }
+      }
+      this.z_regions = cleanArray(this.z_regions)
+   }
+
+   recalculateZRegion(z){
+      let d_z_r = this.z_regions[z]
+      let boundary = this.boundary.polygon
+      let point1 = this.sites[d_z_r.p1].drawable_point.point
+      let point2 = this.sites[d_z_r.p2].drawable_point.point
+      let h_p1 = calculateHilbertPoint(boundary,point1)
+      let h_p2 = calculateHilbertPoint(boundary,point2)
+      let bisector = calculateBisector(boundary,h_p1,h_p2)
+      let new_z_r = new DrawableZRegion(calculateZRegion(boundary,h_p1,h_p2,bisector),d_z_r.p1,d_z_r.p2,d_z_r.color)
+      this.z_regions[z] = new_z_r
+      
+   }
+
+   deleteZRegion(p1,p2){
+      this.z_regions.forEach((z_r,z) => {
+         if ((z_r.p1 === p1 && z_r.p2 === p2) || (z_r.p1 === p2 && z_r.p2 === p1)){
+            this.z_regions[z] = null
+         }
+      })
+      this.z_regions = cleanArray(this.z_regions)
    }
 
 
@@ -591,6 +689,8 @@ export class Canvas {
          }
       });
       this.reindexBisectors()
+      this.reindexZRegions()
+
       this.sites = cleanArray(this.sites) // removes any null elts from array
       this.recalculateAll()
       this.drawAll();
@@ -605,6 +705,15 @@ export class Canvas {
          }
       }
       this.bisectors = cleanArray(this.bisectors)
+
+      for(let z = 0; z < this.z_regions.length; z++ ){
+         let z_r = this.z_regions[z]
+         if(z_r.p1 === idx || z_r.p2 === idx){
+            this.z_regions[z] = null
+         }
+      }
+      this.z_regions = cleanArray(this.z_regions)
+
       site.drawable_point.deleteInfoBox();
       this.sites[idx] = null;
    }
@@ -630,8 +739,18 @@ export class Canvas {
             this.recalculateBisector(b)
          }
       }
+      
       if (change_bisector){
          this.calculateBisectorIntersections()
+      }
+
+      let change_z_region = false
+      for(let z = 0; z < this.z_regions.length; z++){
+         let z_r = this.z_regions[z]
+         if(z_r.p1 == index || z_r.p2 == index){
+            change_z_region = true
+            this.recalculateZRegion(z)
+         }
       }
 
       site.balls.forEach((b) => {
@@ -769,6 +888,8 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
       this.drawSegments()
 
       this.drawBisectors()
+
+      this.drawZRegions()
 
 
       this.sites.forEach((site) => {

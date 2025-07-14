@@ -33,7 +33,6 @@ export class Ball {
                 let pointsOnBall2 = getPointsOnForwardFunkBall(this.point, this.radius, this.boundary);    
                 let polygon2 = new Polygon(pointsOnBall2);
 
-                console.log(createPolygonIntersection(polygon1, polygon2))
                 return createPolygonIntersection(polygon1, polygon2);
         }
     }
@@ -41,9 +40,6 @@ export class Ball {
 
 // Following spoke and ball functions were from Nithins code
 export function getPointOnSpoke(A, C, D, r) {
-  console.log(A)
-  console.log(C)
-  console.log(D)
     const scalar = 1 / (1 + (euclideanDistance(C, D) / euclideanDistance(A, C)) * Math.exp(2 * r));
     const dx = D.x - A.x;
     const dy = D.y - A.y;
@@ -108,9 +104,6 @@ export function calculateZRegion(boundary,h_p1,h_p2,bisector){
     let dist2 = (dist21 + dist22)/2
 
     let ball2 = new Ball(calculateHilbertPoint(boundary,end_point_2),Ball_Types.HILBERT,boundary,dist2)
-
-    console.log("END P1 DIST: ",dist11,dist12)
-    console.log("END P2 DIST: ",dist21,dist22)
 
     let z = createPolygonIntersection(ball1.polygon,ball2.polygon)
     return z

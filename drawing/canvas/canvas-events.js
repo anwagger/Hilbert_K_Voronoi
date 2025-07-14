@@ -62,6 +62,10 @@ export function initEvents(canvas) {
       canvas.setBisectors(event);
     });
 
+   document.getElementById('siteDrawZRegion').addEventListener('input', (event) => {
+      canvas.setZRegions(event);
+    });
+
    document.getElementById('polygonShowInfo').addEventListener('change', (event) => {
       canvas.setPolygonShowInfo(event);
    });

@@ -13,7 +13,8 @@ computeBoundingBox,
 calculateHilbertDistance,
 isBetween,
 pointInPolygon,
-getVoronoiColor} from "../geometry/utils.js";
+getVoronoiColor,
+colors} from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -709,4 +710,19 @@ export class DrawableBall {
 
   // draw should be dif types of lines/transparency for different types of balls. 
   // solid for hilbert, dashed for forward, more opaque for reverse, idk for thompson mayb inverse color?
+}
+
+export class DrawableZRegion{
+  constructor(polygon,p1,p2,color){
+    this.polygon = new DrawablePolygon(polygon)
+    this.polygon.show_vertices = false
+    this.p1 = p1
+    this.p2 = p2
+    this.color = color
+    
+  }
+  draw(ctx){
+    this.polygon.color = this.color
+    this.polygon.draw(ctx)
+  }
 }
