@@ -508,7 +508,6 @@ export class Canvas {
             this.recalculateFastVoronoi()
             // DONT RECALCULATE BRUTE FORCE HERE!
          }
-
          this.drawAll()
       }
    }
@@ -603,11 +602,13 @@ export class Canvas {
          b.recalculateBall(point);
       })
       
-      
       let points = []
       for(let i = 0; i < this.sites.length; i++){
          points.push(this.sites[i].drawable_point.point)
       }
+      /**
+      
+      // a little buggy
       let k_cluster = new KCluster(this.boundary.polygon,3,points)
       let d_ps = []
       k_cluster.centroids.forEach((point) => {
@@ -616,6 +617,7 @@ export class Canvas {
          d_p.radius = 5
          d_ps.push(d_p)
       })
+          */
       //this.bisector_intersections = d_ps
    }
 

@@ -1,7 +1,5 @@
 import express from 'express'
 
-import * as linear from "./test.mjs"
-
 const app = express();
 const port = 3000;
 
