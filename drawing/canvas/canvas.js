@@ -1,7 +1,7 @@
-import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram } from "../drawable.js"
+import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall } from "../drawable.js"
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
-import { Polygon,Point } from "../../geometry/primitives.js";
+import { Polygon,Point, Ball_Types, Ball} from "../../geometry/primitives.js";
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames} from "../../geometry/utils.js"
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
@@ -58,6 +58,8 @@ export class Canvas {
       this.draggingPoint = null;
 
       this.globalScale = 1.0;
+
+      this.lastBallRadius = 1;
 
       this.showCentroid = false;
       this.boundaryLocked = false;
@@ -197,6 +199,31 @@ export class Canvas {
 
          this.drawAll()
       }      
+   }
+
+   addBalls(siteIdx,hilbert,funk,reverse,thompson, radius) {
+      let s = this.sites[siteIdx];
+      let pointWithSpokes = calculateHilbertPoint(this.boundary.polygon,s.drawable_point.point);
+      
+      if (hilbert.checked) {
+         const ball = new Ball(pointWithSpokes,Ball_Types.HILBERT, this.boundary.polygon, radius);
+         s.balls.push(new DrawableBall(ball,s.color));
+      }
+      
+      if (funk.checked) {
+         const ball = new Ball(pointWithSpokes,Ball_Types.WEAK_FUNK, this.boundary.polygon, radius);
+         s.balls.push(new DrawableBall(ball,s.color));
+      }
+      
+      if (reverse.checked) {
+         const ball = new Ball(pointWithSpokes,Ball_Types.REVERSE_FUNK, this.boundary.polygon, radius);
+         s.balls.push(new DrawableBall(ball,s.color));
+      }
+      
+      if (thompson.checked) {
+         const ball = new Ball(pointWithSpokes,Ball_Types.THOMPSON, this.boundary.polygon, radius);
+         s.balls.push(new DrawableBall(ball,s.color));
+      }
    }
 
    addPolygonPoint(event) {

@@ -684,8 +684,8 @@ export class DrawableBall {
   constructor(ball, color = "black") {
     this.ball = ball;
     this.color = color;
-    this.polygon = new DrawablePolygon(this.ball.polygon,this.color)
-
+    this.polygon = new DrawablePolygon(this.ball.polygon,this.color);
+    this.polygon.show_vertices = false;
   }
 
   draw(ctx) {
@@ -694,8 +694,15 @@ export class DrawableBall {
 
   recalculateBall(p) {
     let pointWithSpokes = calculateHilbertPoint(this.ball.boundary, p);
-    this.ball = new Ball(pointWithSpokes, this.ball.type, this.ball.boundary);
-    this.polygon = new DrawablePolygon(this.ball.polygon,this.color)
+    this.ball = new Ball(pointWithSpokes, this.ball.type, this.ball.boundary, this.radius);
+    this.polygon = new DrawablePolygon(this.ball.polygon,this.color);
+    this.polygon.show_vertices = false;
+  }
+
+  recalculateRadius(radius) {
+    this.ball = new Ball(this.ball.point, this.ball.type, this.ball.boundary, radius);
+    this.polygon = new DrawablePolygon(this.ball.polygon,this.color);
+    this.polygon.show_vertices = false;
   }
 
   // draw should be dif types of lines/transparency for different types of balls. 

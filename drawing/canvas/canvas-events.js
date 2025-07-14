@@ -91,10 +91,19 @@ export function initEvents(canvas) {
    canvas.canvas.addEventListener('dblclick', (event) => {
       if (canvas.mode === 'boundary' && canvas.boundaryType === 'freeDraw'){
             canvas.addPolygonPoint(event);
-      }else if(canvas.mode === 'site' || canvas.mode === 'voronoi' || canvas.mode === 'balls'){
+      }else if(canvas.mode === 'site' || canvas.mode === 'voronoi'){
          if(!event.shiftKey){
             canvas.addSite(event)
          }
+      } else if (canvas.mode === "balls") {
+         const hilbert = document.getElementById('hilbertBall');
+         const funk = document.getElementById('weakFunkBall');
+         const reverse = document.getElementById('reverseFunkBall');
+         const thompson = document.getElementById('thompsonBall');
+         const radius = document.getElementById('ballRadius').value
+         canvas.addSite(event);
+         canvas.addBalls(canvas.sites.length - 1, hilbert, funk, reverse, thompson, radius);
+         canvas.drawAll();
       } else if(canvas.mode == 'image'){
          if(canvas.hilbert_image){
 
@@ -184,29 +193,11 @@ export function initEvents(canvas) {
       const funk = document.getElementById('weakFunkBall');
       const reverse = document.getElementById('reverseFunkBall');
       const thompson = document.getElementById('thompsonBall');
-      for (let s of canvas.sites) {
+      const radius = document.getElementById('ballRadius').value
+      for (let i in canvas.sites) {
+         const s = canvas.sites[i];
          if (s.selected) {
-            let pointWithSpokes = calculateHilbertPoint(canvas.boundary.polygon,s.drawable_point.point);
-
-            if (hilbert.checked) {
-               const ball = new Ball(pointWithSpokes,Ball_Types.HILBERT, canvas.boundary.polygon);
-               s.balls.push(new DrawableBall(ball,s.color));
-            }
-
-            if (funk.checked) {
-               const ball = new Ball(pointWithSpokes,Ball_Types.WEAK_FUNK, canvas.boundary.polygon);
-               s.balls.push(new DrawableBall(ball,s.color))
-            }
-
-            if (reverse.checked) {
-               const ball = new Ball(pointWithSpokes,Ball_Types.REVERSE_FUNK, canvas.boundary.polygon);
-               s.balls.push(new DrawableBall(ball,s.color))
-            }
-
-            if (thompson.checked) {
-               const ball = new Ball(pointWithSpokes,Ball_Types.THOMPSON, canvas.boundary.polygon);
-               s.balls.push(new DrawableBall(ball,s.color))
-            }
+            canvas.addBalls(i,hilbert,funk,reverse,thompson, radius);
          }
       }
 
@@ -226,7 +217,7 @@ export function initEvents(canvas) {
 
 
 
-   document.getElementById('zoomRange').addEventListener('change', (event) => {
+   document.getElementById('zoomRange').addEventListener('input', (event) => {
       CAMERA.setScale(event.target.value);
       canvas.drawAll();
    })
@@ -235,6 +226,29 @@ export function initEvents(canvas) {
       CAMERA.setScale(1);
       CAMERA.offset.x = 0;
       CAMERA.offset.y = 0;
+      canvas.drawAll();
+   })
+
+   document.getElementById('ballRadius').addEventListener('input', (event) => {
+      for (let s of canvas.sites) {
+         if (s.selected) {
+            for (let b of s.balls) {
+               b.recalculateRadius(event.target.value);
+            }
+         }
+      }
+      canvas.drawAll();
+   });
+
+   document.getElementById('ballRadiusAmt').addEventListener('change', (event) => {
+      for (let s of canvas.sites) {
+         if (s.selected) {
+            for (let b of s.balls) {
+               b.recalculateRadius(event.target.value);
+            }
+         }
+      }
+      document.getElementById('ballRadius').value = event.target.value;
       canvas.drawAll();
    })
 
