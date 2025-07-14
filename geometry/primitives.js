@@ -1,4 +1,4 @@
-import { createSegmentsFromPoints,convexHull, getPointsOnHilbertBall, getPointsOnForwardFunkBall, getPointsOnReverseFunkBall, createPolygonIntersection } from "./utils.js";
+import { createSegmentsFromPoints,convexHull } from "./utils.js";
 export class Point {
     constructor(x,y){
         this.x = x;
@@ -50,42 +50,6 @@ export class Spoke {
         this.front = front // point
         this.back = back // segment from index - index+1
         this.point = point
-    }
-}
-
-export const Ball_Types = {
-    HILBERT: 0,
-    WEAK_FUNK: 1,
-    REVERSE_FUNK: 2,
-    THOMPSON: 3
-};
-export class Ball {
-    constructor(hilbert_point, type, boundary, radius = 1) {
-        this.point = hilbert_point;
-        this.type = type;
-        this.radius = radius;
-        this.boundary = boundary;
-        this.polygon = this.getPointsOnBall();
-    }
-
-    getPointsOnBall() {
-        switch(this.type) {
-            case Ball_Types.HILBERT:
-                return new Polygon(getPointsOnHilbertBall(this.point,this.radius, this.boundary));
-            case Ball_Types.WEAK_FUNK:
-                return new Polygon(getPointsOnForwardFunkBall(this.point, this.radius, this.boundary));
-            case Ball_Types.REVERSE_FUNK:
-                return new Polygon(getPointsOnReverseFunkBall(this.point, this.radius, this.boundary));
-            case Ball_Types.THOMPSON:
-                let pointsOnBall1 = getPointsOnReverseFunkBall(this.point, this.radius, this.boundary);
-                let polygon1 = new Polygon(pointsOnBall1)
-
-                let pointsOnBall2 = getPointsOnForwardFunkBall(this.point, this.radius, this.boundary);    
-                let polygon2 = new Polygon(pointsOnBall2);
-
-                console.log(createPolygonIntersection(polygon1, polygon2))
-                return createPolygonIntersection(polygon1, polygon2);
-        }
     }
 }
 

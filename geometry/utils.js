@@ -84,59 +84,6 @@ export function minkowskiMetric(point1, point2, p) {
   
   //return (Math.abs(point2.x - point1.x)**p) + (Math.abs(point2.y - point1.y)**p)
 }
-
-// Following spoke and ball functions were from Nithins code
-export function getPointOnSpoke(A, C, D, r) {
-  console.log(A)
-  console.log(C)
-  console.log(D)
-    const scalar = 1 / (1 + (euclideanDistance(C, D) / euclideanDistance(A, C)) * Math.exp(2 * r));
-    const dx = D.x - A.x;
-    const dy = D.y - A.y;
-    return new Point(scalar * dx + A.x, scalar * dy + A.y)
-}
-
-export function getPointsOnHilbertBall(center, radius, polygon) {
-  let points = [];
-  center.spokes.forEach(({ segment:segment, point:point }) => {
-    points.push(getPointOnSpoke(segment.start, point, segment.end, radius));
-    points.push(getPointOnSpoke(segment.end, point, segment.start, radius));
-  });
-  return convexHull(points);
-}
-
-export function getPointOnSpokeForward(C, A, r) {
-  const scalar = 1 / Math.exp(r);
-  const dx = C.x - A.x;
-  const dy = C.y - A.y;
-  return new Point(scalar * dx + A.x, scalar * dy + A.y)
-}
-
-export function getPointOnSpokeReverse(C, A, r) {
-  const scalar = Math.exp(r);
-  const dx = C.x - A.x;
-  const dy = C.y - A.y;
-  return new Point(scalar * dx + A.x, scalar * dy + A.y)
-}
-
-export function getPointsOnForwardFunkBall(center, radius, polygon) {
-  let points = [];
-  center.spokes.forEach(({ segment:segment, point:point }) => {
-    // points.push(getPointOnSpokeForward(C, A, radius));
-    points.push(getPointOnSpokeForward(point, segment.start, radius));
-
-  });
-  return convexHull(points);
-}
-
-export function getPointsOnReverseFunkBall(center, radius, polygon) {
-  let points = [];
-  center.spokes.forEach(({ segment:segment, point:point }) => {
-    points.push(getPointOnSpokeReverse(point, segment.start, radius));
-  });
-  return convexHull(points);
-}
-
 export function calculateHilbertDistance(boundary,point1,point2){
   const mid = new Segment(point1,point2);
   const points = boundary.points;

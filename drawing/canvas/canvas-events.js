@@ -1,8 +1,8 @@
 import { calculateBisector, calculateHilbertPoint, HilbertPoint } from "../../geometry/hilbert.js";
-import { Ball, Ball_Types, Point } from "../../geometry/primitives.js";
+import {Point } from "../../geometry/primitives.js";
 import { cleanArray, pointInPolygon } from "../../geometry/utils.js";
 import { VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
-import { CAMERA, DrawableBall, DrawableBruteForceVoronoi, HilbertImage } from "../drawable.js";
+import { CAMERA, DrawableBruteForceVoronoi, HilbertImage } from "../drawable.js";
 
 // from nithins
 export function initEvents(canvas) {

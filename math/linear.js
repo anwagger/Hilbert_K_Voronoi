@@ -57,8 +57,32 @@ export function crossProduct(l1,l2){
     ]
 }
 
+export function rowReduceMatrix(m){
+    let new_m = [...m]
+    for(let i = 0; i < m.length; i++){
+        for(let j = 0; j < m.length; j++){
+            if(i != j){
+                if(new_m[i][i] != 0){
+                    let scale = new_m[j][i].div(new_m[i][i]).neg()
+                    let scaled_vector = scaleVector(new_m[i],scale)
+                    let changed = addVectors(new_m[j],scaled_vector)
+                    new_m[j] = changed
+                }
+            }else{
+                if(new_m[i][i] != 0){
+                    let scale = (new Complex(1)).div(new_m[i][i])
+                    let scaled_vector = scaleVector(new_m[i],scale)
+                    new_m[i] = scaled_vector
+                }
+            }
+        }
+    }
+    return new_m
+}
+
 export function invert33Matrix(m){
-    let big_m = []
+    let big_m = [...m]
+    /*
     for(let i = 0; i < m.length; i++){
         big_m.push([])
         for(let j = 0; j < m[i].length; j++){
@@ -66,6 +90,7 @@ export function invert33Matrix(m){
             big_m[i].push(copy)
         }
     }
+     */
     big_m[0].push(new Complex(1),new Complex(0),new Complex(0))
     big_m[1].push(new Complex(0),new Complex(1),new Complex(0))
     big_m[2].push(new Complex(0),new Complex(0),new Complex(1))

@@ -1,6 +1,8 @@
 import { ConicSegment,calculateConicSegmentBounds } from "../geometry/conics.js";
 import { calculateHilbertPoint } from "../geometry/hilbert.js";
-import { Ball, Point, Polygon, Segment } from "../geometry/primitives.js";
+import {Point, Polygon, Segment } from "../geometry/primitives.js";
+import {Ball} from "../geometry/balls.js";
+
 import { createSegmentsFromPoints,
   convexHull, 
   intersectSegments, 

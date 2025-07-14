@@ -1,7 +1,9 @@
 import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall } from "../drawable.js"
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
-import { Polygon,Point, Ball_Types, Ball} from "../../geometry/primitives.js";
+import { Polygon,Point} from "../../geometry/primitives.js";
+import { Ball_Types, Ball} from "../../geometry/balls.js";
+
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames} from "../../geometry/utils.js"
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";

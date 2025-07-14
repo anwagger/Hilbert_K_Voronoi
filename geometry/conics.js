@@ -1,6 +1,6 @@
 import { Point, Segment,Bound } from "./primitives.js"
 import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon, boundArea } from "./utils.js"
-
+import {crossProduct, multiplyMatrix, rowReduceMatrix, scaleVector, transform, transposeSquare} from "./../math/linear.js"
 // just stores the equation
 export class Conic {
     constructor(equation){
@@ -199,6 +199,47 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
     }else{
         return false
     }
+}
+
+export function matrixConicSegmentIntersection(c_s1,c_s2){
+
+}
+
+export function matrixConicIntersection(c1,c2){
+    let {A:A1,B:B1,C:C1,D:D1,E:E1,F:F1} = c1.getEquation()
+    let {A:A2,B:B2,C:C2,D:D2,E:E2,F:F2} = c2.getEquation()
+    let m1 = [
+        [A1,B1/2,D1/2],
+        [B1/2,C1,E1/2],
+        [D1/2,E1/2,F1]
+    ]
+    let m2 = [
+        [A2,B2/2,D2/2],
+        [B2/2,C2,E2/2],
+        [D2/2,E2/2,F2]
+    ]
+    // get points!
+    let p1,p2,p3
+
+    let l1 = transform(m1,p1)
+    let l2 = transform(m1,p2)
+
+    let p0 = crossProduct(l1,l2)
+
+    let pre_h = [
+        [p0[0],p1[0],p2[0],p3[0]],
+        [p0[1],p1[1],p2[1],p3[1]],
+        [p0[2],p1[2],p2[2],p3[2]],
+    ]
+    let solved = rowReduceMatrix(pre_h)
+
+    let lambda1 = H[0][0]
+    let lambda2 = H[1][1]
+    let lambda3 = H[2][2]
+
+    let H = transposeSquare([scaleVector(p0,lambda1),scaleVector(p1,lambda2),scaleVector(p2,lambda3)])
+    let c1p = multiplyMatrix(multiplyMatrix(transposeSquare(H),m1),H)
+    let c2p = multiplyMatrix(multiplyMatrix(transposeSquare(H),m2),H)
 }
 
 // classify the conic type and get equation coefficients 
