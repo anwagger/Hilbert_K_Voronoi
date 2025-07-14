@@ -697,7 +697,7 @@ export class DrawableBall {
 
   recalculateBall(p) {
     let pointWithSpokes = calculateHilbertPoint(this.ball.boundary, p);
-    this.ball = new Ball(pointWithSpokes, this.ball.type, this.ball.boundary, this.radius);
+    this.ball = new Ball(pointWithSpokes, this.ball.type, this.ball.boundary, this.ball.radius);
     this.polygon = new DrawablePolygon(this.ball.polygon,this.color);
     this.polygon.show_vertices = false;
   }
