@@ -98,13 +98,11 @@ export function initEvents(canvas) {
             canvas.addSite(event)
          }
       } else if (canvas.mode === "balls") {
-         const hilbert = document.getElementById('hilbertBall');
-         const funk = document.getElementById('weakFunkBall');
-         const reverse = document.getElementById('reverseFunkBall');
-         const thompson = document.getElementById('thompsonBall');
          const radius = document.getElementById('ballRadius').value
          canvas.addSite(event);
-         canvas.addBalls(canvas.sites.length - 1, hilbert, funk, reverse, thompson, radius);
+         let selectedBalls = getCheckedBalls()
+         canvas.addBalls(canvas.sites.length - 1, selectedBalls, radius);
+         console.log(canvas.sites[canvas.sites.length - 1].balls)
          canvas.drawAll();
       } else if(canvas.mode == 'image'){
          if(canvas.hilbert_image){
