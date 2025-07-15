@@ -212,29 +212,46 @@ export class Canvas {
       }      
    }
 
-   addBalls(siteIdx,hilbert,funk,reverse,thompson, radius) {
+   addBalls(siteIdx,balls, radius) {
       let s = this.sites[siteIdx];
       let pointWithSpokes = calculateHilbertPoint(this.boundary.polygon,s.drawable_point.point);
       
-      if (hilbert.checked) {
+      if (balls.hilbert) {
          const ball = new Ball(pointWithSpokes,Ball_Types.HILBERT, this.boundary.polygon, radius);
          s.balls.push(new DrawableBall(ball,s.color));
       }
       
-      if (funk.checked) {
+      if (balls.funk) {
          const ball = new Ball(pointWithSpokes,Ball_Types.WEAK_FUNK, this.boundary.polygon, radius);
          s.balls.push(new DrawableBall(ball,s.color));
       }
       
-      if (reverse.checked) {
+      if (balls.reverse) {
          const ball = new Ball(pointWithSpokes,Ball_Types.REVERSE_FUNK, this.boundary.polygon, radius);
          s.balls.push(new DrawableBall(ball,s.color));
       }
       
-      if (thompson.checked) {
+      if (balls.thompson) {
          const ball = new Ball(pointWithSpokes,Ball_Types.THOMPSON, this.boundary.polygon, radius);
          s.balls.push(new DrawableBall(ball,s.color));
       }
+   }
+
+   deleteBalls(siteIdx,balls){
+      let s = this.sites[siteIdx];
+      s.balls.forEach((d_b,b) => {
+         let ball = d_b.ball
+         if (ball.type === Ball_Types.HILBERT && balls.hilbert){
+            s.balls[b] = null
+         }else if (ball.type === Ball_Types.THOMPSON && balls.thompson){
+            s.balls[b] = null
+         }else if (ball.type === Ball_Types.WEAK_FUNK && balls.funk){
+            s.balls[b] = null
+         }else if (ball.type === Ball_Types.REVERSE_FUNK && balls.reverse){
+            s.balls[b] = null
+         }
+      })
+      s.balls = cleanArray(s.balls)
    }
 
    addPolygonPoint(event) {

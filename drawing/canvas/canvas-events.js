@@ -23,8 +23,6 @@ export function initEvents(canvas) {
 
    }
 
-
-
    toggleContainers(canvas)
 
    function toggleCollapsible(canvas){
@@ -125,15 +123,11 @@ export function initEvents(canvas) {
       const matches = input.value.match(re);
       if (matches != null) {
          const p = new Point( matches[1],matches[2]);
-         console.log(p)
-         console.log(pointInPolygon(p, canvas.boundary.polygon))
-
          if (pointInPolygon(p, canvas.boundary.polygon)) {
             canvas.sites.forEach((site, idx) =>{
                if (site.selected) {
                   site.drawable_point.point.x = parseInt(p.x);
                   site.drawable_point.point.y = parseInt(p.y);
-                  console.log(idx);
                   canvas.recalculateSite(idx);
                }
             });
@@ -166,15 +160,15 @@ export function initEvents(canvas) {
             canvas.deleteSelectedSites()
          } else if (canvas.mode === "voronoi") {
             let int = parseInt(event.key);
-            console.log(int);
             if (int !== NaN && int <= canvas.sites.length && int >= 1) {
                if(canvas.brute_force_voronoi){
                   canvas.brute_force_voronoi.voronoi.degree = int;
-                  console.log(canvas.brute_force_voronoi.voronoi.degree);
                   canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
                }
                   
                canvas.changeFastVoronoiDegree(int)
+               const degree_input = document.getElementById('voronoiDegree');
+               degree_input.value = int
                   
                canvas.drawAll();
             } else {
@@ -192,16 +186,26 @@ export function initEvents(canvas) {
         }
    });
 
-   document.getElementById('addBalls').addEventListener('click', () => { 
+   function getCheckedBalls() {
       const hilbert = document.getElementById('hilbertBall');
       const funk = document.getElementById('weakFunkBall');
       const reverse = document.getElementById('reverseFunkBall');
       const thompson = document.getElementById('thompsonBall');
+      return {
+               hilbert: hilbert.checked,
+               funk: funk.checked,
+               reverse: reverse.checked,
+               thompson: thompson.checked,
+            }
+   }
+
+   document.getElementById('addBalls').addEventListener('click', () => { 
       const radius = document.getElementById('ballRadius').value
+      let selectedBalls = getCheckedBalls()
       for (let i in canvas.sites) {
          const s = canvas.sites[i];
          if (s.selected) {
-            canvas.addBalls(i,hilbert,funk,reverse,thompson, radius);
+            canvas.addBalls(i,selectedBalls, radius);
          }
       }
 
@@ -210,9 +214,12 @@ export function initEvents(canvas) {
    });
 
    document.getElementById('deleteBalls').addEventListener('click', () => {
-      for (let s of canvas.sites) {
+      const radius = document.getElementById('ballRadius').value
+      let selectedBalls = getCheckedBalls()
+      for (let i in canvas.sites) {
+         const s = canvas.sites[i];
          if (s.selected) {
-            s.balls = []
+            canvas.deleteBalls(i,selectedBalls);
          }
       }
 
@@ -260,7 +267,6 @@ export function initEvents(canvas) {
       if(event.target.checked){
          const input = document.getElementById('voronoiDegree').value;
          const degree = parseInt(input);
-         console.log(degree);
          if (degree >= 1 && degree <= canvas.sites.length) {
             const voronoi = new DrawableBruteForceVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
             canvas.brute_force_voronoi = voronoi;
@@ -299,13 +305,11 @@ export function initEvents(canvas) {
    document.getElementById('brute-force-metric-select').addEventListener('change', (event) => {
       if(canvas.brute_force_voronoi){
          if (event.target.value === 'minkowski') {
-            console.log(canvas.brute_force_voronoi.voronoi.p)
             document.getElementById('minkowskiDiv').style.display = 'block';
             canvas.brute_force_voronoi.voronoi.p = document.getElementById('minkowskiVal').value;
          } else {
             document.getElementById('minkowskiDiv').style.display = 'none';
          }
-         console.log("CHANGE METRIC",canvas.brute_force_voronoi.metric, event.target.value)
          canvas.brute_force_voronoi.voronoi.metric = event.target.value
          canvas.recalculateBruteForceVoronoi()
          canvas.drawAll()

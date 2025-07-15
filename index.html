@@ -102,12 +102,6 @@
 
         <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
           <div style="display: flex; flex-direction: column;" >
-            <span style="font-size: 14px; font-weight: 700px; padding-bottom: 2px;" class="text-center">
-              Usage
-            </span>
-            
-            <div class="flex w-full bg-gray-200 h-[1px]"></div>
-
             <div class="mb-2">
               <span class="text-[12px] underline"> 
                 Set Boundary
@@ -115,35 +109,10 @@
               <span>
                 <ul class="text-[12px] pl-4" style="list-style-type:square;">
                   <li>Double click to add polygon vertices in free draw mode (3+ vertices required)</li>
+                  <li>Check "Show Info" to show the boundary's vertex positions</li>
                 </ul>
               </span>
             </div>
-
-            
-
-            <div class="mb-2">
-              <span class="text-[12px] underline"> 
-                Insert Sites
-              </span>
-              <span>
-                <ul class="text-[12px] pl-4" style="list-style-type:square;">
-                  <li>Double click to add a site or a funk ball to the polygon</li>
-                  <li>Click and drag to move a site </li>
-                  <li>Shift + click/drag to select multiple sites</li>
-                  <li>Press delete to remove selected sites</li>
-                  <li>Open the menus on the left to apply options to selected sites</li>
-                </ul>
-              </span>
-            </div>
-            <span class="text-[12px] underline"> 
-              Metric Space Visualization
-            </span>
-            <span>
-              <ul class="text-[12px] pl-4" style="list-style-type:square;">
-                <li>Drag Mode: Click & drag the space inside the polygon</li>
-                <li>Sprite Mode: Use arrow keys to move around the polygon</li>
-              </ul>
-            </span>
           </div>
         </div>
         <!-- --------------------------------------------------------------- -->
@@ -246,6 +215,24 @@
             <div id="allinfo">
 
             </div>
+            <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+              <div style="display: flex; flex-direction: column;" >
+                <div class="mb-2">
+                  <span class="text-[12px] underline"> 
+                    Insert Sites
+                  </span>
+                  <span>
+                    <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                      <li>Double click to add a site to the polygon</li>
+                      <li>Click and drag to move a site </li>
+                      <li>Shift + click/drag to select multiple sites</li>
+                      <li>Press delete to remove selected sites</li>
+                      <li>Open the menus on the left to apply options to selected sites</li>
+                    </ul>
+                  </span>
+                </div>
+              </div>
+            </div>
         </div>
 
       <div id="ballContainer">
@@ -257,31 +244,64 @@
         <label for="reverseFunkBall">Reverse Funk Ball</label><br>
         <input type="checkbox" id="thompsonBall" name="thompsonBall" value="Thompson">
         <label for="thompsonBall">Thompson Ball</label><br>
-        <button type="button" id="addBalls">Add Balls</button>
-        <button type="button" id="deleteBalls">Delete Balls</button><br>
+        <div class="ballButton">
+          <button type="button" id="addBalls">Add Balls</button>
+          <button type="button" id="deleteBalls">Delete Balls</button>
+        </div>
         <input type="range" id="ballRadius" min="0.01" max="5" value="1" step = "0.01" oninput="ballRadiusAmt.value=ballRadius.value"/>
         <label for="ballRadius">Ball Radius</label>
         <input type="text" id="ballRadiusAmt" name="ballRadiusAmt" value="1">
+        <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+          <div style="display: flex; flex-direction: column;" >
+            <div class="mb-2">
+              <span class="text-[12px] underline"> 
+                Balls
+              </span>
+              <span>
+                <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                  <li>Click "Add Balls" to add all selected balls to all selected sites</li>
+                  <li>Click "Delete Balls" to add delete selected balls from all selected sites</li>
+                  <li>Slide the "Ball Radius" slider or type in the text box to change all selected balls' radius</li>
+                </ul>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
 
       <div id="zoomContainer">
         <input type="range" id="zoomRange" name="zoomRange" min="0.1" max="2.5" value="1" step="0.1"/>
-        <input type="button" id="resetZoom" name="resetZoom" value="Reset"/>
+        <label for="zoomRange">Zoom</label>
+        <div>
+          <input type="button" id="resetZoom" name="resetZoom" value="Reset Camera"/>
+        </div>
+        <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+          <div style="display: flex; flex-direction: column;" >
+            <div class="mb-2">
+              <span class="text-[12px] underline"> 
+                Zoom
+              </span>
+              <span>
+                <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                  <li>Click and drag to move the camera </li>
+                  <li>Shift + drag up/down to to zoom in/out</li>
+                  <li>Drag the "Zoom" slider to zoom in/out</li>
+                </ul>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div id="voronoiContainer">
         <div style="position: relative; margin: 10px;">
-          <input style="width: 20px; height: 20px;" type="checkbox" name="bruteForceVoronoi" id="bruteForceVoronoi" class="checkbox-input">
-          <span class="checkbox-background"> Brute Force Voronoi meow</span>
-        </div>
-        <div style="position: relative; margin: 10px;">
           <input style="width: 20px; height: 20px;" type="checkbox" id="calculateFastVoronoi" class="checkbox-input">
-          <span class="checkbox-background"> Calculate Fast Voronoi</span>
+          <span class="checkbox-background"> Calculate Fast Hilbert Voronoi</span>
         </div>
         <div style="position: relative; margin: 10px;">
-          <br>
-          Degree: <input type="text" id="voronoiDegree" name="voronoiDegree" value="1">
+          <input style="width: 20px; height: 20px;" type="checkbox" name="bruteForceVoronoi" id="bruteForceVoronoi" class="checkbox-input">
+          <span class="checkbox-background"> Brute Force Voronoi</span>
         </div>
         <form id="modeCollapsible">
           <div style="position: relative; margin: 10px;">
@@ -306,6 +326,24 @@
           <input type="range" id="minkowskiVal" min="-5" max="5" value="2" step = "0.01" oninput="minkowskiAmount.value=minkowskiVal.value"/>
           <label for="minkowskiVal">Minkowski P Value</label><br>
           <input type="text" id="minkowskiAmount" name="minkowskiAmount" value="2"/>
+        </div>
+        <div style="position: relative; margin: 10px;">
+          Degree: <input type="text" id="voronoiDegree" name="voronoiDegree" value="1">
+        </div>
+        <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+          <div style="display: flex; flex-direction: column;" >
+            <div class="mb-2">
+              <span class="text-[12px] underline"> 
+                Voronoi
+              </span>
+              <span>
+                <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                  <li>Change the voronoi's degree with the "Degree" text box or with the number keys </li>
+                  <li>Change the metric used for brute force voronoi with the drop-down menu</li>
+                </ul>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 

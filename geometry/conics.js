@@ -950,8 +950,9 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
 
     // special case for crossed lines
     // specifically the case where the center-point is on the polygon
-    if (parameterized_conic.type ==Conic_Type.DEGENERATE && parameterized_conic.orientation == Conic_Orientation.NONE){
+    if (parameterized_conic.type == Conic_Type.DEGENERATE && parameterized_conic.orientation == Conic_Orientation.NONE && start_point != null){
         let center_point = parameterized_conic.getPointFromT(0)
+
         if(pointOnPolygon(center_point,polygon)){
             let poss_ts = [0,Math.PI,2*Math.PI]
             let start_t = parameterized_conic.getTOfPoint(start_point)
@@ -960,8 +961,12 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
             })
             end = [poss_ts[0],null,center_point]
         }else{
-            //console.log("DN CENTER NOT ON:",center_point,polygon)
-            //console.log("USING",start,end)
+                console.log("DN CENTER NOT ON:",center_point,polygon)
+                console.log("USING",start,end)
+                let zero = parameterized_conic.getPointFromT(0)
+                let pi = parameterized_conic.getPointFromT(Math.PI)
+                let two_pi = parameterized_conic.getPointFromT(2*Math.PI)  
+                console.log("ON CHECK",pointOnPolygon(zero,polygon),pointOnPolygon(pi,polygon),pointOnPolygon(two_pi,polygon))
         }
     }
 

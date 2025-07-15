@@ -782,6 +782,7 @@
     }
 
     canvas {
+        z-index: -1;
         background-color: #ffffff;
         user-select: none;
         -webkit-user-select: none; /* Chrome, Safari, Opera */
@@ -1304,4 +1305,8 @@
 #toggleAsteroidsButton:active {
     transform: scale(0.98);
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+.ballButton{
+    margin: 10px;
 }
