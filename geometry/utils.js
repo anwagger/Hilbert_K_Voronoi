@@ -81,9 +81,13 @@ export function chebyshevMetric(point1,point2) {
 // yes i know p should be only an integer and anything less than 1 doesnt make it a valid metric space but shhhhh 
 export function minkowskiMetric(point1, point2, p) {
     return (((Math.abs(point2.x - point1.x)**p) + (Math.abs(point2.y - point1.y)**p))**(1/p))
-  
-  //return (Math.abs(point2.x - point1.x)**p) + (Math.abs(point2.y - point1.y)**p)
 }
+
+export function randomMinkowski(point1, point2) {
+    const p = (Math.random() + 1) * 5
+    return (((Math.abs(point2.x - point1.x)**p) + (Math.abs(point2.y - point1.y)**p))**(1/p))  
+}
+
 export function calculateHilbertDistance(boundary,point1,point2){
   const mid = new Segment(point1,point2);
   const points = boundary.points;
@@ -744,6 +748,9 @@ export function getDistanceFromMetric(metric,p,point,first,last,minkowski_p=2){
     break;    
     case "random":
         distance = randomMetric(first,p,point,last);
+    break;
+    case "random minkowski":
+        distance = randomMinkowski(p,point);
   }
   return distance
 }
