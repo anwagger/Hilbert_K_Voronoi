@@ -782,6 +782,8 @@ export class Canvas {
       site.balls.forEach((b) => {
          b.recalculateBall(point);
       })
+
+      this.recalculateHilbertDelaunay()
       
       let points = []
       for(let i = 0; i < this.sites.length; i++){
@@ -917,7 +919,9 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       this.drawZRegions()
 
-      if (this.delaunay) {
+      const degree = parseInt(document.getElementById('voronoiDegree').value);
+
+      if (this.delaunay && degree === 1) {
          for (let s of this.delaunay) {
             s.draw(this.ctx);
          }
