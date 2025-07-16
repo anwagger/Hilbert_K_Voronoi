@@ -579,7 +579,7 @@ export class Canvas {
    }
 
    recalculateHilbertDelaunay() {
-      if (this.voronois) {
+      if (this.voronois && this.delaunay) {
          this.delaunay = this.voronois[0].hilbertDelaunay(this.sites);
       }
    }
@@ -923,7 +923,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       if (this.delaunay && degree === 1) {
          for (let s of this.delaunay) {
-            s.draw(this.ctx);
+            s.drawDotted(this.ctx);
          }
       }
 

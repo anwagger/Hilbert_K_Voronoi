@@ -122,6 +122,16 @@ export class DrawableSegment {
     ctx.lineTo(CAMERA.x(this.segment.end.x), CAMERA.y(this.segment.end.y));
     ctx.stroke();
   }
+
+  drawDotted(ctx) {
+    ctx.beginPath();
+    ctx.setLineDash([1, 3]); 
+    ctx.moveTo(CAMERA.x(this.segment.start.x), CAMERA.y(this.segment.start.y));
+    ctx.lineTo(CAMERA.x(this.segment.end.x), CAMERA.y(this.segment.end.y));
+    ctx.stroke(); 
+    ctx.setLineDash([]); 
+    
+  }
 }
 
 export class DrawableSpoke {
