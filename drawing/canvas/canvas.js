@@ -945,7 +945,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
         this.resetSites()
         this.deleteBoundaryPoints()
         this.boundary = new DrawablePolygon(new Polygon([]), this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
-
+        this.delaunay = null;
         this.boundaryType = 'freeDraw';
         document.querySelector('input[name="polygonType"][value="freeDraw"]').checked = true;
 
