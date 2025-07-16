@@ -54,6 +54,7 @@ export class Canvas {
       this.calculate_fast_voronoi = false;
       this.voronois = null
       this.voronoi_diagram = null;
+      this.delaunay = null;
 
       this.hilbert_image = null;
       this.draw_hilbert_image = false;
@@ -206,6 +207,7 @@ export class Canvas {
          // calculate the new point
          this.recalculateSite(this.sites.length-1)
          this.recalculateFastVoronoi()
+         this.recalculateHilbertDelaunay()
          this.recalculateBruteForceVoronoi()
 
          this.drawAll()
@@ -575,6 +577,13 @@ export class Canvas {
          this.changeFastVoronoiDegree(degree)
       }
    }
+
+   recalculateHilbertDelaunay() {
+      if (this.voronois) {
+         this.delaunay = this.voronois[0].hilbertDelaunay(this.sites);
+      }
+   }
+
    recalculateBruteForceVoronoi(){
       if (this.brute_force_voronoi){
          this.brute_force_voronoi.calculateBruteForce(this)
@@ -908,6 +917,11 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       this.drawZRegions()
 
+      if (this.delaunay) {
+         for (let s of this.delaunay) {
+            s.draw(this.ctx);
+         }
+      }
 
       this.sites.forEach((site) => {
          site.draw(this.ctx)

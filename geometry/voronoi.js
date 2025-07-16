@@ -1,3 +1,4 @@
+import { DrawableSegment } from "../drawing/drawable.js";
 import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter, intersectBisectors } from "./bisectors.js";
 import { calculateBisector, calculateHilbertPoint } from "./hilbert.js";
 import { PartitionTree } from "./partition_tree.js";
@@ -141,6 +142,18 @@ export class VoronoiDiagram {
             }
         }
         return grid;
+    }
+
+    hilbertDelaunay(sites) {
+        let segs = [];
+        for (let c of this.cells) {
+            for (let b of c.bisector_data) {
+                const p1 = sites[b[0]].drawable_point.point;
+                const p2 = sites[b[1]].drawable_point.point;
+                segs.push(new DrawableSegment(new Segment(p1,p2)));
+            }
+        }
+        return segs;
     }
 
     

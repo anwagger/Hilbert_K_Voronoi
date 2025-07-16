@@ -286,6 +286,18 @@ export function initEvents(canvas) {
       canvas.setFastVoronoi(event,degree);
    });
 
+    document.getElementById("calculateHilbertDelaunay").addEventListener('change', (event) => {
+      const degree_input = document.getElementById('voronoiDegree');
+      
+      if (event.target.checked && canvas.voronois !== null) {
+         canvas.delaunay = canvas.voronois[0].hilbertDelaunay(canvas.sites);
+      } else {
+         canvas.delaunay = null;
+      }
+
+      canvas.drawAll();
+   });
+
    document.getElementById('voronoiDegree').addEventListener('change', (event) => {
       const input = event.target.value;
       const degree = parseInt(input);
