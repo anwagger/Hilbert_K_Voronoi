@@ -12,11 +12,11 @@ let canvas = new Canvas(canvasElement);
 let ctx = canvas.ctx;
 console.log(canvas);  
 
-/**
+
 let m = [[1,2,2],[4,5,6],[9,8,9]] 
 let c_m = makeMatrixComplex(m)
 console.log(c_m)
-let c_vec  =[complex(1),complex(1),complex(1)]
+let c_vec  =[complex(1),complex(1),complex(2)]
 console.log(c_vec)
 console.log("SCALE",scaleVector(c_vec,10))
 console.log("ADD",addVectors(c_vec,c_vec))
@@ -26,9 +26,12 @@ let i_c_m =  invert33Matrix(c_m)
 console.log(i_c_m)
 let i_i_c_m =  invert33Matrix(i_c_m)
 
+console.log(c_m,i_c_m)
+console.log("MATMULT",multiplyMatrix(c_m,i_c_m))
+console.log(c_m)
+
 console.log(i_i_c_m)
 
-let id = makeMatrixComplex([[1,0,0],[0,1,0],[0,0,1]])
-let m2 = multiplyMatrix(id,id)
-console.log("MATMULT",m2)
- */
+let id2 = makeMatrixComplex([[2,0,0],[0,2,0],[0,0,2]])
+let m2 = multiplyMatrix(id2,c_m)
+console.log("MATMULT I",m2)

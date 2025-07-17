@@ -29,6 +29,10 @@ export function scaleVector(v,s){
     return new_v
 }
 
+export function standardizePoint(v){
+    return scaleVector(v,complex(1).div(v[2]))
+}
+
 export function addVectors(v1,v2){
     let new_v = []
     for(let i = 0; i < v1.length; i++){
@@ -43,15 +47,24 @@ export function determinant2(m){
 
 export function transform(matrix,vector){
     let new_vector = []
-    for(let i = 0; i < vector.length; i++){
+    for(let i = 0; i < matrix.length; i++){
         let value = new Complex(0)
         for(let j = 0; j < matrix[i].length; j++){
-            value = value.add(vector[i].mul(matrix[i][j]))
+            value = value.add(vector[j].mul(matrix[i][j]))
         }
         new_vector.push(value)
     }
     return new_vector
 }
+
+export function dotProduct(v1,v2){
+    let prod = complex(0)
+    for(let i = 0; i < v1.length; i++){
+        prod = prod.add(v1[i].mul(v2[i]))
+    }
+    return prod
+}
+
 
 export function crossProduct(l1,l2){
     return [
@@ -85,8 +98,7 @@ export function rowReduceMatrix(m){
 }
 
 export function invert33Matrix(m){
-    let big_m = [...m]
-    /*
+    let big_m = []
     for(let i = 0; i < m.length; i++){
         big_m.push([])
         for(let j = 0; j < m[i].length; j++){
@@ -94,7 +106,6 @@ export function invert33Matrix(m){
             big_m[i].push(copy)
         }
     }
-     */
     big_m[0].push(new Complex(1),new Complex(0),new Complex(0))
     big_m[1].push(new Complex(0),new Complex(1),new Complex(0))
     big_m[2].push(new Complex(0),new Complex(0),new Complex(1))
@@ -146,5 +157,23 @@ export function multiplyMatrix(m1,m2){
         } 
         new_m.push(transform(m1,vec))
     }
-    return transposeSquare(new_m)
+    return (new_m)
+}
+
+export function multiplyMatrix2(m1,m2){
+    let new_m = []
+    for(let i = 0; i < m2[0].length; i++){
+        new_m.push([])
+    }
+    for(let i = 0; i < m2[0].length; i++){
+        let vec = []
+        
+        for(let j = 0; j < m1.length; j++){
+            vec.push(m2[j][i])
+        }
+        for(let j = 0; j < m1.length; j++){
+            new_m[j].push(dotProduct(m1[j],vec))
+        }
+    }
+    return new_m
 }

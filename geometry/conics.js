@@ -1,6 +1,6 @@
 import { Point, Segment,Bound } from "./primitives.js"
 import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon, boundArea, isColinear } from "./utils.js"
-import {complex, crossProduct, makeMatrixComplex, multiplyMatrix, pointToVector, rowReduceMatrix, scaleVector, transform, transposeSquare} from "./../math/linear.js"
+import {complex, crossProduct, makeMatrixComplex, multiplyMatrix, pointToVector, rowReduceMatrix, scaleVector, standardizePoint, transform, transposeSquare} from "./../math/linear.js"
 // just stores the equation
 export class Conic {
     constructor(equation){
@@ -115,11 +115,11 @@ export function unrotateConic(c){
 export function intersectConicSegments(c_s1,c_s2){
     //console.log("INTERSECTING:",c_s1.parameterized_conic.type,c_s1.parameterized_conic.orientation,"AND",c_s2.parameterized_conic.type,c_s2.parameterized_conic.orientation)
     count = 0
-    let matrix = matrixConicSegmentIntersection(c_s1,c_s2);
+    //let matrix = matrixConicSegmentIntersection(c_s1,c_s2);
     let approx = approximateConicSegmentIntersection(c_s1,c_s2);
 
-    console.log("MATRIX",matrix)
-    console.log("APPROX",approx)
+    //console.log("MATRIX",matrix)
+    //console.log("APPROX",approx)
 
     return approx 
 }
@@ -260,7 +260,7 @@ export function matrixConicIntersection(p_c1,p_c2){
     let l1 = transform(m1,p1)
     let l2 = transform(m1,p2)
 
-    let p0 = crossProduct(l1,l2)
+    let p0 = standardizePoint(crossProduct(l1,l2))
 
     let pre_h = [
         [p0[0],p1[0],p2[0],p3[0]],
@@ -268,15 +268,27 @@ export function matrixConicIntersection(p_c1,p_c2){
         [p0[2],p1[2],p2[2],p3[2]],
     ]
 
+    console.log("PRE_H",pre_h)
+
     let solved = rowReduceMatrix(pre_h)
 
     let lambda1 = solved[0][3]
     let lambda2 = solved[1][3]
     let lambda3 = solved[2][3]
 
+    console.log("SOLVED",solved)
+    console.log("LAMBDAS",lambda1,lambda2,lambda3)
+
     let H = transposeSquare([scaleVector(p0,lambda1),scaleVector(p1,lambda2),scaleVector(p2,lambda3)])
 
+    console.log("H",H)
+
+    let c1p = multiplyMatrix(multiplyMatrix(transposeSquare(H),m1),H)
+
     let c2p = multiplyMatrix(multiplyMatrix(transposeSquare(H),m2),H)
+
+    console.log("C1P",c1p)
+    console.log("C2P",c2p)
 
     let a = c2p[1][1]
     let b = 2*c2p[1][0]
@@ -308,7 +320,9 @@ export function matrixConicIntersection(p_c1,p_c2){
         Q = (1/2)*(-(2/3)*p+(1/(3*a))*(d0 + q/d0))**(1/2)
     }
 
-    let disc1 = (1/2)*(-4*Q**2-2*p+S/Q)**(1/2)
+
+
+    let disc1 = (1/2)*(-4*(Q**2)-2*p+S/Q)**(1/2)
     let const1 = -b/(4*a)-Q
     roots.push(const1 + disc1)
     roots.push(const1 - disc1)
@@ -317,14 +331,21 @@ export function matrixConicIntersection(p_c1,p_c2){
     roots.push(const2 + disc2)
     roots.push(const2 - disc2)
 
+        console.log("ROOTS",roots)
+
+
     let intersections = []
 
     for(let i = 0; i < roots.length; i++){
         let point = pointToVector(new Point(roots[i],roots[i]**2))
+
         let c_t_point = transform(H,point)
         let t_point = new Point(c_t_point[0].re/c_t_point[2].re,c_t_point[1].re/c_t_point[2].re)
         intersections.push(t_point)
+        
     }
+
+    console.log("MATRIX INTS",intersections)
 
     return intersections
 
@@ -811,7 +832,7 @@ export class ParameterizedConic {
     getTOfPoint(point,skipOn = false){
 
         // for debugging
-        let parallel = (this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.NONE)
+        let parallel = false//(this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.NONE)
         
         let sin = Math.sin(this.angle)
         let cos = Math.cos(this.angle)
@@ -1077,12 +1098,14 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
             })
             end = [poss_ts[0],null,center_point]
         }else{
+            /**
                 console.log("DN CENTER NOT ON:",center_point,polygon)
                 console.log("USING",start,end)
                 let zero = parameterized_conic.getPointFromT(0)
                 let pi = parameterized_conic.getPointFromT(Math.PI)
                 let two_pi = parameterized_conic.getPointFromT(2*Math.PI)  
                 console.log("ON CHECK",pointOnPolygon(zero,polygon),pointOnPolygon(pi,polygon),pointOnPolygon(two_pi,polygon))
+             */
         }
     }
 
