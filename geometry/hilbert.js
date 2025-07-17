@@ -436,6 +436,26 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
 
     let p_conic = parameterizeConic(conic)
 
+    /**
+    if(p_conic.type === "D" && p_conic.orientation === "N"){
+        console.log("CROSS TEST:")
+        let theta = Math.random()*2*Math.PI
+        let p = p_conic.getPointFromT(theta)
+        let y = p_conic.y_func(theta)
+        let yts = p_conic.yi_func(y)
+        let ys = [p_conic.y_func(yts[0]),p_conic.y_func(yts[1])]
+         let x = p_conic.x_func(theta)
+        let xts = p_conic.xi_func(x)
+        let xs = [p_conic.x_func(xts[0]),p_conic.x_func(xts[1])]
+        let t = p_conic.getTOfPoint(p)
+        let p2 = p_conic.getPointFromT(t)
+        console.log("T:",theta,"to",t)
+        console.log("P:",p,"to",p2)
+        console.log("Y",theta,"to",y,"back to",yts,"which is",ys)
+        console.log("X",theta,"to",x,"back to",xts,"which is",xs)
+    }
+         */
+
     // get the conic's t bounds. Where a lot of problems come from
     let {start_t:start_t, start_segment:start_segment,start_point:s_point, end_t:end_t, end_segment:end_segment,end_point:e_point,direction:direction} = getConicParameterBoundsInPolygon(p_conic,sector.polygon,start_point)
 

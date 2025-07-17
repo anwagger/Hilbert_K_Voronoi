@@ -17,6 +17,10 @@ export function makeMatrixComplex(matrix){
     return c_matrix
 }
 
+export function pointToVector(point){
+    return [complex(point.x),complex(point.y),complex(1)]
+}
+
 export function scaleVector(v,s){
     let new_v = []
     for(let i = 0; i < v.length; i++){
@@ -120,7 +124,6 @@ export function invert33Matrix(m){
             i_matrix[i].push(big_m[i][j])
         }
     }
-    console.log("BIG",big_m)
     return i_matrix
 }
 export function transposeSquare(m){

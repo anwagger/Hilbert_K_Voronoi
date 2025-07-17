@@ -754,3 +754,8 @@ export function getDistanceFromMetric(metric,p,point,first,last,minkowski_p=2){
   }
   return distance
 }
+
+
+export function isColinear(p1,p2,p3){
+  return isZero(pointSegDistance (p1,new Segment(p2,p3)))
+}

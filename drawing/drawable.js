@@ -354,7 +354,7 @@ export class DrawableConicSegment {
       start = 0
       dt = 2*Math.PI/num_of_points//2*Math.PI/num_of_points
     }
-       */
+        */
     
     let c_s = this.conic_segment
 

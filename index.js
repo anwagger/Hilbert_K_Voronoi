@@ -12,7 +12,7 @@ let canvas = new Canvas(canvasElement);
 let ctx = canvas.ctx;
 console.log(canvas);  
 
-
+/**
 let m = [[1,2,2],[4,5,6],[9,8,9]] 
 let c_m = makeMatrixComplex(m)
 console.log(c_m)
@@ -31,3 +31,4 @@ console.log(i_i_c_m)
 let id = makeMatrixComplex([[1,0,0],[0,1,0],[0,0,1]])
 let m2 = multiplyMatrix(id,id)
 console.log("MATMULT",m2)
+ */

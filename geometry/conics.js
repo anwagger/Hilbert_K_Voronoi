@@ -1,6 +1,6 @@
 import { Point, Segment,Bound } from "./primitives.js"
-import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon, boundArea } from "./utils.js"
-import {crossProduct, multiplyMatrix, rowReduceMatrix, scaleVector, transform, transposeSquare} from "./../math/linear.js"
+import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon, boundArea, isColinear } from "./utils.js"
+import {complex, crossProduct, makeMatrixComplex, multiplyMatrix, pointToVector, rowReduceMatrix, scaleVector, transform, transposeSquare} from "./../math/linear.js"
 // just stores the equation
 export class Conic {
     constructor(equation){
@@ -115,7 +115,13 @@ export function unrotateConic(c){
 export function intersectConicSegments(c_s1,c_s2){
     //console.log("INTERSECTING:",c_s1.parameterized_conic.type,c_s1.parameterized_conic.orientation,"AND",c_s2.parameterized_conic.type,c_s2.parameterized_conic.orientation)
     count = 0
-    return approximateConicSegmentIntersection(c_s1,c_s2);
+    let matrix = matrixConicSegmentIntersection(c_s1,c_s2);
+    let approx = approximateConicSegmentIntersection(c_s1,c_s2);
+
+    console.log("MATRIX",matrix)
+    console.log("APPROX",approx)
+
+    return approx 
 }
 
 // recursive brute force approach to intersecting conic segments
@@ -202,24 +208,54 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
 }
 
 export function matrixConicSegmentIntersection(c_s1,c_s2){
-
+    let p_c1 = c_s1.parameterized_conic
+    let p_c2 = c_s2.parameterized_conic
+    let intersections = matrixConicIntersection(p_c1,p_c2)
+    if(intersections){
+        let valid_ints = []
+        for(let i = 0; i < intersections.length; i++){
+            let point = intersections[i]
+            if(c_s1.isOn(point) && c_s2.isOn(point)){
+                valid_ints.push(point)
+            }
+        }
+        return valid_ints
+    }else{
+        console.log("A=0")
+    }
 }
 
-export function matrixConicIntersection(c1,c2){
+export function matrixConicIntersection(p_c1,p_c2){
+    let c1 = p_c1.conic
+    let c2 = p_c2.conic
     let {A:A1,B:B1,C:C1,D:D1,E:E1,F:F1} = c1.getEquation()
     let {A:A2,B:B2,C:C2,D:D2,E:E2,F:F2} = c2.getEquation()
-    let m1 = [
+    let m1 = makeMatrixComplex([
         [A1,B1/2,D1/2],
         [B1/2,C1,E1/2],
         [D1/2,E1/2,F1]
-    ]
-    let m2 = [
+    ])
+    let m2 = makeMatrixComplex([
         [A2,B2/2,D2/2],
         [B2/2,C2,E2/2],
         [D2/2,E2/2,F2]
-    ]
+    ])
     // get points!
-    let p1,p2,p3
+    let p1,p2,p3;
+    let rp1,rp2,rp3;
+
+    console.log("GETTING POINTS")
+    do{
+        rp1 = p_c1.getPointFromT(Math.random()*2*Math.PI)
+        rp2 = p_c1.getPointFromT(Math.random()*2*Math.PI)
+        rp3 = p_c1.getPointFromT(Math.random()*2*Math.PI)
+    }while(isColinear(rp1,rp2,rp3))
+
+    p1 = pointToVector(rp1)
+    p2 = pointToVector(rp2)
+    p3 = pointToVector(rp3)
+
+    console.log("MATS and POINTS",m1,m2,p1,p2)
 
     let l1 = transform(m1,p1)
     let l2 = transform(m1,p2)
@@ -231,16 +267,70 @@ export function matrixConicIntersection(c1,c2){
         [p0[1],p1[1],p2[1],p3[1]],
         [p0[2],p1[2],p2[2],p3[2]],
     ]
+
     let solved = rowReduceMatrix(pre_h)
 
-    let lambda1 = H[0][0]
-    let lambda2 = H[1][1]
-    let lambda3 = H[2][2]
+    let lambda1 = solved[0][3]
+    let lambda2 = solved[1][3]
+    let lambda3 = solved[2][3]
 
     let H = transposeSquare([scaleVector(p0,lambda1),scaleVector(p1,lambda2),scaleVector(p2,lambda3)])
-    let c1p = multiplyMatrix(multiplyMatrix(transposeSquare(H),m1),H)
+
     let c2p = multiplyMatrix(multiplyMatrix(transposeSquare(H),m2),H)
+
+    let a = c2p[1][1]
+    let b = 2*c2p[1][0]
+    let c = (c2p[0][0] + 2*c2p[1][2])
+    let d = 2*c2p[0][2]
+    let e = c2p[2][2]
+
+    if(isZero(a)){
+        // check p1,p2,p3
+        return false
+    }
+
+    let roots = [] // x values, y = x^2
+
+    // solve the quartic!
+
+    let p = (8*a*c - 3*b**2)/(8*a**2)
+    let S = (8*a**2*d-4*a*b*c+b**3)/(8*a**3)
+    let q = 12*a*e - 3*b*d + c**2
+    let s = 27*a*d**2 - 72*a*c*e + 27*b**2*e - 9*b*c*d + 2*c**3
+    
+    let d0 = ((s + (s**2 - 4 *q**3)**(1/2))/2)**(1/3)
+    let Q = (1/2)*(-(2/3)*p+(1/(3*a))*(d0 + q/d0))**(1/2)
+
+    while(isZero(Q)){
+        let n = 7
+        let power = complex(0,2*Math.PI*n/3)
+        d0 = d0 * power.exp()
+        Q = (1/2)*(-(2/3)*p+(1/(3*a))*(d0 + q/d0))**(1/2)
+    }
+
+    let disc1 = (1/2)*(-4*Q**2-2*p+S/Q)**(1/2)
+    let const1 = -b/(4*a)-Q
+    roots.push(const1 + disc1)
+    roots.push(const1 - disc1)
+    let disc2 = (1/2)*(-4*Q**2-2*p-S/Q)**(1/2)
+    let const2 = -b/(4*a)+Q
+    roots.push(const2 + disc2)
+    roots.push(const2 - disc2)
+
+    let intersections = []
+
+    for(let i = 0; i < roots.length; i++){
+        let point = pointToVector(new Point(roots[i],roots[i]**2))
+        let c_t_point = transform(H,point)
+        let t_point = new Point(c_t_point[0].re/c_t_point[2].re,c_t_point[1].re/c_t_point[2].re)
+        intersections.push(t_point)
+    }
+
+    return intersections
+
 }
+
+
 
 // classify the conic type and get equation coefficients 
 export function parameterizeConic(conic){
@@ -456,6 +546,8 @@ export class ParameterizedConic {
                         
                     break;
                     case Conic_Orientation.NONE:
+                        /**
+                         * // old way, breaks on near-squares
                         x_func = (t) => {
                             if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
                                 return (this.x_mult*Math.sin(t) + x_off)
@@ -479,6 +571,30 @@ export class ParameterizedConic {
                             return [
                                 asin < 0 ? asin+2*Math.PI: asin,-asin+Math.PI
                             ]
+                        }
+                        */
+                       x_func = (t) => {
+                            if (isLeZero(Math.abs(t) - Math.PI)){
+                                return (this.x_mult*Math.tan(-t) + x_off)
+                            }else{
+                                return (this.x_mult*Math.tan(t) + x_off)
+                            }
+                        }
+                        y_func = (t) => {
+                            return this.x_mult*this.y_mult*(Math.tan(t))+y_off
+                        }
+                        xi_func = (x) => {
+                            let atan = Math.atan((x - x_off)/this.x_mult)
+                            if(isLeZero(atan)){
+                                return [-atan, atan + 2*Math.PI]
+                            }else{
+                                return [atan+Math.PI,- atan + Math.PI]
+                            }
+                            
+                        }
+                        yi_func = (y) => {
+                            let atan = Math.atan((y - y_off)/(this.x_mult*this.y_mult))
+                            return [atan + Math.PI,isLeZero(atan)? atan + 2*Math.PI:atan]
                         }
                     break;
 
@@ -695,7 +811,7 @@ export class ParameterizedConic {
     getTOfPoint(point,skipOn = false){
 
         // for debugging
-        let parallel = false//this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.NONE
+        let parallel = (this.type == Conic_Type.DEGENERATE && this.orientation == Conic_Orientation.NONE)
         
         let sin = Math.sin(this.angle)
         let cos = Math.cos(this.angle)
@@ -712,7 +828,7 @@ export class ParameterizedConic {
             
 
             if(parallel){
-                console.log("PARA",point,x_ts,y_ts)
+                console.log("PARA",this.type,this.orientation,point,x_ts,y_ts)
             }
             
             // for each of the possible ts, check if the points match
@@ -1050,6 +1166,41 @@ export class ConicSegment {
         }
 
         return length
+    }
+
+    isOn(point){
+        let p_c = this.parameterized_conic
+        let t = p_c.getTOfPoint(point,true)
+        if(t){
+            // convert conic segment t to bisector t
+            let range = this.getRange()
+            // puts the t between 0 and 2PI
+            if (t < 0){
+                t += 2*Math.PI
+            }
+            
+            if(range < 0){
+                if (t < this.start + range){
+                    t += 2*Math.PI
+                }else if (t > this.start){
+                    t -= 2*Math.PI
+                }
+            }else{
+                if (t > this.start + range){
+                    t -= 2*Math.PI
+                }else if (t < this.start){
+                    t += 2*Math.PI
+                }
+            }
+            // turn the t into a percentage of the way through the conic segment
+            let percentage = (t - this.start)/range//1 - (t - c_s.start)/range
+            if(isLeZero(percentage-1) && isLeZero(-percentage)){
+                return true
+            }else{
+                return false
+            }
+        }
+        return false
     }
 }
 
