@@ -613,14 +613,12 @@ export class HilbertImage {
     console.log("IMAGE",this.image)
 
     let img_sum = 0
-    while(img_sum === 0){
-      imgCtx.drawImage(this.image,0,0,this.image.width,this.image.height)
-      this.image_data = imgCtx.getImageData(0,0,this.image.width, this.image.height);
-      img_sum = this.image_data.data.reduce((accumulator, currentValue) => accumulator + currentValue,
-      0)
-      console.log("SUM",img_sum)
-      console.log("DATA",this.image_data.data)
-    }
+    imgCtx.drawImage(this.image,0,0,this.image.width,this.image.height)
+    this.image_data = imgCtx.getImageData(0,0,this.image.width, this.image.height);
+    img_sum = this.image_data.data.reduce((accumulator, currentValue) => accumulator + currentValue,
+    0)
+    console.log("SUM",img_sum)
+    console.log("DATA",this.image_data.data)
     
 
     

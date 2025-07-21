@@ -115,11 +115,21 @@ export function unrotateConic(c){
 export function intersectConicSegments(c_s1,c_s2){
     //console.log("INTERSECTING:",c_s1.parameterized_conic.type,c_s1.parameterized_conic.orientation,"AND",c_s2.parameterized_conic.type,c_s2.parameterized_conic.orientation)
     count = 0
-    //let matrix = matrixConicSegmentIntersection(c_s1,c_s2);
+    
+
     let approx = approximateConicSegmentIntersection(c_s1,c_s2);
 
-    //console.log("MATRIX",matrix)
-    //console.log("APPROX",approx)
+    if(approx.count){
+        console.log("STUCK")
+        console.log("1",c_s1,approx.c_s1)
+        console.log("2",c_s2,approx.c_s2)
+    }
+    if(false && approx){
+        let matrix = matrixConicSegmentIntersection(c_s1,c_s2);
+        console.log("MATRIX",matrix)
+        console.log("APPROX",approx)
+    }
+
 
     return approx 
 }
@@ -162,10 +172,27 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
         intersections.push(new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2))
         return intersections
         // return new Point((mid_point1.x + mid_point2.x)/2,(mid_point1.y + mid_point2.y)/2)
+    }else if (Math.abs(range1) <= sensitivity*1e-2){
+        intersections.push(new Point(mid_point1.x,mid_point1.y))
+        return intersections
+    }else if (Math.abs(range2) <= sensitivity*1e-2){
+        intersections.push(new Point(mid_point2.x,mid_point2.y))
+        return intersections
     }
 
     if(count > 100000){
         console.log("EHLLL{","Depth",depth,"count",count,"Ranges: ",range1,range2,"Areas: ",bound_area1,bound_area2,"TYPES",c_s1.parameterized_conic.type,c_s1.parameterized_conic.orientation,c_s2.parameterized_conic.type,c_s2.parameterized_conic.orientation)
+
+        //if(c_s1.parameterized_conic.type === "D" && c_s1.parameterized_conic.orientation === "N"){
+            console.log("CROSSED ISSUE 1","FIRST",first1,"RANGE",range1,"AREA",bound_area1,"BOUND",c_s1.bound,c_s1)
+        //}
+        //if(c_s2.parameterized_conic.type === "D" && c_s2.parameterized_conic.orientation === "N"){
+            console.log("CROSSED ISSUE 2","FIRST",first2,"RANGE",range2,"AREA",bound_area2,"BOUND",c_s2.bound,c_s2)
+        //}
+        if(count > 110000){
+            return false
+        }
+        return {count:count,c_s1:c_s1,c_s2:c_s2}
     }
 
     let sub_cs1 = []
@@ -178,14 +205,14 @@ export function approximateConicSegmentIntersection(c_s1,c_s2,depth=0){
         let bound1 = calculateConicSegmentBounds(c_s1.parameterized_conic,start1,end1,c_s1.direction)
         
         sub_cs1.push(new ConicSegment(c_s1.parameterized_conic,start1,end1,bound1,c_s1.direction))
+        
 
         
         let start2 = first2 + range2*i/split
         let end2 = first2 + range2*(i+1)/split
         let bound2 = calculateConicSegmentBounds(c_s2.parameterized_conic,start2,end2,c_s2.direction,depth)
-        
-        sub_cs2.push(new ConicSegment(c_s2.parameterized_conic,start2,end2,bound2,c_s2.direction))
 
+        sub_cs2.push(new ConicSegment(c_s2.parameterized_conic,start2,end2,bound2,c_s2.direction))
     }
 
 
@@ -244,7 +271,6 @@ export function matrixConicIntersection(p_c1,p_c2){
     let p1,p2,p3;
     let rp1,rp2,rp3;
 
-    console.log("GETTING POINTS")
     do{
         rp1 = p_c1.getPointFromT(Math.random()*2*Math.PI)
         rp2 = p_c1.getPointFromT(Math.random()*2*Math.PI)
@@ -254,8 +280,6 @@ export function matrixConicIntersection(p_c1,p_c2){
     p1 = pointToVector(rp1)
     p2 = pointToVector(rp2)
     p3 = pointToVector(rp3)
-
-    console.log("MATS and POINTS",m1,m2,p1,p2)
 
     let l1 = transform(m1,p1)
     let l2 = transform(m1,p2)
@@ -268,16 +292,11 @@ export function matrixConicIntersection(p_c1,p_c2){
         [p0[2],p1[2],p2[2],p3[2]],
     ]
 
-    console.log("PRE_H",pre_h)
-
     let solved = rowReduceMatrix(pre_h)
 
     let lambda1 = solved[0][3]
     let lambda2 = solved[1][3]
     let lambda3 = solved[2][3]
-
-    console.log("SOLVED",solved)
-    console.log("LAMBDAS",lambda1,lambda2,lambda3)
 
     let H = transposeSquare([scaleVector(p0,lambda1),scaleVector(p1,lambda2),scaleVector(p2,lambda3)])
 
@@ -286,9 +305,6 @@ export function matrixConicIntersection(p_c1,p_c2){
     let c1p = multiplyMatrix(multiplyMatrix(transposeSquare(H),m1),H)
 
     let c2p = multiplyMatrix(multiplyMatrix(transposeSquare(H),m2),H)
-
-    console.log("C1P",c1p)
-    console.log("C2P",c2p)
 
     let a = c2p[1][1]
     let b = 2*c2p[1][0]
@@ -305,33 +321,40 @@ export function matrixConicIntersection(p_c1,p_c2){
 
     // solve the quartic!
 
-    let p = (8*a*c - 3*b**2)/(8*a**2)
-    let S = (8*a**2*d-4*a*b*c+b**3)/(8*a**3)
-    let q = 12*a*e - 3*b*d + c**2
-    let s = 27*a*d**2 - 72*a*c*e + 27*b**2*e - 9*b*c*d + 2*c**3
+    let p = complex((8*a*c - 3*b**2)/(8*a**2))
+    let S = complex((8*a**2*d-4*a*b*c+b**3)/(8*a**3))
+    let q = complex(12*a*e - 3*b*d + c**2)
+    let s = complex(27*a*d**2 - 72*a*c*e + 27*b**2*e - 9*b*c*d + 2*c**3)    
     
-    let d0 = ((s + (s**2 - 4 *q**3)**(1/2))/2)**(1/3)
-    let Q = (1/2)*(-(2/3)*p+(1/(3*a))*(d0 + q/d0))**(1/2)
-
-    while(isZero(Q)){
-        let n = 7
+    //let d0 = ((s + (s**2 - 4 *(q**3))**(1/2))/2)**(1/3)
+    let d0 = q.pow(complex(3)).mul(complex(4)).neg().add(s.pow(complex(2))).sqrt().add(s).div(complex(2)).pow(complex(1/3))
+    //let Q = (1/2)*(-(2/3)*p+(1/(3*a))*(d0 + q/d0))**(1/2)
+    let Q = d0.add(q.div(d0)).mul(complex(a).mul(complex(3)).inverse()).add(p.mul(complex(2/3)).neg()).sqrt().div(complex(2))
+    let n = 7
+    while(isZero(Q.abs())){
         let power = complex(0,2*Math.PI*n/3)
-        d0 = d0 * power.exp()
-        Q = (1/2)*(-(2/3)*p+(1/(3*a))*(d0 + q/d0))**(1/2)
+        d0 = d0.mul(power.exp())
+        Q = d0.add(q.div(d0)).mul(complex(a).mul(complex(3)).inverse()).add(p.mul(complex(2/3)).neg()).sqrt().div(complex(2))
+        console.log("NEW Q",Q)
+        n += 1
     }
 
 
 
-    let disc1 = (1/2)*(-4*(Q**2)-2*p+S/Q)**(1/2)
-    let const1 = -b/(4*a)-Q
-    roots.push(const1 + disc1)
-    roots.push(const1 - disc1)
-    let disc2 = (1/2)*(-4*Q**2-2*p-S/Q)**(1/2)
-    let const2 = -b/(4*a)+Q
-    roots.push(const2 + disc2)
-    roots.push(const2 - disc2)
+    //let disc1 = (1/2)*(-4*(Q**2)-2*p+S/Q)**(1/2)
+    let disc1 = (Q.pow(complex(2)).mul(complex(-4)).add(S.div(Q).add(p.mul(complex(-2))))).sqrt().mul(complex(1/2))
+    //let const1 = -b/(4*a)-Q
+    let const1 = complex(-b).div(complex(a).mul(complex(4))).sub(Q)
+    roots.push(const1.add(disc1))
+    roots.push(const1.sub(disc1))
+    //let disc2 = (1/2)*(-4*Q**2-2*p-S/Q)**(1/2)
+    let disc2 = (Q.pow(complex(2)).mul(complex(-4)).add(S.div(Q).neg().add(p.mul(complex(-2))))).sqrt().mul(complex(1/2))
+    //let const2 = -b/(4*a)+Q
+    let const2 = complex(-b).div(complex(a).mul(complex(4))).add(Q)
+    roots.push(const2.add(disc2))
+    roots.push(const2.sub(disc2))
 
-        console.log("ROOTS",roots)
+    console.log("ROOTS",roots)
 
 
     let intersections = []
@@ -401,23 +424,23 @@ export function parameterizeConic(conic){
         }
 
     }else if (type == Conic_Type.PARABOLA){
-        // NOT USED!
+        // SHOULD BE USED! VERIFY
         // was A, switched
         if (C === 0){
             orientation = Conic_Orientation.VERTICAL
             //X(t) = E/(-2A)t - D/(2A)
-            parameterization.x_mult = E/(-2*A)
+            parameterization.x_mult = 1
             parameterization.x_const = -D/(2*A)
             //Y(t) = E/(-4A)t^2 - (F/E - D^2/(4AE))
-            parameterization.y_mult = E/(-4*A)
+            parameterization.y_mult = A/(-E)
             parameterization.y_const = -(F/E - D*D/(4*A*E))
         }else if (A === 0){
             orientation = Conic_Orientation.HORIZONTAL
             //X(t) = D/(-4C)t^2 - (F/D - E^2/(4CD))
-            parameterization.x_mult = D/(-4*C)
+            parameterization.x_mult = C/(-D)
             parameterization.x_const = - (F/D - E*E/(4*C*D))
             //Y(t) = D/(-2C)t - E/(2C)
-            parameterization.y_mult = D/(-2*C)
+            parameterization.y_mult = 1
             parameterization.y_const = -E/(2*C)
         }
     }else if (type == Conic_Type.ELLIPSE){
@@ -430,8 +453,6 @@ export function parameterizeConic(conic){
         parameterization.y_const = -E/(2*C)
     }else if (type == Conic_Type.HYPERBOLA){
         // was (A < 0 && C > 0) 
-        // all hyperbolas are horizontal?
-        // NOOOOOO
         if (D*D/(4*A*A) + E*E/(4*A*C) - F/A >0){
             orientation = Conic_Orientation.HORIZONTAL
             //X(t) = sqrt(D^2/(4A^2) - E^2/(4AC) + F/A)sec(t)+D/(2A)
@@ -622,54 +643,65 @@ export class ParameterizedConic {
                 }
                 
             break;
+            // need to verify still
             case Conic_Type.PARABOLA:
                 switch (this.orientation){
                     case Conic_Orientation.HORIZONTAL:
-                        x_func = (t) => this.x_mult*t*t + x_off
-                        y_func = (t) => this.y_mult*t + y_off
+                        x_func = (t) => this.x_mult*Math.tan(t)**2 + x_off
+    
+                        y_func = (t) => this.y_mult*Math.tan(t) + y_off
 
                         xi_func = (x) => {
-                            let t = Math.sqrt((x-x_off)/this.x_mult)
-                            return [t, -t]
+                            let atan = Math.atan(Math.sqrt((x-x_off)/this.x_mult))
+                            return [atan,atan + Math.PI]
                         }
-                        yi_func = (y) => [(y - y_off)/this.y_mult]
-
-                        /*
+                        yi_func = (y) => {
+                            let atan = Math.atan((y - y_off)/this.y_mult)
+                            return [atan,atan + Math.PI]
+                        }
+                        
+                                                /*
                         solving derivates
                         X:
-                            0 = cos*2*x_mult*t - sin*y_mult
-                            t = sin*y_mult/(cos*2*x_mult)
+                            0 = cos*this.x_mult*2*sec(t)^2*tan(t) - sin * this.y_mult*sec(t)^2
+                            t = atan((sin * this.y_mult)/(2*cos*this.x_mult))
                         Y: 
-                            0  = cos*y_mult + sin*2*x_mult*t
-                            t = -cos*y_mult/(sin*2*x_mult)
+                            0 = cos*this.y_mult *sec(t)^2 + sin * this.x_mult * 2 * sec(t)^2 * tan(t)
+                            -cos*this.y_mult = this.x_mult * 2 * tan(t)
+                            t = atan((-cos*this.y_mult)/(this.x_mult * 2))
                         */
 
-                        dx_func = () => [sin*y_mult/(cos*2*x_mult)]
-                        dy_func = () => [-cos*y_mult/(sin*2*x_mult)]
+                        dx_func = () => [Math.atan((sin*this.y_mult)/(2*cos*this.x_mult))]
+                        dy_func = () => [Math.atan((-cos*this.y_mult)/(2*this.x_mult))]
 
                     break;
                     case Conic_Orientation.VERTICAL:
-                        x_func = (t) => this.x_mult*t + x_off
-                        y_func = (t) => this.y_mult*t*t + y_off
+                        x_func = (t) => this.x_mult*Math.tan(t) + x_off
+                        y_func = (t) => this.y_mult*Math.tan(t)**2 + y_off
 
-                        xi_func = (x) => [(x - x_off)/this.x_mult]
+                        xi_func = (x) => {
+                            let atan = Math.atan((x - x_off)/this.x_mult)
+                            return [atan,atan + Math.PI]
+                        }
                         yi_func = (y) => {
-                            let t = Math.sqrt((y-y_off)/this.y_mult)
-                            return [t,-t]
+                            let atan = Math.atan(Math.sqrt((y-y_off)/this.y_mult))
+                            return [atan,atan + Math.PI]
                         }
 
                         /*
                         solving derivates
                         X:
-                            0 = cos*x_mult - sin*2*y_mult*t
-                            t = cos*x_mult/(sin*2*y_mult)
+                            0 = cos*(x_mult*sec(t)^2) - sin*2*y_mult*sec(t)^2*tan(t)
+                            sin*y_mult*2*sec(t)^2*tan(t) = cos*(x_mult*sec(t)^2)
+                            (sin*y_mult*2)/(cos*x_mult)*tan(t) = 1
+                            t = atan((cos*x_mult)/(sin*y_mult*2))
                         Y: 
-                            0  = cos*2*y_mult*t + sin*x_mult
-                            t = -sin*x_mult/(cos*2*y_mult)
+                            0  = cos*2*y_mult*sec(t)^2*tan(t) + sin*(x_mult*sec(t)^2)
+                            t = atan((sin*x_mult)/( -cos*2*y_mult))
                         */
 
-                        dx_func = () => [cos*x_mult/(sin*2*y_mult)]
-                        dy_func = () => [-sin*x_mult/(cos*2*y_mult)]
+                        dx_func = () => [Math.atan((cos*this.x_mult)/(2*sin*this.y_mult))]
+                        dy_func = () => [Math.atan((sin*this.x_mult)/(-2*cos*this.y_mult))]
 
                     break;
                 }
@@ -983,7 +1015,7 @@ export function getConicType(conic){
         return Conic_Type.DEGENERATE
     }else{
         const d = B*B - 4*A*C
-        if (d === 0){            
+        if (isZero(d)){            
             return Conic_Type.PARABOLA
         }else if (d > 0){
             return Conic_Type.HYPERBOLA

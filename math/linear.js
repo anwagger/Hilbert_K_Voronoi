@@ -147,20 +147,7 @@ export function transposeSquare(m){
     }
     return new_m
 }
-
 export function multiplyMatrix(m1,m2){
-    let new_m = []
-    for(let i = 0; i < m1.length; i++){
-        let vec = []
-        for(let j = 0; j < m1.length; j++){
-            vec.push(m2[i][j])
-        } 
-        new_m.push(transform(m1,vec))
-    }
-    return (new_m)
-}
-
-export function multiplyMatrix2(m1,m2){
     let new_m = []
     for(let i = 0; i < m2[0].length; i++){
         new_m.push([])

@@ -65,13 +65,7 @@ export class Canvas {
 
       this.lastBallRadius = 1;
 
-      this.showCentroid = false;
       this.boundaryLocked = false;
-
-      this.colorPool = [
-         "red","orange","gold","green","blue","purple",
-         "pink","brown","black","gray","cyan","lime"
-      ];
 
       this.usedColors = [];
 
@@ -325,10 +319,6 @@ export class Canvas {
       this.drawAll();
    }
 
-   setPolygonShowCentroid() {
-        this.showCentroid = true;
-        this.drawAll();
-   }
 
    addBisector(bisector,p1,p2) {
       let c1 = this.sites[p1].color 
@@ -546,8 +536,9 @@ export class Canvas {
       if(degree >= 1 && degree <= this.sites.length){
          if(event.target.checked){
             this.calculate_fast_voronoi = true
-            let {voronois:voronois} = createVoronoiFromCanvas(this)
+            let {voronois:voronois,circumcenters:circumcenters} = createVoronoiFromCanvas(this)
             this.voronois = voronois
+            this.bisector_intersections = []
             this.changeFastVoronoiDegree(degree)
          }
       }
@@ -568,7 +559,7 @@ export class Canvas {
    recalculateFastVoronoi(degree = null){
 
       if (this.calculate_fast_voronoi){
-         let {voronois:voronois} = createVoronoiFromCanvas(this)
+         let {voronois:voronois,circumcenters:circumcenters} = createVoronoiFromCanvas(this)
          // change for degree!
          this.voronois = voronois
          if(!degree){
@@ -580,6 +571,7 @@ export class Canvas {
 
    recalculateHilbertDelaunay() {
       if (this.voronois && this.delaunay) {
+         console.log("USE SITES",this.sites)
          this.delaunay = this.voronois[0].hilbertDelaunay(this.sites);
       }
    }
@@ -666,6 +658,7 @@ export class Canvas {
             site.drawable_point.point.y = mouse.y
             this.recalculateSite(this.draggingPoint);
             this.recalculateFastVoronoi()
+            this.recalculateHilbertDelaunay()
             // DONT RECALCULATE BRUTE FORCE HERE!
          }
          this.drawAll()
@@ -783,7 +776,6 @@ export class Canvas {
          b.recalculateBall(point);
       })
 
-      this.recalculateHilbertDelaunay()
       
       let points = []
       for(let i = 0; i < this.sites.length; i++){
@@ -821,8 +813,10 @@ export class Canvas {
       this.calculateBisectorIntersections()
 
       this.recalculateFastVoronoi()
+      this.recalculateHilbertDelaunay()
       this.recalculateBruteForceVoronoi()
       this.recalculateHilbertImage()
+
    }
 
    
@@ -951,4 +945,18 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
         this.drawAll();
     }
+
+   saveCanvas(){
+      let canvas = {}
+      canvas.boundary = this.boundary
+      canvas.sites = this.sites
+      canvas.CAMERA = CAMERA
+
+      
+   
+      return canvas
+   }
+   loadCanvas(canvas){
+
+   }
 }
