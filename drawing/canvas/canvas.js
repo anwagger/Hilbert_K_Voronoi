@@ -8,6 +8,8 @@ import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, color
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 import { KCluster } from "../../geometry/clustering.js";
+
+import { loadBoundary, loadSites, loadBisectors, loadSegments } from "./load.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -65,6 +67,40 @@ export class Canvas {
 
    }
 
+    load(data) {
+      for (d in data) {
+         let val = d.value();
+         switch(d) {
+            case "boundary":
+               loadBoundary(val, this);
+            break;
+            case "sites":
+               loadSites(val, this);
+            break;
+            case "segments":
+               loadSegments(val, this);
+            break;
+            case "bisectors":
+               loadBisectors(val, this);
+            break;
+            case "brute_force_voronoi":
+               loadBruteForceVoronoi(val, this);
+            break;
+            case "voronois":
+               ({voronois: voronois} = createVoronoiFromCanvas(this));
+               this.voronois = voronois;
+            break;
+            case "voronoi_diagram":
+               this.voronoi_diagram = new DrawableVoronoiDiagram(voronois[0]);
+            break;
+            default:
+               if (d.value() !== null) {
+                  this.d = val;
+               }   
+         }
+      }
+   }
+
    setPolygonType(type) {
          this.boundary = new DrawablePolygon(new Polygon([]),this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
         this.boundaryType = type;
@@ -95,6 +131,7 @@ export class Canvas {
         this.reindexZRegions()
 
         this.sites = cleanArray(this.sites)
+        console.log(this.absolute_border);
         this.recalculateAll()
         this.drawAll();
     }

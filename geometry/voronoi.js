@@ -177,13 +177,18 @@ export class VoronoiDiagram {
     
 }
 
-export function createVoronoiFromCanvas(canvas){
+
+export function createVoronoiFromCanvas(canvas, first_degree = false){
     let boundary = canvas.boundary.polygon
     let points = []
     canvas.sites.forEach((site,i) => {
         points.push(site.drawable_point.point)
     })
-    return n3lognVoronoi(boundary,points)
+    if (first_degree) {
+        return firstDegreeHilbertVoronoi(boundary,points);
+    } else {
+        return n3lognVoronoi(boundary,points)
+    }
 }
 
 export function n3lognVoronoi(boundary,points){
@@ -461,4 +466,8 @@ export function n3lognVoronoi(boundary,points){
     //console.log("VORONOIS",voronois)
 
     return {voronois: voronois,classification:bisector_classifications,circumcenters:circumcenters}
+}
+
+export function firstDegreeHilbertVoronoi(boundary,points) {
+    
 }
