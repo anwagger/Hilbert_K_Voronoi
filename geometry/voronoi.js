@@ -2,7 +2,7 @@ import { DrawableSegment } from "../drawing/drawable.js";
 import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter, intersectBisectors } from "./bisectors.js";
 import { calculateBisector, calculateHilbertPoint } from "./hilbert.js";
 import { PartitionTree } from "./partition_tree.js";
-import { Bound, Point, Segment } from "./primitives.js";
+import { Bound, Point, Polygon, Segment } from "./primitives.js";
 import { pointInPolygon, 
     pointOnPolygon, 
     intersectSegmentsAsLines, 
@@ -20,7 +20,8 @@ import { pointInPolygon,
     weakFunk,
     randomMetric,
     quasiMetric,
-    getDistanceFromMetric} from "./utils.js";
+    getDistanceFromMetric,
+    boundOfBounds} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -43,11 +44,11 @@ export class VoronoiCell {
     }
 }
 
-export function calculateVoronoiCellBounds(bisectors){
+export function calculateVoronoiCellBounds(bisectors,boundary_range){
     // find the extremes of each of the bounds of the conic_segments
 
     
-    return bisectors.reduce(
+    let bisector_bound = bisectors.reduce(
         (current_bound,bisector_segment) => {
             const segment_bound = bisector_segment.bound
             current_bound.top = Math.max(current_bound.top,segment_bound.top)
@@ -58,6 +59,23 @@ export function calculateVoronoiCellBounds(bisectors){
         },
         new Bound(-Infinity,Infinity,Infinity,-Infinity),
     );
+
+    let vertices = []
+    if(boundary_range){
+        for(let i = Math.ceil(boundary_range.start); i < Math.floor(boundary_range.end); i++){
+            vertices.push(boundary_range.boundary.points[i])
+        }
+    }
+    if(vertices.length > 0){
+        let boundary_segment = convexHull(vertices)
+        let polygon_bound  = computeBoundingBox(new Polygon(boundary_segment))
+        return boundOfBounds(bisector_bound,polygon_bound)
+
+    }else{
+        return bisector_bound
+    }
+
+
 }
 
 

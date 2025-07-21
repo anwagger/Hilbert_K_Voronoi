@@ -37,11 +37,7 @@ export class Canvas {
       // for collapsible menus
       this.activeManager = '';
       
-      //this.hilbertDistanceManager = null;
-
       this.boundaryType = 'freeDraw';
-      this.canvasWidth = 1500;
-      this.canvasHeight = 850;
 
       this.sites = [];
       this.segments = [];
@@ -60,12 +56,6 @@ export class Canvas {
       this.draw_hilbert_image = false;
 
       this.draggingPoint = null;
-
-      this.globalScale = 1.0;
-
-      this.lastBallRadius = 1;
-
-      this.boundaryLocked = false;
 
       this.usedColors = [];
 
@@ -168,9 +158,6 @@ export class Canvas {
       
       let sceneX = rawX;
       let sceneY = rawY;
-    
-      sceneX /= this.globalScale;
-      sceneY /= this.globalScale;
       
       return { x: sceneX, y: sceneY };
    }
