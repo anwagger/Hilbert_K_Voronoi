@@ -53,6 +53,7 @@ export class Canvas {
       this.voronois = null
       this.voronoi_diagram = null;
       this.delaunay = null;
+      this.delaunay_degree = 1
 
       this.hilbert_image = null;
       this.draw_hilbert_image = false;
@@ -593,10 +594,14 @@ export class Canvas {
       }
    }
 
-   recalculateHilbertDelaunay() {
+   recalculateHilbertDelaunay(degree) {
       if (this.voronois && this.delaunay) {
-         console.log("USE SITES",this.sites)
-         this.delaunay = this.voronois[0].hilbertDelaunay(this.sites);
+         if(degree){
+            this.delaunay_degree = degree
+         }
+         
+         console.log("DEGREE",this.delaunay_degree)
+         this.delaunay = this.voronois[this.delaunay_degree-1].hilbertDelaunay(this.sites);
       }
    }
 
@@ -939,7 +944,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       const degree = parseInt(document.getElementById('voronoiDegree').value);
 
-      if (this.delaunay && degree === 1) {
+      if (this.delaunay) {
          for (let s of this.delaunay) {
             s.drawDotted(this.ctx);
          }

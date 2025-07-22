@@ -1,4 +1,4 @@
-import { createSegmentsFromPoints,convexHull } from "./utils.js";
+import { createSegmentsFromPoints,convexHull, pointSegDistance, computeBoundingBox, inBound, isZero } from "./utils.js";
 export class Point {
     constructor(x,y){
         this.x = x;
@@ -32,6 +32,36 @@ export class Polygon {
             }
         })
         return false;
+    }
+
+    getTOfPoint(point){
+        for(let i = 0; i < this.points.length; i++){
+            let bound = computeBoundingBox(new Polygon(this.points[i],this.points[(i+1)%this.points.length]))
+            if(inBound(point,bound) && pointSegDistance(point,this.segments[i])){
+                let seg = this.segments[i]
+                let dx = seg.end.x - seg.start.x
+                if(isZero(dx)){
+                    let dy = seg.end.y - seg.start.y
+                    return i + ((point.y - seg.start.y)/dy)
+                }else{
+                    return i + ((point.x - seg.start.x)/dx)
+                }
+            }
+        }
+    }
+
+    getPointOfT(t){
+        t = t % this.points.length
+        let start_i = Math.floor(t)
+        let end_i = Math.ceil(t) % this.points.length
+        let start_p = this.points[start_i]
+        let end_p = this.points[end_i]
+        let dx = end_p.x - start_p.x
+        let dy = end_p.y - start_p.y
+
+        let percentage = t % 1
+
+        return new Point(start_p.x + dx * percentage,start_p.y + dy * percentage)
     }
 
 } 

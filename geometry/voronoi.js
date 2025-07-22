@@ -171,6 +171,7 @@ export class VoronoiDiagram {
                 segs.push(new DrawableSegment(new Segment(p1,p2)));
             }
         }
+        console.log("SEGS,",segs)    
         return segs;
     }
 

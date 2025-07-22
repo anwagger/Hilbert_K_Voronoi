@@ -194,6 +194,8 @@ export function initEvents(canvas) {
                }
                   
                canvas.changeFastVoronoiDegree(int)
+               canvas.recalculateHilbertDelaunay(int)
+
                const degree_input = document.getElementById('voronoiDegree');
                degree_input.value = int
                   
@@ -317,9 +319,11 @@ export function initEvents(canvas) {
 
     document.getElementById("calculateHilbertDelaunay").addEventListener('change', (event) => {
       const degree_input = document.getElementById('voronoiDegree');
-      
+      const input = degree_input.value;
+      const degree = parseInt(input);
       if (event.target.checked && canvas.voronois !== null) {
-         canvas.delaunay = canvas.voronois[0].hilbertDelaunay(canvas.sites);
+         canvas.delaunay = true
+         canvas.recalculateHilbertDelaunay(degree)
       } else {
          canvas.delaunay = null;
       }
@@ -336,7 +340,7 @@ export function initEvents(canvas) {
          canvas.brute_force_voronoi.voronoi.degree = degree;
          canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
          canvas.changeFastVoronoiDegree(degree)
-                     
+         canvas.recalculateHilbertDelaunay(degree)
          canvas.drawAll();
       }
    });

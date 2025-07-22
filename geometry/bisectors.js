@@ -68,6 +68,14 @@ export class Bisector {
         }
         console.log("NOTING RETURNED!")
     }
+    
+    getBoundaryDirection(boundary){
+        let start_p = this.getPointFromT(0)
+        let end_p = this.getPointFromT(this.conic_segments.length)
+        let start_t = boundary.getTOfPoint(start_p)
+        let end_t = boundary.getTOfPoint(end_p)
+        
+    }
 }
 
 // A bisector with t bounds put in place
