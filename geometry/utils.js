@@ -439,6 +439,18 @@ export function convexHull(points) {
   return lower.concat(upper);
 }
 
+export function centroid(points) {
+  let x = 0;
+  let y = 0;
+
+  points.forEach(point => {
+    x += point.x;
+    y += point.y;
+  });
+
+  return new Point(x / points.length, y / points.length);
+}
+
 export function boundArea(bound){
   return (bound.right - bound.left) * (bound.top - bound.bottom)
 }

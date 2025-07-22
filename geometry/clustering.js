@@ -16,9 +16,9 @@ export class KCluster{
             
             let point = null
             do{
-                point = new Point(Math.random(bound.left,bound.right),Math.random(bound.bottom,bound.top))
+                point = new Point(bound.left+(bound.right-bound.left)*Math.random(),bound.bottom+(bound.top-bound.bottom)*Math.random())
 
-            }while(pointInPolygon(point,this.boundary) && !pointOnPolygon(point,this.boundary))
+            }while(!pointInPolygon(point,this.boundary) || pointOnPolygon(point,this.boundary))
 
             this.centroids.push(point)
         }

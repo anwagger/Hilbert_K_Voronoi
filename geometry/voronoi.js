@@ -164,6 +164,7 @@ export class VoronoiDiagram {
 
     hilbertDelaunay(sites) {
         let segs = [];
+        
         for (let c of this.cells) {
             for (let b of c.bisector_data) {
                 const p1 = sites[b[0]].drawable_point.point;
@@ -171,7 +172,24 @@ export class VoronoiDiagram {
                 segs.push(new DrawableSegment(new Segment(p1,p2)));
             }
         }
-        console.log("SEGS,",segs)    
+        /**
+         // maybe how it works for kth degree?
+        for (let c of this.cells) {
+            let contained = c.contained_sites
+            let point_is = []
+            while(contained > 0){
+                let i = Math.floor(Math.log2(contained))
+                contained -= 2**i
+                point_is.push(i)
+            }
+            let points = []
+            for(let i = 0; i < point_is.length; i++){
+                points.push(sites[point_is[i]].drawable_point.point)
+            }
+            let polygon = new Polygon(points)
+            polygon.segments.forEach((seg,idx) => segs.push(new DrawableSegment(seg)))
+        }
+             */
         return segs;
     }
 

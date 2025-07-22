@@ -1,3 +1,4 @@
+import { Space } from "../../asteroids/space.js";
 import { calculateBisector, calculateHilbertPoint, HilbertPoint } from "../../geometry/hilbert.js";
 import {Point } from "../../geometry/primitives.js";
 import { cleanArray, cleanJason, fieldsToIgnore, pointInPolygon } from "../../geometry/utils.js";
@@ -20,6 +21,7 @@ export function initEvents(canvas) {
       document.getElementById('zoomContainer').style.display = canvas.mode === "view" ? 'block' : 'none';
       document.getElementById('voronoiContainer').style.display = canvas.mode === "voronoi" ? 'block' : 'none';
       document.getElementById('imageContainer').style.display = canvas.mode === "image" ? 'block' : 'none';
+      document.getElementById('spaceContainer').style.display = canvas.mode === "space" ? 'block' : 'none';
 
    }
 
@@ -208,8 +210,22 @@ export function initEvents(canvas) {
                   canvas.drawAll();
                   }
                }
+            }else if (canvas.mode === "space"){
+               if(canvas.space){
+                  canvas.space.manageInput(event)
+               }
             }
         }
+   });
+   document.addEventListener('keyup', (event) => {
+      const activeElement = document.activeElement;
+      if (activeElement && activeElement.tagName !== 'INPUT') {
+         if (canvas.mode === "space"){
+            if(canvas.space){
+               canvas.space.manageInput(event)
+            }
+         }
+      }
    });
 
    function getCheckedBalls() {
@@ -519,39 +535,15 @@ export function initEvents(canvas) {
    canvasElement.onscroll = (event) => {
        CAMERA.changeOffset(event.movementX,event.movementY)
    }
-   
-  
-   /**
-   document.getElementById('reset').addEventListener('click', () => {
-      canvas.resetCanvas();
-   });
-    
 
-  
+   document.getElementById('createSpace').addEventListener('click', (event) => {
+      if(canvas.boundary && canvas.boundary.polygon.points.length > 2){
+         canvas.space = new Space(canvas.boundary.polygon)
+         canvas.space.storeOriginalOriginalGeometry()
+         canvas.space.storeOriginalGeometry()
 
-
-   document.getElementById('polygonShowCentroid').addEventListener('change', (event) => {
-      canvas.setPolygonShowCentroid(event);
-   });
-
-
-   
-
-   
-  
-   document.addEventListener('keydown', (event) => {
-      if (!isAnyModalOpen()) {
-        if (event.key === 't') {
-          const modeSwitch = document.getElementById('modeSwitch');
-          modeSwitch.checked = !modeSwitch.checked;
-          canvas.mode = modeSwitch.checked ? 'site' : 'boundary';
-          if (modeSwitch.checked) {
-            canvas.drawAll();
-          }
-          toggleContainers({ target: modeSwitch });
-        }
-      } 
-   });
-
-   */
+         canvas.space.runSpace(canvas)
+      }
+      
+   })
 }

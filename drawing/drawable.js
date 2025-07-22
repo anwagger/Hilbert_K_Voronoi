@@ -103,6 +103,20 @@ export class DrawablePolygon {
       });
     }
   }
+  drawFill(ctx){
+    let points = this.polygon.points
+    
+    if(points.length > 0){
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.moveTo(CAMERA.x(points[0].x), CAMERA.y(points[0].y));
+      for(let i = 1; i < points.length; i++){
+        ctx.lineTo(CAMERA.x(points[i].x),CAMERA.y(points[i].y));
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
 }
 
 export class DrawableSegment {
