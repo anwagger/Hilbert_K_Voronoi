@@ -1,8 +1,9 @@
 import { Bisector } from "../../geometry/bisectors.js";
 import { VoronoiDiagram, createVoronoiFromCanvas } from "../../geometry/voronoi.js"
-import {calculateSpokes} from  "../../geometry/hilbert.js"
+import {calculateSpokes, calculateHilbertPoint, calculateBisector} from  "../../geometry/hilbert.js"
 import { Point, Polygon, Segment, Spoke } from "../../geometry/primitives.js";
-import { DrawablePoint, DrawablePolygon, DrawableSegment, DrawableSpoke, Site, DrawableBruteForceVoronoi} from "../drawable.js";
+import { DrawablePoint, DrawablePolygon, DrawableSegment, DrawableSpoke, Site, DrawableBruteForceVoronoi, DrawableVoronoiDiagram, DrawableBall} from "../drawable.js";
+import { Ball, calculateZRegion } from "../../geometry/balls.js";
 
 export function loadBoundary(data, canvas) {
    let points = []
@@ -19,26 +20,25 @@ export function loadSites(data, canvas) {
    canvas.sites = [];
 
    for (let s of data) {
-      console.log(s)
       const point = new Point(s["drawable_point"]["point"]["x"], s["drawable_point"]["point"]["y"]);
       const dP = new DrawablePoint(point);
       let site = new Site(dP,[], s["radius"]);
       site.color = s["color"];
-      s.drawable_point.color = s["color"];
+      site.drawable_point.color = s["color"];
 
-      console.log(site);
-      console.log(calculateSpokes(canvas.boundary,point))
-      calculateSpokes(canvas.boundary,point).forEach((spoke) => {
+      calculateSpokes(canvas.boundary.polygon,point).forEach((spoke) => {
          site.drawable_spokes.push(new DrawableSpoke(spoke))
          site.drawable_spokes[site.drawable_spokes.length-1].color = site.color
       })
 
-      // deal with balls here
+      for (let b of s["balls"]) {
+         const hP = calculateHilbertPoint(canvas.boundary.polygon, point);
+         const ball = new Ball(hP, b["ball"]["type"], canvas.boundary.polygon, b["ball"]["radius"])
+         site.balls.push(new DrawableBall(ball, s["color"]));
+      }
 
       canvas.sites.push(site);
    }
-
-   console.log(canvas.sites);
 }
 
 export function loadSegments(data,canvas) {
@@ -56,6 +56,7 @@ export function loadSegments(data,canvas) {
 }
 
 export function loadBisectors(data,canvas) {
+   canvas.bisectors = [];
    for (let b of data) {
       // these are indices
       const p1 = b.p1;
@@ -68,6 +69,7 @@ export function loadBisectors(data,canvas) {
       let h_p2 = calculateHilbertPoint(boundary,point2);
       let bisector = calculateBisector(boundary,h_p1,h_p2);
       canvas.addBisector(bisector,p1,p2);
+
    }
 }
 
@@ -83,15 +85,17 @@ export function loadFastVoronoi(data, canvas, delaunay) {
    if(data) {
       let {voronois:voronois} = createVoronoiFromCanvas(canvas);
       canvas.voronois = voronois;
-      canvas.voronoi_diagram = new DrawableVoronoiDiagram(this.voronois[0])
+      canvas.voronoi_diagram = new DrawableVoronoiDiagram(canvas.voronois[0])
 
       if(delaunay) {
          canvas.delaunay = canvas.voronois[0].hilbertDelaunay(canvas.sites);
       }
+      canvas.calculate_fast_voronoi = true;
    }
 }
 
 export function loadZRegions(data, canvas) {
+   canvas.z_regions = [];
    for (let z of data) {
       const p1 = z.p1;
       const p2 = z.p2;
@@ -103,6 +107,9 @@ export function loadZRegions(data, canvas) {
       let h_p2 = calculateHilbertPoint(boundary,point2)
       let bisector = calculateBisector(boundary,h_p1,h_p2)
       let z_r = calculateZRegion(boundary,h_p1,h_p2,bisector)
-      this.addZRegion(z_r,p1,p2)
+
+      canvas.addZRegion(z_r,p1,p2)
    }
+
+   console.log(canvas.z_regions);
 }
