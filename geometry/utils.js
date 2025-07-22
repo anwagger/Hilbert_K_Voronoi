@@ -24,6 +24,10 @@ export const colors = {"aqua":"#00ffff","aquamarine":"#7fffd4",
 
 export const colorNames = Array.from(Object.keys(colors))
 
+export const fieldsToIgnore = ["canvas","ctx","dpr","absolute_border","mode","activeManager", "voronois", 
+                               "voronoi_image", "hilbert_image", "draw_hilbert_image", "draggingPoint",
+                               "selectionAnchor", "selectionPointer", "selecting", "delaunay_degree", "voronoi_diagram"];
+
 export function euclideanDistance(point1,point2){
     let dx = point1.x - point2.x
     let dy = point1.y - point2.y
@@ -758,4 +762,33 @@ export function getDistanceFromMetric(metric,p,point,first,last,minkowski_p=2){
 
 export function isColinear(p1,p2,p3){
   return isZero(pointSegDistance (p1,new Segment(p2,p3)))
+}
+
+// gets rid of unnecessary data from canvas clone json file for user to save :D
+export function cleanJason(canvas_clone) {
+  for (let i of Object.keys(canvas_clone)) {
+    if (fieldsToIgnore.includes(i)) {
+      delete canvas_clone[i];
+    }
+  }
+
+  // gets rid of the brute force grid in the json so itll be wayway smaller lol
+  if (canvas_clone["brute_force_voronoi"]) {
+    canvas_clone["brute_force_voronoi"] = true;
+  }
+
+  if (canvas_clone["delaunay"]) {
+   canvas_clone["delaunay"] = true;
+  }
+
+  // we recalculate these on load so we dont need them, we just need which points to draw the bisectors between
+  for (let b of canvas_clone["bisectors"]) {
+    delete b["bisector"];
+    delete b["drawable_conic_segments"];
+  }
+
+  for (let z of canvas_clone["z_regions"]) {
+    delete z["polygon"];
+  }
+
 }

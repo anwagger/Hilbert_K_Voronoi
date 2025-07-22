@@ -1,10 +1,16 @@
 import { Bisector } from "../../geometry/bisectors.js";
-import { VoronoiDiagram } from "../../geometry/voronoi.js"
-import { Polygon, Segment, Spoke } from "../../geometry/primitives.js";
-import { DrawablePoint, DrawablePolygon, DrawableSegment, DrawableSpoke, Site } from "../drawable.js";
+import { VoronoiDiagram, createVoronoiFromCanvas } from "../../geometry/voronoi.js"
+import {calculateSpokes} from  "../../geometry/hilbert.js"
+import { Point, Polygon, Segment, Spoke } from "../../geometry/primitives.js";
+import { DrawablePoint, DrawablePolygon, DrawableSegment, DrawableSpoke, Site, DrawableBruteForceVoronoi} from "../drawable.js";
 
 export function loadBoundary(data, canvas) {
-   const polygon = new Polygon(data.polygon.points);
+   let points = []
+   for (let p of data.polygon.points) {
+      points.push(new Point(p.x,p.y))
+   }
+
+   const polygon = new Polygon(points);
    canvas.boundary = new DrawablePolygon(polygon);
    canvas.boundary.color = data.color;
 }
@@ -13,36 +19,35 @@ export function loadSites(data, canvas) {
    canvas.sites = [];
 
    for (let s of data) {
-      const dP = new DrawablePoint(s.drawable_point);
-      const spokes = getDrawableSpokes(s.drawableSpokes);
+      console.log(s)
+      const point = new Point(s["drawable_point"]["point"]["x"], s["drawable_point"]["point"]["y"]);
+      const dP = new DrawablePoint(point);
+      let site = new Site(dP,[], s["radius"]);
+      site.color = s["color"];
+      s.drawable_point.color = s["color"];
 
-      let site = new Site(dP,spokes, s.radius);
-      site.color = s.color;
+      console.log(site);
+      console.log(calculateSpokes(canvas.boundary,point))
+      calculateSpokes(canvas.boundary,point).forEach((spoke) => {
+         site.drawable_spokes.push(new DrawableSpoke(spoke))
+         site.drawable_spokes[site.drawable_spokes.length-1].color = site.color
+      })
 
       // deal with balls here
 
       canvas.sites.push(site);
    }
-}
 
-function getDrawableSpokes(spokeInfo) {
-   let result = [];
-
-   for (let s of spokeInfo) {
-      const spoke = new Spoke(s.spoke);
-
-      let drawable_spoke = new DrawableSpoke(spoke);
-      drawable_spoke.color = s.color;
-
-      result.push(drawable_spoke);
-   }
+   console.log(canvas.sites);
 }
 
 export function loadSegments(data,canvas) {
    canvas.segments = [];
 
    for (let s of data) {
-      const seg = new Segment(s.segment);
+      const start = new Point(s["segment"]["start"]["x"], s["segment"]["start"]["y"]);
+      const end = new Point(s["segment"]["end"]["x"], s["segment"]["end"]["y"]);
+      const seg = new Segment(start, end);
       let drawable_seg = new DrawableSegment(seg);
       drawable_seg.color = s.color;
 
@@ -52,6 +57,7 @@ export function loadSegments(data,canvas) {
 
 export function loadBisectors(data,canvas) {
    for (let b of data) {
+      // these are indices
       const p1 = b.p1;
       const p2 = b.p2;
 
@@ -66,9 +72,23 @@ export function loadBisectors(data,canvas) {
 }
 
 export function loadBruteForceVoronoi(data, canvas) {
-   const voronoi = new VoronoiDiagram(canvas.boundary.polygon,[],data.voronoi.degree)
-   canvas.brute_force_voronoi = voronoi;
-   canvas.recalculateBruteForceVoronoi();  
+   if(data) {
+      const voronoi = new DrawableBruteForceVoronoi(new VoronoiDiagram(canvas.boundary.polygon,[],1));
+      canvas.brute_force_voronoi = voronoi;
+      canvas.recalculateBruteForceVoronoi();
+   }  
+}
+
+export function loadFastVoronoi(data, canvas, delaunay) {
+   if(data) {
+      let {voronois:voronois} = createVoronoiFromCanvas(canvas);
+      canvas.voronois = voronois;
+      canvas.voronoi_diagram = new DrawableVoronoiDiagram(this.voronois[0])
+
+      if(delaunay) {
+         canvas.delaunay = canvas.voronois[0].hilbertDelaunay(canvas.sites);
+      }
+   }
 }
 
 export function loadZRegions(data, canvas) {

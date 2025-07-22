@@ -9,7 +9,7 @@ import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 import { KCluster } from "../../geometry/clustering.js";
 
-import { loadBoundary, loadSites, loadBisectors, loadSegments } from "./load.js";
+import { loadBoundary, loadSites, loadBisectors, loadSegments, loadBruteForceVoronoi, loadFastVoronoi} from "./load.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -69,8 +69,8 @@ export class Canvas {
    }
 
     load(data) {
-      for (d in data) {
-         let val = d.value();
+      for (let d in data) {
+         let val = data[d];
          switch(d) {
             case "boundary":
                loadBoundary(val, this);
@@ -87,16 +87,12 @@ export class Canvas {
             case "brute_force_voronoi":
                loadBruteForceVoronoi(val, this);
             break;
-            case "voronois":
-               ({voronois: voronois} = createVoronoiFromCanvas(this));
-               this.voronois = voronois;
-            break;
-            case "voronoi_diagram":
-               this.voronoi_diagram = new DrawableVoronoiDiagram(voronois[0]);
+            case "calculate_fast_voronoi":
+               loadFastVoronoi(val, this, data["delaunay"]);
             break;
             default:
-               if (d.value() !== null) {
-                  this.d = val;
+               if (data[d] !== null) {
+                  this[d] = val;
                }   
          }
       }
