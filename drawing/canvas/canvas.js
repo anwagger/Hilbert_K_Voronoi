@@ -93,6 +93,9 @@ export class Canvas {
             case "z_regions":
                loadZRegions(val, this);
             break;
+            case "delaunay":
+            case "delaunay_degree":
+            break;
             default:
                this[d] = val;
          }
