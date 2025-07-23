@@ -827,9 +827,6 @@ export function cleanJason(canvas_clone) {
   for (let z of canvas_clone["z_regions"]) {
     delete z["polygon"];
   }
-<<<<<<< Updated upstream
-=======
-
 }
 
 export function moveInHilbert(boundary,point,r,theta){
@@ -862,7 +859,5 @@ export function moveInHilbert(boundary,point,r,theta){
     return new_p
 
   }
-  
-  
->>>>>>> Stashed changes
 }
+  
