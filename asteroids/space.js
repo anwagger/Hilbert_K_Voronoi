@@ -1,5 +1,5 @@
 import { Polygon, Point } from "../geometry/primitives.js";
-import { calculateHilbertDistance, centroid, computeBoundingBox, euclideanDistance, moveInHilbert, pointInPolygon, pointOnPolygon} from "../geometry/utils.js";
+import { calculateHilbertDistance, centroid, cleanArray, computeBoundingBox, euclideanDistance, hilbertMetric, moveInHilbert, pointInPolygon, pointOnPolygon} from "../geometry/utils.js";
 import { DrawableBall, DrawablePoint, DrawablePolygon } from "../drawing/drawable.js";
 import { calculateHilbertPoint } from "../geometry/hilbert.js";
 import { Ball, Ball_Types } from "../geometry/balls.js";
@@ -176,8 +176,6 @@ export class Asteroid{
         let pointWithSpokes = calculateHilbertPoint(boundary,this.point);
         const ball = new Ball(pointWithSpokes,Ball_Types.HILBERT, boundary, this.radius);
         const d_ball = new DrawableBall(ball,this.color);
-
-        console.log("DRAW STROID")
         //d_ball.draw(ctx)
         d_ball.polygon.drawFill(ctx)
         //let d_p = new DrawablePoint(this.point)
@@ -185,6 +183,60 @@ export class Asteroid{
         //d_p.draw(ctx)
     }
 
+    split() {
+        if (this.radius < 0.1) {
+            return false;
+        }
+
+        let newAstr = new Asteroid(this.point, this.radius * 0.7);
+        newAstr.angle = (this.angle + Math.PI/2) % (2*Math.PI);
+        this.radius = this.radius * 0.7;
+        this.angle =  (this.angle - Math.PI/2) % (2*Math.PI);
+        return newAstr;
+    }
+
+    checkCollision(lasers, boundary) {
+        for (let l of lasers) {
+        
+            if (((this.radius + l.radius) - calculateHilbertDistance(boundary, this.point, l.point)) > 1e-4) {
+                return true;
+            }  
+        }
+
+        return false;
+    }
+
+}
+
+export class Laser{
+    constructor(point,angle,radius = 0.01,color = "cyan"){
+        this.point = point
+        this.radius = radius
+        this.color = color 
+
+        this.angle = angle;
+        this.speed = 0.1;
+        this.time = 0;
+    }
+
+     update(space){
+        let angle = (this.angle + Math.PI) % (2*Math.PI)
+        let boundary = space.original_boundary.polygon
+
+        let new_position = moveInHilbert(boundary,this.point,this.speed,angle)
+        if(new_position){
+            this.point = new_position
+        }
+
+        this.time += 1000/60; // current fps
+    }
+    
+    draw(ctx, boundary) {
+        let pointWithSpokes = calculateHilbertPoint(boundary,this.point);
+        const ball = new Ball(pointWithSpokes,Ball_Types.HILBERT, boundary, this.radius);
+        const d_ball = new DrawableBall(ball,this.color);
+        d_ball.polygon.drawFill(ctx);
+    }
 }
 
 export class Ship{
@@ -196,6 +248,7 @@ export class Ship{
         this.maxSpeed = 0.05;
         this.vel = new Point(0,0)
         this.radius = 15;
+        this.lasers = [];
 
         this.up = false
         this.down = false
@@ -221,6 +274,10 @@ export class Ship{
             this.speed -= this.dpos
         }
 
+        if(this.fire){
+            this.lasers.push(new Laser(this.pos,this.angle));
+        }
+
         this.speed = Math.min(this.speed,this.maxSpeed)
         if(this.speed < 0){
             this.speed = 0
@@ -239,10 +296,20 @@ export class Ship{
         if(new_position){
             this.pos = new_position
         }
-        
+
+        this.lasers.forEach((l,i) => {
+            l.update(space);
+
+            // if a laser has existed for more then 2 secs
+            if (l.time > 2000) {
+                this.lasers[i] = null;
+            }
+        })
+
+        this.lasers = cleanArray(this.lasers);
     }
 
-    draw(ctx){
+    draw(ctx, space){
         let points = []
 
         let angle = this.angle
@@ -265,6 +332,10 @@ export class Ship{
         shipPolygon.polygon.points = points // manually set it
 
         shipPolygon.drawFill(ctx)
+
+        this.lasers.forEach((l) => {
+            l.draw(ctx,space.original_boundary.polygon);
+        });
 
     }
 
@@ -352,6 +423,9 @@ export class Space {
             case "ArrowRight":
                 ship.right = keyDown
             break;
+            case " ":
+                ship.fire = keyDown;
+            break;
         }
     }
     projectPoints(v) {
@@ -420,6 +494,24 @@ export class Space {
             this.asteroids[i].update(this)
         }
 
+        // check if a laser interacts with an asteroid
+
+        this.asteroids.forEach((a,i) => {
+            if(a.checkCollision(this.ship.lasers, this.original_boundary.polygon)) {
+                console.log("yay")
+                // happens when split returns false, indicating that the asteroids radius is too small
+                let res = a.split();
+                if (res) {
+                    this.asteroids.push(res);
+                } else {
+                    this.asteroids[i] = null;
+                }
+            }
+            
+        });
+
+        this.asteroids = cleanArray(this.asteroids);
+
         //this.projectPoints(this.ship.pos)
     }
 
@@ -444,6 +536,6 @@ export class Space {
             }
         }
 
-        this.ship.draw(ctx)
+        this.ship.draw(ctx,this)
     }
 }
