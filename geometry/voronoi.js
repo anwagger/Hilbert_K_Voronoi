@@ -21,7 +21,8 @@ import { pointInPolygon,
     randomMetric,
     quasiMetric,
     getDistanceFromMetric,
-    boundOfBounds} from "./utils.js";
+    boundOfBounds,
+    centroid} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -164,17 +165,12 @@ export class VoronoiDiagram {
 
     hilbertDelaunay(sites) {
         let segs = [];
-        
-        for (let c of this.cells) {
-            for (let b of c.bisector_data) {
-                const p1 = sites[b[0]].drawable_point.point;
-                const p2 = sites[b[1]].drawable_point.point;
-                segs.push(new DrawableSegment(new Segment(p1,p2)));
-            }
-        }
-        /**
-         // maybe how it works for kth degree?
-        for (let c of this.cells) {
+        let centroids = [];
+
+        let boundaries = {}
+
+        for (let i = 0; i < this.cells.length; i++) {
+            let c = this.cells[i]
             let contained = c.contained_sites
             let point_is = []
             while(contained > 0){
@@ -186,10 +182,29 @@ export class VoronoiDiagram {
             for(let i = 0; i < point_is.length; i++){
                 points.push(sites[point_is[i]].drawable_point.point)
             }
-            let polygon = new Polygon(points)
-            polygon.segments.forEach((seg,idx) => segs.push(new DrawableSegment(seg)))
+            centroids.push(centroid(points))
+
+            
+            for (let b in c.bisector_data) {
+                let data = c.bisector_data[b]
+                let b_s = c.bisector_segments[b]
+                let key = [data[0],data[1],b_s.start,b_s.end]
+                if(!boundaries[key]){
+                    boundaries[key] = []
+                }
+                boundaries[key].push(i)
+                
+            }
         }
-             */
+        for(let bs in boundaries){
+            let bisectorCells = boundaries[bs]
+            if(bisectorCells.length == 2){
+                let p1 = centroids[bisectorCells[0]]
+                let p2 = centroids[bisectorCells[1]]
+                segs.push(new DrawableSegment(new Segment(p1,p2)))
+            }
+        }
+        
         return segs;
     }
 
