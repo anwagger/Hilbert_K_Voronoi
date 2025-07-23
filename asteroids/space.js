@@ -143,7 +143,7 @@ export class Asteroid{
         this.color = color
 
         this.angle = Math.random()*2*Math.PI
-        this.speed = 1/1000 + Math.random()/1000
+        this.speed = 1/100 + Math.random()/100
     }
 
     update(space){
@@ -157,7 +157,7 @@ export class Asteroid{
         if(distance >= 4 && this.point || pointOnPolygon(this.point,boundary)){
             let angle_to_player = (Math.atan2(this.point.y - ship_pos.y,this.point.x - ship_pos.x) + 2*Math.PI) % (2*Math.PI)
             this.angle = (angle_to_player + Math.random()*Math.PI/2)  % (2*Math.PI)
-            this.speed = 1/1000 + Math.random()/1000
+            this.speed = 1/100 + Math.random()/100
             let new_pos = null
             do{
                 new_pos = moveInHilbert(boundary,ship_pos,3,Math.random()*2*Math.PI)
@@ -193,7 +193,7 @@ export class Ship{
         this.pos = new Point(point.x,point.y);
         this.angle = 0;
         this.speed = 0;
-        this.maxSpeed = 0.01;
+        this.maxSpeed = 0.05;
         this.vel = new Point(0,0)
         this.radius = 15;
 
@@ -202,8 +202,8 @@ export class Ship{
         this.left = false
         this.right = false
 
-        this.dtheta = 0.01 //change when turning 
-        this.dpos = 0.00001 //change when moving
+        this.dtheta = 0.1 //change when turning 
+        this.dpos = 0.001 //change when moving
     }
 
     update(space){
@@ -408,7 +408,7 @@ export class Space {
         this.drawSpace(canvas)
 
         if(canvas.mode === "space"){
-            setInterval(() => {this.runSpace(canvas)},1000/10)
+            setTimeout(() => {this.runSpace(canvas)},1000/60)
         }
     }
 
