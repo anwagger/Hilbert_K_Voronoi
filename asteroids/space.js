@@ -1,5 +1,5 @@
 import { Polygon, Point } from "../geometry/primitives.js";
-import { centroid, computeBoundingBox, pointInPolygon, pointOnPolygon} from "../geometry/utils.js";
+import { calculateHilbertDistance, centroid, computeBoundingBox, euclideanDistance, moveInHilbert, pointInPolygon, pointOnPolygon} from "../geometry/utils.js";
 import { DrawableBall, DrawablePoint, DrawablePolygon } from "../drawing/drawable.js";
 import { calculateHilbertPoint } from "../geometry/hilbert.js";
 import { Ball, Ball_Types } from "../geometry/balls.js";
@@ -137,10 +137,39 @@ function unNormalizePoint(pt, info) {
 }
 
 export class Asteroid{
-    constructor(point,radius = 1,color = "gray"){
+    constructor(point,radius = 0.1,color = "gray"){
         this.point = point
-        this.radius = radius
+        this.radius = radius +  radius*(Math.random() - 0.5)
         this.color = color
+
+        this.angle = Math.random()*2*Math.PI
+        this.speed = 1/1000 + Math.random()/1000
+    }
+
+    update(space){
+
+        let boundary = space.original_boundary.polygon
+
+        let ship_pos = space.ship.pos
+
+        let distance = calculateHilbertDistance(boundary,this.point,ship_pos)
+
+        if(distance >= 4 && this.point || pointOnPolygon(this.point,boundary)){
+            let angle_to_player = (Math.atan2(this.point.y - ship_pos.y,this.point.x - ship_pos.x) + 2*Math.PI) % (2*Math.PI)
+            this.angle = (angle_to_player + Math.random()*Math.PI/2)  % (2*Math.PI)
+            this.speed = 1/1000 + Math.random()/1000
+            let new_pos = null
+            do{
+                new_pos = moveInHilbert(boundary,ship_pos,3,Math.random()*2*Math.PI)
+            }while(!new_pos)
+
+            this.point = new_pos
+        }
+
+        let new_position = moveInHilbert(boundary,this.point,this.speed,this.angle)
+        if(new_position){
+            this.point = new_position
+        }
     }
 
     draw(ctx,boundary){
@@ -149,21 +178,22 @@ export class Asteroid{
         const d_ball = new DrawableBall(ball,this.color);
 
         console.log("DRAW STROID")
-        d_ball.draw(ctx)
-        let d_p = new DrawablePoint(this.point)
-        d_p.color = "gray"
-        d_p.draw(ctx)
+        //d_ball.draw(ctx)
+        d_ball.polygon.drawFill(ctx)
+        //let d_p = new DrawablePoint(this.point)
+        //d_p.color = "gray"
+        //d_p.draw(ctx)
     }
 
 }
 
 export class Ship{
     constructor(point){
-        this.anchor = new Point(point.x,point.y)
-        this.pos = point//new Point(0,0)
-        this.angle = 0
-        this.speed = 0
-        this.maxSpeed = 0.2;
+        this.anchor = new Point(point.x,point.y);
+        this.pos = new Point(point.x,point.y);
+        this.angle = 0;
+        this.speed = 0;
+        this.maxSpeed = 0.01;
         this.vel = new Point(0,0)
         this.radius = 15;
 
@@ -173,10 +203,10 @@ export class Ship{
         this.right = false
 
         this.dtheta = 0.01 //change when turning 
-        this.dpos = 0.01 //change when moving
+        this.dpos = 0.00001 //change when moving
     }
 
-    update(){
+    update(space){
         
         if(this.left){
             this.angle -= this.dtheta
@@ -192,29 +222,43 @@ export class Ship{
         }
 
         this.speed = Math.min(this.speed,this.maxSpeed)
+        if(this.speed < 0){
+            this.speed = 0
+        }
 
-        let angle = this.angle + Math.PI
-
-        this.vel = new Point(Math.cos(angle)*this.speed,Math.sin(angle)*this.speed)
-        this.pos.x += this.vel.x
-        this.pos.y += this.vel.y
+        if(this.angle < 0){
+            this.angle += 2*Math.PI
+        }
+        if(this.angle > 2*Math.PI){
+            this.angle -= 2*Math.PI
+        }
+        let boundary = space.original_boundary.polygon
+        let angle = (this.angle + Math.PI) % (2*Math.PI)
+        
+        let new_position = moveInHilbert(boundary,this.pos,this.speed,angle)
+        if(new_position){
+            this.pos = new_position
+        }
+        
     }
 
     draw(ctx){
         let points = []
 
         let angle = this.angle
+        
+        let position = this.pos
 
-        points.push(new Point(this.anchor.x + Math.cos(angle)*this.radius,this.anchor.y + Math.sin(angle)*this.radius))
+        points.push(new Point(position.x + Math.cos(angle)*this.radius,position.y + Math.sin(angle)*this.radius))
 
         angle = this.angle - 4*Math.PI/5
-        points.push(new Point(this.anchor.x + Math.cos(angle)*this.radius,this.anchor.y + Math.sin(angle)*this.radius))
+        points.push(new Point(position.x + Math.cos(angle)*this.radius,position.y + Math.sin(angle)*this.radius))
 
         angle = this.angle - Math.PI
-        points.push(new Point(this.anchor.x + Math.cos(angle)*this.radius/3,this.anchor.y + Math.sin(angle)*this.radius/3))
+        points.push(new Point(position.x + Math.cos(angle)*this.radius/3,position.y + Math.sin(angle)*this.radius/3))
 
         angle = this.angle + 4*Math.PI/5
-        points.push(new Point(this.anchor.x + Math.cos(angle)*this.radius,this.anchor.y + Math.sin(angle)*this.radius))
+        points.push(new Point(position.x + Math.cos(angle)*this.radius,position.y + Math.sin(angle)*this.radius))
 
         let shipPolygon = new DrawablePolygon(new Polygon([]))
         shipPolygon.color = "white"
@@ -229,6 +273,7 @@ export class Ship{
 export class Space {
     constructor(polygon){
         this.boundary = new DrawablePolygon(polygon,"black")
+        this.original_boundary = new DrawablePolygon(polygon,"black")
         this.asteroids = []
         this.showAsteroids = true
 
@@ -240,16 +285,16 @@ export class Space {
         this._normInfo = null;
 
         this._origJohn = null;
-
-        let bound = computeBoundingBox(this.boundary.polygon)
         
-        for(let i = 0; i < 4; i++){
+        let ship_pos = this.ship.pos
+
+        for(let i = 0; i < 10; i++){
             let point = null
             do{
-                point = new Point(bound.left+(bound.right-bound.left)*Math.random(),bound.bottom+(bound.top-bound.bottom)*Math.random())
-            }while(!pointInPolygon(point,this.boundary.polygon) || pointOnPolygon(point,this.boundary.polygon))
-
-            this.asteroids.push(new Asteroid(point,0.5,"gray"))
+                point = moveInHilbert(this.boundary.polygon,ship_pos,3,Math.random()*2*Math.PI)
+            }while(!point)
+            this.asteroids.push(new Asteroid(point,0.3,"gray"))
+            
         }
     }
     storeOriginalGeometry() {
@@ -369,32 +414,33 @@ export class Space {
 
     updateSpace(){
 
-        //this.storeOriginalGeometry()
-        this.ship.update()
+        this.ship.update(this)
 
-        this.projectPoints(this.ship.pos)
+        for(let i = 0; i < this.asteroids.length; i++){
+            this.asteroids[i].update(this)
+        }
+
+        //this.projectPoints(this.ship.pos)
     }
 
     drawSpace(canvas){
         let ctx = canvas.ctx
 
-
         let background = new DrawablePolygon(canvas.absolute_border.polygon,"white")
 
         background.drawFill(canvas.ctx)
 
-
-        this.boundary.draw(ctx)
+        //this.boundary.draw(ctx)
         this.boundary.drawFill(ctx)
 
         if (this.showAsteroids) {
             for (let i = 0; i < this.asteroids.length; i++) {
                 const asteroid = this.asteroids[i];
                 let a = asteroid.point
-                console.log("ASTER",a,this.boundary.polygon,asteroid,pointInPolygon(a, this.boundary.polygon))
-                //if (pointInPolygon(a, this.boundary.polygon)) {
-                    asteroid.draw(ctx,this.boundary.polygon)  
-                //}
+                let polygon = this.original_boundary.polygon
+                if (pointInPolygon(a, polygon)) {
+                    asteroid.draw(ctx,polygon)  
+                }
             }
         }
 

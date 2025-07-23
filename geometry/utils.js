@@ -1,3 +1,4 @@
+import { getPointOnSpoke } from "./balls.js";
 import {Bound, Point, Segment, Polygon} from "./primitives.js"
 
 export const colors = {"aqua":"#00ffff","aquamarine":"#7fffd4",
@@ -95,7 +96,7 @@ export function randomMinkowski(point1, point2) {
 export function calculateHilbertDistance(boundary,point1,point2){
   const mid = new Segment(point1,point2);
   const points = boundary.points;
-  const ints = [];
+  const ints = [null,null];
   let count = 0;
   for (let p = 0; p < points.length; p++) {
       const p2 = (p + 1) % points.length;
@@ -215,6 +216,30 @@ export function areParallel(segment1, segment2) {
 
 export function arePointsEqual(point1, point2, epsilon = 1e-9) {
       return Math.abs(point1.x - point2.x) < epsilon && Math.abs(point1.y - point2.y) < epsilon;
+}
+
+export function intersectPolygonWithLine(polygon,seg){
+  let intersections = [];
+    
+  for (let i = 0; i < polygon.points.length; i++) {
+    let edge1 = new Segment(polygon.points[i],polygon.points[(i+1)%polygon.points.length])
+    if (areParallel(edge1, seg)) continue;
+    let new_point = intersectSegmentsAsLines(edge1,seg)
+    if(new_point){
+      let new_seg = new Segment(seg.start,new_point)
+      
+      let intersection = intersectSegments(edge1, new_seg);
+      if (intersection) {
+        if (!intersections.some(point => arePointsEqual(point, intersection))) {
+          intersections.push(intersection);
+        }
+      }
+    }
+    
+  }
+
+
+  return intersections;
 }
 
 export function intersectWithPolygon(polygon1, polygon2) {
@@ -802,4 +827,42 @@ export function cleanJason(canvas_clone) {
   for (let z of canvas_clone["z_regions"]) {
     delete z["polygon"];
   }
+<<<<<<< Updated upstream
+=======
+
+}
+
+export function moveInHilbert(boundary,point,r,theta){
+  // x  = point.x + dist * Math.cos(theta) 
+  // y  = point.y + dist * Math.sin(theta)
+  // r = (1/2) * Math.log(crossRatio())
+  // Math.exp(2*r) = crossRatio 
+  // arbitrary point along line
+  let new_point = new Point(point.x + 1 * Math.cos(theta),point.y + 1 * Math.sin(theta)) 
+  let ints = intersectPolygonWithLine(boundary,new Segment(point,new_point))
+  if(ints.length === 2){
+    let rs = []
+    for(let i = 0; i < ints.length; i++){
+      let center = new Point(point.x - ints[i].x,point.y - ints[i].y)
+      let theta_p = (Math.atan2(center.y,center.x) + 2*Math.PI) % (2*Math.PI)
+      if(isZero(theta- theta_p)){
+        rs.push(r)
+      }else{
+        rs.push(-r)
+      }
+    }
+
+    let edge1 = rs[0] > rs[1]? ints[0]:ints[1]
+    let edge2 = rs[0] > rs[1]? ints[1]:ints[0]
+
+    
+    let new_p = getPointOnSpoke(edge1,point,edge2,r)
+
+
+    return new_p
+
+  }
+  
+  
+>>>>>>> Stashed changes
 }
