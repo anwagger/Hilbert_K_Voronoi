@@ -802,5 +802,4 @@ export function cleanJason(canvas_clone) {
   for (let z of canvas_clone["z_regions"]) {
     delete z["polygon"];
   }
-
 }
