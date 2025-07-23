@@ -1,15 +1,15 @@
-import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall, DrawableZRegion } from "../drawable.js"
+import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall, DrawableZRegion, DrawableInfiniteBalls } from "../drawable.js"
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
-import { Ball_Types, Ball, calculateZRegion} from "../../geometry/balls.js";
+import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
 
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames} from "../../geometry/utils.js"
 import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 import { KCluster } from "../../geometry/clustering.js";
 
-import { loadBoundary, loadSites, loadBisectors, loadSegments, loadBruteForceVoronoi, loadFastVoronoi, loadZRegions} from "./load.js";
+import { loadBoundary, loadSites, loadBisectors, loadSegments, loadBruteForceVoronoi, loadFastVoronoi, loadZRegions, loadInfiniteBalls} from "./load.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -46,6 +46,7 @@ export class Canvas {
       this.bisectors = [];
       this.bisector_intersections = [];
       this.z_regions = [];
+      this.infinite_balls = [];
       this.brute_force_voronoi = null;
       this.voronoi_image = null;
 
@@ -93,6 +94,9 @@ export class Canvas {
             case "z_regions":
                loadZRegions(val, this);
             break;
+            case "infinite_balls":
+               loadInfiniteBalls(val, this);
+            break;
             case "delaunay":
             case "delaunay_degree":
             break;
@@ -130,6 +134,7 @@ export class Canvas {
         }
         this.reindexBisectors()
         this.reindexZRegions()
+        this.reindexInfiniteBalls();
 
         this.sites = cleanArray(this.sites)
         console.log(this.absolute_border);
@@ -159,6 +164,12 @@ export class Canvas {
    drawZRegions() {
       this.z_regions.forEach((z_r,i) => {
          z_r.draw(this.ctx)
+      });
+   }
+
+   drawInfiniteBalls() {
+      this.infinite_balls.forEach((inf) => {
+         inf.draw(this.ctx)
       });
    }
 
@@ -534,6 +545,104 @@ export class Canvas {
       this.z_regions = cleanArray(this.z_regions)
    }
 
+   addInfiniteBalls(ball1, ball2, p1,p2) {
+      const d_ball1 = new DrawableBall(ball1, this.sites[p1].color);
+      const d_ball2 = new DrawableBall(ball2, this.sites[p2].color);
+
+      let inf_ball = new DrawableInfiniteBalls(d_ball1, d_ball2, p1, p2);
+      this.infinite_balls.push(inf_ball);
+      this.drawAll();
+   }
+
+   setInfiniteBalls(event) {
+      let selectedSites = []
+      this.sites.forEach((site,i) =>{
+         if (site.selected){
+
+            selectedSites.push(i)
+         }
+      })      
+      for(let i = 0; i < selectedSites.length; i++){
+         let p1 = selectedSites[i]
+         for(let j = i+1; j < selectedSites.length; j++){
+            let p2 = selectedSites[j]
+            if (event.target.checked){
+               let needNew = true
+               this.infinite_balls.forEach((inf,i) => {
+                  if ((inf.p1 === p1 && inf.p2 === p2) || (inf.p1 === p2 && inf.p2 === p1)){
+                     needNew = false
+                     this.recalculateInfiniteBalls(i)
+                  }
+               })
+               if(needNew){
+                  let boundary = this.boundary.polygon
+                  let point1 = this.sites[selectedSites[i]].drawable_point.point
+                  let point2 = this.sites[selectedSites[j]].drawable_point.point
+                  let h_p1 = calculateHilbertPoint(boundary,point1)
+                  let h_p2 = calculateHilbertPoint(boundary,point2)
+                  let bisector = calculateBisector(boundary,h_p1,h_p2)
+                  let {ball1, ball2} = calculateInfiniteBalls(boundary,h_p1,h_p2,bisector)
+                  console.log(ball1);
+                  this.addInfiniteBalls(ball1, ball2, p1, p2);
+               }
+            }else{
+               this.deleteInfiniteBalls(p1,p2)
+            }
+         }
+      }
+      this.drawAll();
+   }
+
+   // run after deleting sites, but before cleaning!
+   reindexInfiniteBalls(){
+      let indexMap = []
+      let index = 0
+      for(let i = 0; i < this.sites.length; i++){
+         if(this.sites[i]){
+            indexMap.push(index)
+            index ++
+         }else{
+            indexMap.push(-1)
+         }
+      }
+
+      for(let i = 0; i < this.infinite_balls.length; i++){
+         let inf_ball = this.infinite_balls[i]
+         inf_ball.p1 = indexMap[inf_ball.p1]
+         inf_ball.p2 = indexMap[inf_ball.p2]
+         if(inf_ball.p1 === -1 || inf_ball.p2 === -1){
+            this.infinite_balls[i] = null
+         }
+      }
+      this.infinite_balls = cleanArray(this.infinite_balls)
+   }
+
+   recalculateInfiniteBalls(i){
+      let inf_ball = this.infinite_balls[i]
+      let boundary = this.boundary.polygon
+      let point1 = this.sites[inf_ball.p1].drawable_point.point
+      let point2 = this.sites[inf_ball.p2].drawable_point.point
+      let h_p1 = calculateHilbertPoint(boundary,point1)
+      let h_p2 = calculateHilbertPoint(boundary,point2)
+      let bisector = calculateBisector(boundary,h_p1,h_p2)
+      let {ball1, ball2} = calculateInfiniteBalls(boundary,h_p1,h_p2,bisector);
+
+      const d_ball1 = new DrawableBall(ball1, this.sites[inf_ball.p1].color);
+      const d_ball2 = new DrawableBall(ball2, this.sites[inf_ball.p2].color);
+
+      let new_inf_ball = new DrawableInfiniteBalls(d_ball1, d_ball2, inf_ball.p1,inf_ball.p2);
+      this.infinite_balls[i] = new_inf_ball;  
+   }
+
+   deleteInfiniteBalls(p1,p2){
+      this.infinite_balls.forEach((inf_ball,i) => {
+         if ((inf_ball.p1 === p1 && inf_ball.p2 === p2) || (inf_ball.p1 === p2 && inf_ball.p2 === p1)){
+            this.infinite_balls[i] = null
+         }
+      })
+      this.infinite_balls = cleanArray(this.infinite_balls)
+   }
+
 
 
    calculateBisectorIntersections(){
@@ -738,6 +847,7 @@ export class Canvas {
       });
       this.reindexBisectors()
       this.reindexZRegions()
+      this.reindexInfiniteBalls();
 
       this.sites = cleanArray(this.sites) // removes any null elts from array
       this.recalculateAll()
@@ -800,6 +910,14 @@ export class Canvas {
             this.recalculateZRegion(z)
          }
       }
+
+      for(let i = 0; i < this.infinite_balls.length; i++){
+         let inf_ball = this.infinite_balls[i]
+         if(inf_ball.p1 == index || inf_ball.p2 == index){
+            this.recalculateInfiniteBalls(i)
+         }
+      }
+      
 
       site.balls.forEach((b) => {
          b.recalculateBall(point);
@@ -941,6 +1059,8 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
       this.drawBisectors()
 
       this.drawZRegions()
+
+      this.drawInfiniteBalls();
 
       const degree = parseInt(document.getElementById('voronoiDegree').value);
 

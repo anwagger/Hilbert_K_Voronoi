@@ -66,6 +66,10 @@ export function initEvents(canvas) {
       canvas.setZRegions(event);
     });
 
+   document.getElementById('siteDrawInfiniteBalls').addEventListener('input', (event) => {
+      canvas.setInfiniteBalls(event);
+    });
+
    document.getElementById('polygonShowInfo').addEventListener('change', (event) => {
       canvas.setPolygonShowInfo(event);
    });
@@ -183,6 +187,7 @@ export function initEvents(canvas) {
                   canvas.drawAll();
 
                } catch (error) {
+                  console.log(error)
                   alert("Failed to load data. Make sure the file is a valid JSON format.");
                }
          };

@@ -3,7 +3,7 @@ import { VoronoiDiagram, createVoronoiFromCanvas } from "../../geometry/voronoi.
 import {calculateSpokes, calculateHilbertPoint, calculateBisector} from  "../../geometry/hilbert.js"
 import { Point, Polygon, Segment, Spoke } from "../../geometry/primitives.js";
 import { DrawablePoint, DrawablePolygon, DrawableSegment, DrawableSpoke, Site, DrawableBruteForceVoronoi, DrawableVoronoiDiagram, DrawableBall} from "../drawable.js";
-import { Ball, calculateZRegion } from "../../geometry/balls.js";
+import { Ball, calculateInfiniteBalls, calculateZRegion } from "../../geometry/balls.js";
 
 export function loadBoundary(data, canvas) {
    let points = []
@@ -110,6 +110,22 @@ export function loadZRegions(data, canvas) {
 
       canvas.addZRegion(z_r,p1,p2)
    }
+}
 
-   console.log(canvas.z_regions);
+export function loadInfiniteBalls(data, canvas) {
+   canvas.infinite_balls = [];
+   for (let i of data) {
+      const p1 = i.p1;
+      const p2 = i.p2;
+
+      let boundary = canvas.boundary.polygon
+      let point1 = canvas.sites[p1].drawable_point.point
+      let point2 = canvas.sites[p2].drawable_point.point
+      let h_p1 = calculateHilbertPoint(boundary,point1)
+      let h_p2 = calculateHilbertPoint(boundary,point2)
+      let bisector = calculateBisector(boundary,h_p1,h_p2)
+      let {ball1, ball2} = calculateInfiniteBalls(boundary,h_p1,h_p2,bisector)
+
+      canvas.addInfiniteBalls(ball1,ball2,p1,p2)
+   }
 }

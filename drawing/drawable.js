@@ -748,3 +748,17 @@ export class DrawableZRegion{
     this.polygon.draw(ctx)
   }
 }
+
+export class DrawableInfiniteBalls {
+  constructor(ball1, ball2, p1, p2) {
+    this.ball1 = ball1;
+    this.ball2 = ball2;
+    this.p1 = p1;
+    this.p2 = p2;
+  }
+
+  draw(ctx) {
+    this.ball1.draw(ctx);
+    this.ball2.draw(ctx);
+  }
+}
