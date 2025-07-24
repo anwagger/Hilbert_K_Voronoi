@@ -249,6 +249,8 @@ export class Ship{
         this.vel = new Point(0,0)
         this.radius = 15;
         this.lasers = [];
+        this.firing_ratelimit = 50;
+        this.laser_cooldown = 100;
 
         this.up = false
         this.down = false
@@ -275,7 +277,11 @@ export class Ship{
         }
 
         if(this.fire){
-            this.lasers.push(new Laser(this.pos,this.angle));
+            if ((this.laser_cooldown > 25) && (this.firing_ratelimit < 0)) {
+                this.lasers.push(new Laser(this.pos,this.angle));
+                this.laser_cooldown -= 10;
+                this.firing_ratelimit = 50;
+            }
         }
 
         this.speed = Math.min(this.speed,this.maxSpeed)
@@ -305,6 +311,9 @@ export class Ship{
                 this.lasers[i] = null;
             }
         })
+
+        this.laser_cooldown += .5;
+        this.firing_ratelimit -= 10;
 
         this.lasers = cleanArray(this.lasers);
     }
