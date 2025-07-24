@@ -195,10 +195,11 @@ export class Asteroid{
         return newAstr;
     }
 
-    checkCollision(lasers, boundary) {
-        for (let l of lasers) {
-        
-            if (((this.radius + l.radius) - calculateHilbertDistance(boundary, this.point, l.point)) > 1e-4) {
+    laserHitsAsteroid(lasers, boundary) {
+        for (let l = 0; l < lasers.length; l ++) {
+            
+            if (((this.radius + lasers[l].radius) - calculateHilbertDistance(boundary, this.point, lasers[l].point)) > 1e-4) {
+                lasers[l] = null;
                 return true;
             }  
         }
@@ -261,6 +262,19 @@ export class Ship{
         this.dpos = 0.001 //change when moving
     }
 
+    shipHitsAsteroid(asteroids, boundary) {
+        let pointWithSpokes = calculateHilbertPoint(boundary,this.pos);
+        const ball = new Ball(pointWithSpokes,Ball_Types.HILBERT, boundary, 0.01);  
+        for (let a of asteroids) {
+            if ((ball.radius + a.radius) - calculateHilbertDistance(boundary, this.pos, a.point) > 1e-4) {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
     update(space){
         
         if(this.left){
@@ -316,6 +330,7 @@ export class Ship{
         this.firing_ratelimit -= 10;
 
         this.lasers = cleanArray(this.lasers);
+
     }
 
     draw(ctx, space){
@@ -354,6 +369,33 @@ export class Space {
     constructor(polygon){
         this.boundary = new DrawablePolygon(polygon,"black")
         this.original_boundary = new DrawablePolygon(polygon,"black")
+        this.asteroids = []
+        this.showAsteroids = true
+
+        this.ship = new Ship(centroid(this.boundary.polygon.points))
+
+        this._listenersAttached = false;
+
+        this._normOriginalPolygonVertices = [];
+        this._normInfo = null;
+
+        this._origJohn = null;
+        
+        let ship_pos = this.ship.pos
+
+        for(let i = 0; i < 10; i++){
+            let point = null
+            do{
+                point = moveInHilbert(this.boundary.polygon,ship_pos,3,Math.random()*2*Math.PI)
+            }while(!point)
+            this.asteroids.push(new Asteroid(point,0.3,"gray"))
+            
+        }
+    }
+
+    reset() {
+        this.boundary = new DrawablePolygon(this.original_boundary.polygon,"black")
+        this.original_boundary = new DrawablePolygon(this.original_boundary.polygon,"black")
         this.asteroids = []
         this.showAsteroids = true
 
@@ -499,6 +541,11 @@ export class Space {
 
         this.ship.update(this)
 
+        if (this.ship.shipHitsAsteroid(this.asteroids, this.original_boundary.polygon)) {
+            this.reset();
+            return true;
+        }
+
         for(let i = 0; i < this.asteroids.length; i++){
             this.asteroids[i].update(this)
         }
@@ -506,13 +553,12 @@ export class Space {
         // check if a laser interacts with an asteroid
 
         this.asteroids.forEach((a,i) => {
-            if(a.checkCollision(this.ship.lasers, this.original_boundary.polygon)) {
-                console.log("yay")
-                // happens when split returns false, indicating that the asteroids radius is too small
+            if(a.laserHitsAsteroid(this.ship.lasers, this.original_boundary.polygon)) {
+                this.ship.lasers = cleanArray(this.ship.lasers);
                 let res = a.split();
                 if (res) {
                     this.asteroids.push(res);
-                } else {
+                } else { // happens when split returns false, indicating that the asteroids radius is too small
                     this.asteroids[i] = null;
                 }
             }
@@ -525,6 +571,7 @@ export class Space {
     }
 
     drawSpace(canvas){
+
         let ctx = canvas.ctx
 
         let background = new DrawablePolygon(canvas.absolute_border.polygon,"white")

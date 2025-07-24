@@ -59,6 +59,8 @@ export class Canvas {
       this.hilbert_image = null;
       this.draw_hilbert_image = false;
 
+      this.space = null;
+
       this.draggingPoint = null;
 
       this.usedColors = [];
@@ -168,7 +170,7 @@ export class Canvas {
    }
 
    drawInfiniteBalls() {
-      this.infinite_balls.forEach((inf) => {
+      this.infinite_balls.forEach((inf ) => {
          inf.draw(this.ctx)
       });
    }
@@ -198,6 +200,11 @@ export class Canvas {
          const adjustedY = canvasCenterY + (vertex.y - centroidY);
          this.boundary.addPoint(new Point(adjustedX, adjustedY));
       }
+   }
+
+   generateRandomGon(canvas) {
+      const vertices = Math.round(Math.random() * 5) + 3;
+      this.createNgon(vertices);
    }
 
    getMousePos(event) {

@@ -564,13 +564,16 @@ export function initEvents(canvas) {
    }
 
    document.getElementById('createSpace').addEventListener('click', (event) => {
-      if(canvas.boundary && canvas.boundary.polygon.points.length > 2){
+      if (!canvas.space) {
+         if(!canvas.boundary || canvas.boundary.polygon.points.length < 3){
+            canvas.generateRandomGon();
+         }
+
          canvas.space = new Space(canvas.boundary.polygon)
          canvas.space.storeOriginalOriginalGeometry()
          canvas.space.storeOriginalGeometry()
 
          canvas.space.runSpace(canvas)
       }
-      
    })
 }
