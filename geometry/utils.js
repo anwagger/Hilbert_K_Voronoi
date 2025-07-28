@@ -522,7 +522,8 @@ export function computeBoundingBox(polygon) {
         let max_x = -Infinity;
         let min_y = Infinity;
         let max_y = -Infinity;
-        for (let p of polygon.points) {
+        for (let i = 0; i < polygon.points.length; i++) {
+            let p = polygon.points[i]
             min_x = Math.min(min_x,p.x);
             max_x = Math.max(max_x, p.x);
             min_y = Math.min(min_y, p.y);
@@ -530,6 +531,16 @@ export function computeBoundingBox(polygon) {
         }
         return new Bound(max_y,min_y,min_x,max_x);
     }
+
+export function computeBoundingBoxOfSegment(segment){
+  let s = segment.start
+  let e = segment.end
+  let min_x = Math.min(s.x,e.x);
+  let max_x = Math.max(s.x,e.x);
+  let min_y = Math.min(s.y, e.y);
+  let max_y = Math.max(s.y, e.y);
+  return new Bound(max_y,min_y,min_x,max_x);
+}
 
 export function computeClosestBound(bounds, point, vertical = false) {
     let minDistance = Infinity;

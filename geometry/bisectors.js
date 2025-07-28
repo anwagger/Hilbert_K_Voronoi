@@ -1,5 +1,5 @@
 import {calculateConicSegmentBounds, intersectConicSegments } from "./conics.js"
-import { Bound, Point } from "./primitives.js"
+import { Bound, Point, Segment } from "./primitives.js"
 import { boundOfBounds, convexHull, euclideanDistance, inBound, isBetween, isLeZero, isZero, pointInPolygon, pointOnPolygon } from "./utils.js"
 
 // bisectors are just lists of conic segments
@@ -26,7 +26,7 @@ export class Bisector {
     }
 
     // takes in a point and returns the bisector t
-    getTofPoint(point){
+    getTOfPoint(point){
         for(let c = 0; c < this.conic_segments.length; c++){
             let c_s = this.conic_segments[c]
             // simple bounds check initially
@@ -245,4 +245,60 @@ export function calculateCircumcenter3(boundary,b1,b2,b3){
             euclideanDistance(i12,i13)**2)
             }
     }    
+}
+
+export function findPointsOnEitherSideOfBisector(boundary,bisector){
+    let start_p = bisector.getPointFromT(0)
+    let end_p = bisector.getPointFromT(bisector.conic_segments.length)
+    let start_t = boundary.getTOfPoint(start_p)
+    let end_t = boundary.getTOfPoint(end_p)
+
+    let range1 = (end_t - start_t)
+    if (range1 < 0){
+        range1 += boundary.points.length
+    }
+    let range2 = (start_t - end_t)
+    if (range2 < 0){
+        range2 += boundary.points.length
+    }
+    let pos_mid = null
+    let neg_mid = null
+
+    let percentage = 0.5
+    let mid_int = null
+    let count = 0
+    do{
+        let pos_t = (start_t + range1*percentage + boundary.points.length) % (boundary.points.length)
+        let neg_t = (start_t - range2*percentage + boundary.points.length) % (boundary.points.length)
+
+        pos_mid = boundary.getPointFromT(pos_t)
+        neg_mid = boundary.getPointFromT(neg_t)
+        let mid_seg = new Segment(pos_mid,neg_mid)
+        
+        mid_int = null
+        for(let i = 0; i < bisector.conic_segments.length; i++){
+            let c_s = bisector.conic_segments[i]
+            let ints = c_s.parameterized_conic.conic.intersectSegment(mid_seg)
+            for(let j = 0; j < ints.length; j++){
+                if(c_s.isOn(ints[j])){
+                    mid_int = ints[j]
+                    break;
+                }
+            }
+            if(mid_int){
+                break;
+            }
+        }
+        count += 1
+        percentage += 0.05
+    }while(!mid_int && count < 5)
+    
+    if(mid_int){
+        let p1 = new Point((pos_mid.x + mid_int.x)/2,(pos_mid.y + mid_int.y)/2)
+        let p2 = new Point((neg_mid.x + mid_int.x)/2,(neg_mid.y + mid_int.y)/2)
+        return [p1,p2]
+    }
+
+    return null
+    
 }

@@ -574,6 +574,8 @@ export function initEvents(canvas) {
          canvas.space.storeOriginalGeometry()
 
          canvas.space.runSpace(canvas)
+      }else{
+         canvas.space.reset()
       }
    })
 }

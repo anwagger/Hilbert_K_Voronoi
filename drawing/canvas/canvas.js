@@ -5,7 +5,7 @@ import { Polygon,Point} from "../../geometry/primitives.js";
 import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
 
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames} from "../../geometry/utils.js"
-import { BisectorSegment, intersectBisectors } from "../../geometry/bisectors.js";
+import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 import { KCluster } from "../../geometry/clustering.js";
 
@@ -157,6 +157,16 @@ export class Canvas {
    drawBisectors() {
       this.bisectors.forEach((bisector,i) => {
          bisector.draw(this.ctx)
+
+         let sites = findPointsOnEitherSideOfBisector(this.boundary.polygon,bisector.bisector)
+         if(sites){
+            for(let i = 0; i < sites.length; i++){
+               
+            }
+            let d_p = new DrawablePoint(sites[0])
+            d_p.color = bisector.color
+            d_p.draw(this.ctx)
+         }
       });
       this.bisector_intersections.forEach((d_p,i) => {
          d_p.draw(this.ctx)
@@ -237,6 +247,7 @@ export class Canvas {
 
       if (!pointOnPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.absolute_border.polygon)){
          let site = new Site(new DrawablePoint(point))
+         site.drawable_point.label = this.sites.length  + ""
          this.sites.push(site);
          let color = this.getNewColor(this.sites)
          console.log("COLOR: ",color)
@@ -342,9 +353,10 @@ export class Canvas {
 
    setPolygonShowInfo(event) {
       this.boundary.showInfo = event.target.checked;
-      this.boundary.points.forEach((point) => {
+      this.boundary.points.forEach((point,i) => {
          if (this.boundary.showInfo) { 
             point.showInfo = true; 
+            point.label = i+""
          }else { 
             point.showInfo = false; 
             point.deleteInfoBox()
@@ -935,9 +947,10 @@ export class Canvas {
       for(let i = 0; i < this.sites.length; i++){
          points.push(this.sites[i].drawable_point.point)
       }
-      /**
+      
       
       // a little buggy
+      /**
       let k_cluster = new KCluster(this.boundary.polygon,3,points)
       let d_ps = []
       k_cluster.centroids.forEach((point) => {
@@ -946,8 +959,9 @@ export class Canvas {
          d_p.radius = 5
          d_ps.push(d_p)
       })
-          */
-      //this.bisector_intersections = d_ps
+      
+      this.bisector_intersections = d_ps
+       */
    }
 
    recalculateAll(){

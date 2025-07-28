@@ -1,5 +1,5 @@
 import { DrawableSegment } from "../drawing/drawable.js";
-import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter, intersectBisectors } from "./bisectors.js";
+import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter, findPointsOnEitherSideOfBisector, intersectBisectors } from "./bisectors.js";
 import { calculateBisector, calculateHilbertPoint } from "./hilbert.js";
 import { PartitionTree } from "./partition_tree.js";
 import { Bound, Point, Polygon, Segment } from "./primitives.js";
@@ -22,7 +22,8 @@ import { pointInPolygon,
     quasiMetric,
     getDistanceFromMetric,
     boundOfBounds,
-    centroid} from "./utils.js";
+    centroid,
+    isZero} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -32,20 +33,17 @@ class Pair {
 }
 
 export class VoronoiCell {
-    constructor(contained_sites,bisector_segments,bisector_data, bound){
+    constructor(contained_sites,bisector_segments,bisector_data,boundary_points, bound){
         this.bisector_segments = bisector_segments
         this.bound = bound
         this.contained_sites = contained_sites
         this.bisector_data = bisector_data
+        this.boundary_points
     }
 
-    // uses some tricks to 
-    containsPoint(point){
-        
-    }
 }
 
-export function calculateVoronoiCellBounds(bisectors,boundary_range){
+export function calculateVoronoiCellBounds(bisectors,boundary_points){
     // find the extremes of each of the bounds of the conic_segments
 
     
@@ -62,9 +60,9 @@ export function calculateVoronoiCellBounds(bisectors,boundary_range){
     );
 
     let vertices = []
-    if(boundary_range){
-        for(let i = Math.ceil(boundary_range.start); i < Math.floor(boundary_range.end); i++){
-            vertices.push(boundary_range.boundary.points[i])
+    if(boundary_points){
+        for(let i = 0; i < boundary_points.length; i++){
+            vertices.push(boundary_points[i])
         }
     }
     if(vertices.length > 0){
@@ -75,8 +73,118 @@ export function calculateVoronoiCellBounds(bisectors,boundary_range){
     }else{
         return bisector_bound
     }
+}
 
+export function calculateVoronoiCellBoundary(boundary, sites, bisector_segments,bisector_data,contained_sites){
+    
+    let debug = false
+    
+    let potential_points = []
+    for(let i = 0; i < bisector_segments.length; i++){
+        let b_s = bisector_segments[i]
+        let bisector = bisector_segments[i].bisector
+        if (b_s.start === 0 || b_s.end === bisector.conic_segments.length){
+            let data = bisector_data[i]
+            let start_p = bisector.getPointFromT(0)
+            let end_p = bisector.getPointFromT(bisector.conic_segments.length)
+            let side_points = findPointsOnEitherSideOfBisector(boundary,bisector)
+            if(side_points){
+                let pos_point_order = []
+                //let neg_point_order = []
+                for(let i = 0; i < sites.length; i++){
+                    pos_point_order.push(i)
+                    //neg_point_order.push(i)
+                }
+                pos_point_order.sort((a,b) => {
+                    return calculateHilbertDistance(boundary,side_points[0],sites[a]) - calculateHilbertDistance(boundary,side_points[0],sites[b])
+                })
+                /**
+                neg_point_order.sort((a,b) => {
+                    return calculateHilbertDistance(boundary,side_points[1],sites[a]) - calculateHilbertDistance(boundary,side_points[1],sites[b])
+                })
+                */
+                if(debug){
+                    console.log("CELL",contained_sites)
+                    console.log("BISECTOR",data)
+                    console.log("POINT ORDER",pos_point_order)
+                }
+                let order = 1
+                let done = false
+                // if the first of the two sites is not in the cell, order is negative
+                for(let i = 0; i < sites.length; i++){
+                    for(let j = 0; j < data.length; j++){
+                        if(pos_point_order[i] === data[j]){
+                            if(debug){
+                                console.log("CHECK",pos_point_order[i],contained_sites & (2**pos_point_order[i]))
+                            }
+                            if((contained_sites & (2**pos_point_order[i])) === 0){
+                                order = -1
+                                done = true
+                                break;
+                            }else{
+                                done = true
+                                break;
+                            }
+                        }
+                    }
+                    if(done){
+                        break;
+                    }
+                }
+                if(debug){
+                    console.log("ORDER",order)
+                }
+                let start_t = boundary.getTOfPoint(start_p)
+                if(isZero(start_t%1)){
+                    start_t = Math.sign(start_t)*Math.floor(Math.abs(start_t))
+                }
+                if(isZero((start_t%1)-1)){
+                    start_t = Math.sign(start_t)*Math.ceil(Math.abs(start_t))
+                }
+                let end_t = boundary.getTOfPoint(end_p)
+                if(isZero(end_t%1)){
+                    end_t = Math.sign(end_t)*Math.floor(Math.abs(end_t))
+                }
+                if(isZero((end_t%1)-1)){
+                    end_t = Math.sign(end_t)*Math.ceil(Math.abs(end_t))
+                }
 
+                let first = ((order === 1? Math.ceil(start_t): Math.floor(start_t) ) + boundary.points.length)% boundary.points.length
+                let last = ((order === 1? Math.floor(end_t): Math.ceil(end_t)) + boundary.points.length)% boundary.points.length
+                let boundary_points = []
+                for(let i = first; i != last; i = (i + order + boundary.points.length) %(boundary.points.length)){
+                    boundary_points.push(i)
+                }
+                if(first != last){
+                    boundary_points.push(last)
+                }
+                potential_points.push(boundary_points)
+                if(debug){
+                    console.log("BS",start_t,end_t,first,last,boundary_points)
+                }
+            }
+        }
+    }
+    let point_frequency = {}
+    for(let i = 0; i < potential_points.length; i++){
+        for(let j = 0; j < potential_points[i].length; j++){
+            let index = potential_points[i][j]
+            if(!(index in point_frequency)){
+                point_frequency[index] = 0
+            }
+            point_frequency[index] += 1
+        }
+    }
+    let included_polygon_points = []
+    for(let index in point_frequency){
+        if(point_frequency[index] ==  potential_points.length){
+            included_polygon_points.push(boundary.points[index])
+        }
+    }
+    if(debug){
+        console.log("INC",point_frequency,included_polygon_points)
+    }
+    return included_polygon_points
 }
 
 
@@ -305,7 +413,7 @@ export function n3lognVoronoi(boundary,points){
                             while(p === r || q === r) r+=1;
                             let i3 = ps[r]
                             data[i1][i2] = {
-                                t: bisectors[i1][i2].getTofPoint(c),
+                                t: bisectors[i1][i2].getTOfPoint(c),
                             }
 
                             if (!data[i1][i2].t){
@@ -465,7 +573,7 @@ export function n3lognVoronoi(boundary,points){
     for(let v in voronoi_cell_map){
         let bisector_segments_data = voronoi_cell_map[v]
         let degree = bisector_segments_data[0].degree
-        let voronoi_cell = new VoronoiCell(v,[],[],null)
+        let voronoi_cell = new VoronoiCell(v,[],[],[],null)
         for(let d = 0; d < bisector_segments_data.length; d++){
             let i = bisector_segments_data[d].i
             let j = bisector_segments_data[d].j
@@ -476,7 +584,8 @@ export function n3lognVoronoi(boundary,points){
             voronoi_cell.bisector_segments.push(bisector_segment)
             voronoi_cell.bisector_data.push([i,j])
         }
-        voronoi_cell.bound = calculateVoronoiCellBounds(voronoi_cell.bisector_segments)
+        voronoi_cell.boundary_points = calculateVoronoiCellBoundary(boundary,points,voronoi_cell.bisector_segments,voronoi_cell.bisector_data,voronoi_cell.contained_sites)
+        voronoi_cell.bound = calculateVoronoiCellBounds(voronoi_cell.bisector_segments,voronoi_cell.boundary_points)
         voronoi_lists[degree-1].push(voronoi_cell)
     }
 
