@@ -477,6 +477,20 @@ export function initEvents(canvas) {
             canvas.selectDragSite(event)
          }
          
+         if(canvas.mode === "voronoi"){
+
+            if(canvas.calculate_fast_voronoi){
+               const {x,y} = canvas.getMousePos(event)
+               let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
+               let points = []
+               canvas.sites.forEach((site,i) => {
+                  points.push(site.drawable_point.point)
+               })
+               let voronoi = canvas.voronoi_diagram.voronoi
+               canvas.current_voronoi_cell_index = voronoi.partition_tree.findCurrentCell(voronoi,points,point)
+            }
+            
+         }
          
        }
        /* 
@@ -554,6 +568,22 @@ export function initEvents(canvas) {
             }
          }
       } 
+      if(canvas.mode === "voronoi"){
+
+         if(canvas.calculate_fast_voronoi){
+            const {x,y} = canvas.getMousePos(event)
+            let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
+            let points = []
+            canvas.sites.forEach((site,i) => {
+               points.push(site.drawable_point.point)
+            })
+            let voronoi = canvas.voronoi_diagram.voronoi
+            canvas.current_voronoi_cell_index = voronoi.partition_tree.findCurrentCell(voronoi,points,point)
+            console.log("CHAN",canvas.current_voronoi_cell_index)
+            canvas.drawAll()
+         }
+         
+      }
 
       //test_render()
       //canvas.drawAll()
@@ -576,6 +606,16 @@ export function initEvents(canvas) {
          canvas.space.runSpace(canvas)
       }else{
          canvas.space.reset()
+      }
+   })
+   document.getElementById('showAsteroids').addEventListener('change', (event) => {
+      if (canvas.space) {
+         canvas.space.showAsteroids = !event.target.checked
+      }
+   })
+   document.getElementById('makeInvulnerable').addEventListener('change', (event) => {
+      if (canvas.space) {
+         canvas.space.invulnerable = event.target.checked
       }
    })
 }

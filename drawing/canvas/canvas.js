@@ -53,6 +53,7 @@ export class Canvas {
       this.calculate_fast_voronoi = false;
       this.voronois = null
       this.voronoi_diagram = null;
+      this.current_voronoi_cell_index = -1
       this.delaunay = null;
       this.delaunay_degree = 1
 
@@ -158,15 +159,14 @@ export class Canvas {
       this.bisectors.forEach((bisector,i) => {
          bisector.draw(this.ctx)
 
+         /*
          let sites = findPointsOnEitherSideOfBisector(this.boundary.polygon,bisector.bisector)
          if(sites){
-            for(let i = 0; i < sites.length; i++){
-               
-            }
             let d_p = new DrawablePoint(sites[0])
             d_p.color = bisector.color
             d_p.draw(this.ctx)
          }
+            */
       });
       this.bisector_intersections.forEach((d_p,i) => {
          d_p.draw(this.ctx)
@@ -705,8 +705,8 @@ export class Canvas {
          }else{
             this.voronoi_diagram = new DrawableVoronoiDiagram(new VoronoiDiagram(this.boundary.polygon,[],1))
          }
-         
       }
+      this.current_voronoi_cell_index = -1
    }
 
    recalculateFastVoronoi(degree = null){
@@ -1048,10 +1048,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
       
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-      
-
       this.absolute_border.draw(this.ctx);
-
 
       this.boundary.points.forEach((point) => {
          if (point.showInfo){
@@ -1073,6 +1070,11 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       if (this.calculate_fast_voronoi){
          this.voronoi_diagram.draw(this.ctx)
+         if(this.current_voronoi_cell_index >= 0){
+            if(this.voronoi_diagram.drawable_cells[this.current_voronoi_cell_index]){
+               this.voronoi_diagram.drawable_cells[this.current_voronoi_cell_index].drawFill(this.ctx)
+            }
+         }
       }
 
       this.drawSegments()

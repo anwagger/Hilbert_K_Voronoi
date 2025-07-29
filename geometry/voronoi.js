@@ -23,7 +23,8 @@ import { pointInPolygon,
     getDistanceFromMetric,
     boundOfBounds,
     centroid,
-    isZero} from "./utils.js";
+    isZero,
+    inBound} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -41,6 +42,30 @@ export class VoronoiCell {
         this.boundary_points
     }
 
+    contains(boundary,sites,point){
+        if(!inBound(point,this.bound)){
+            return false
+        }
+        for(let i = 0; i < this.bisector_data.length; i++){
+            let data = this.bisector_data[i]
+            let dist0 = calculateHilbertDistance(boundary,point,sites[data[0]])
+            let dist1 = calculateHilbertDistance(boundary,point,sites[data[1]])
+            // data[0] not in cell
+            // if
+            if(isZero(dist0 - dist1)){
+            
+            }else if((this.contained_sites & (2**data[0])) === 0){
+                if(dist0 < dist1){
+                   return false 
+                }
+            }else{
+                if(dist1 < dist0){
+                   return false 
+                }
+            }
+        }
+        return true
+    }
 }
 
 export function calculateVoronoiCellBounds(bisectors,boundary_points){

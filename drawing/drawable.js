@@ -290,16 +290,10 @@ export class DrawableBisectorSegment {
 
   draw(ctx){
     const debug_colors = ["red","orange","yellow","green","blue","purple","pink","brown","grey"]
-    const segment_num_map = {
-      D: 5,
-      E: 30,
-      H: 30,
-      P: 30,
-    }
 
     this.drawable_conic_segments.forEach((d_c_s,i) => {
       //d_c_s.color = debug_colors[i % debug_colors.length]
-      d_c_s.draw(ctx,segment_num_map[d_c_s.conic_segment.parameterized_conic.type])
+      d_c_s.draw(ctx)
     })
 
      // bisector bounding box
@@ -334,7 +328,7 @@ export class DrawableBisector {
     //const debug_colors = ["red","orange","yellow","green","blue","purple","pink","brown","grey"]
     this.drawable_conic_segments.forEach((d_c_s,i) => {
       //d_c_s.color = debug_colors[i % debug_colors.length]
-      d_c_s.draw(ctx,50)
+      d_c_s.draw(ctx)
     })
   }
 
@@ -344,16 +338,16 @@ export class DrawableConicSegment {
   constructor(conic_segment) {
     this.conic_segment = conic_segment;
     this.color = "black"
+    const segment_num_map = {
+      D: 5,
+      E: 30,
+      H: 30,
+      P: 30,
+    }
+    this.drawable_segments = this.createPolygon(segment_num_map[this.conic_segment.parameterized_conic.type])
   }
 
-  draw(ctx,num_of_points) {
-    // we do a for loop from start to end
-    // end - start / num_of_points is our dt (dt could be negative)
-    // for i from 0 to number of points, start + dt * i = t
-    // this.paramaterizedConic.getPointFromT(t) gets us the point
-    // then we can draw a line between the points
-    // yay
-
+  createPolygon(num_of_points){
     let length = this.conic_segment.getRange()
 
     let dt = length / num_of_points;
@@ -383,7 +377,13 @@ export class DrawableConicSegment {
       segments.push(new DrawableSegment(new Segment(p1, p2)));
     }
 
-    segments.forEach((s) => {
+    return segments
+
+  }
+
+  draw(ctx) {
+    
+    this.drawable_segments.forEach((s) => {
       s.color = this.color 
       s.draw(ctx)
     });
@@ -571,6 +571,7 @@ export class DrawableVoronoiCell {
       d_b_s.color = "black"
       this.drawable_bisector_segments.push(d_b_s)
     })
+    this.drawable_polygon = this.createPolygon()
   }
 
   draw(ctx){
@@ -583,8 +584,66 @@ export class DrawableVoronoiCell {
     ctx.setLineDash([5, 5]); 
     ctx.rect(CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.top),CAMERA.x(v_c.bound.right) - CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.bottom) - CAMERA.y(v_c.bound.top))
     ctx.stroke(); 
-    ctx.setLineDash([]); 
-       
+    ctx.setLineDash([]);   
+  }
+  drawFill(ctx){
+    this.drawable_polygon.drawFill(ctx)
+  }
+    
+
+  createPolygon(){
+    let points = []
+    for(let i = 0; i < this.voronoi_cell.boundary_points.length; i++){ 
+      points.push(this.voronoi_cell.boundary_points[i])
+    }
+    points = convexHull(points)
+    for(let i = 0; i < this.voronoi_cell.bisector_segments.length; i++){
+      let b_s = this.voronoi_cell.bisector_segments[i]
+      let b_start = b_s.start
+      let b_end = b_s.end
+      let conic_segments = b_s.bisector.conic_segments
+      let c_s_to_draw = []
+      for (let i = Math.floor(b_start); i < Math.ceil(b_end); i++){
+          let conic_segment = conic_segments[i];
+          let p_conic = conic_segment.parameterized_conic
+
+          let start_percentage = 0
+          let end_percentage = 1
+          let range = conic_segment.getRange()
+
+          if (i < b_start) {
+
+              start_percentage = (b_start % 1)
+              
+          } 
+          if (i > (b_end-1)){
+              end_percentage = (b_end % 1)
+              
+          }
+          
+          let start_t = conic_segment.start + range * start_percentage
+          let end_t = conic_segment.start + range * end_percentage
+
+          let new_bound = calculateConicSegmentBounds(p_conic,start_t,end_t,conic_segment.direction)
+          let partial_c_s = new ConicSegment(p_conic,start_t,end_t,new_bound,conic_segment.direction)
+          c_s_to_draw.push(partial_c_s)
+          
+      }
+      for(let j = 0; j < c_s_to_draw.length; j++){
+        let c_s = c_s_to_draw[j]
+        let length = c_s.getRange()
+        let num_of_points  = 10
+
+        let dt = length / num_of_points;
+        let start = c_s.start
+        
+        for (let i = 0; i <= num_of_points; i++) {
+          let t1 = start + dt * i;          
+          points.push(c_s.parameterized_conic.getPointFromT(t1))
+        }
+      }
+    }
+    return new DrawablePolygon(new Polygon(points),"gray")
   }
 }
 

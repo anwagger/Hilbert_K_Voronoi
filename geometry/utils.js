@@ -485,6 +485,10 @@ export function intersectBounds(b1,b2){
     return b1.top >= b2.bottom && b1.bottom <= b2.top && b1.left <= b2.right && b1.right >= b2.left
 }
 
+export function intersectBoundsNoEquals(b1,b2){
+    return !isLeZero(b1.top - b2.bottom) && !isLeZero(b2.top - b1.bottom) && !isLeZero(b2.right - b1.left) && !isLeZero(b1.right - b2.left)
+}
+
 export function inBound(point,bound){
   let inside = isLeZero(point.x - bound.right) && isLeZero(bound.left - point.x) && isLeZero(point.y - bound.top) && isLeZero(bound.bottom - point.y)
   if(inside){

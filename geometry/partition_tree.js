@@ -1,5 +1,5 @@
 import { Bound } from "./primitives.js";
-import { computeBoundingBox, computeClosestBound, intersectBounds } from "./utils.js";
+import { boundArea, computeBoundingBox, computeClosestBound, inBound, intersectBounds,intersectBoundsNoEquals, isZero } from "./utils.js";
 import { calculateVoronoiCellBounds, VoronoiCell } from "./voronoi.js";
 
 const Partition_Node_Type = {
@@ -26,7 +26,6 @@ export class PartitionTreeNode {
                 this.type = Partition_Node_Type.Y;
             break;
             case Partition_Node_Type.CELL:
-                this.index = data.index;
                 this.outside = data.outside;
                 this.type = Partition_Node_Type.CELL;
             break;
@@ -47,161 +46,116 @@ export class PartitionTree {
             // each bisector segment has a bisector, start, end and bound
             voronoi_bounds.set(i, c.bound);
         }
-
-        // was trying to do smth with each bisectors bound instead of just getting the median
-
-        let middle_x = Math.floor((bound.right + bound.left) / 2);
-
-
-        // using the approach of median the tree gets stuck in infinite recursion, im going to likely have to 
-        // do something that uses the bisectors bounds tbhtbh
-        let x = computeClosestBound(voronoi_bounds.values(),middle_x);
-
-        this.root = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
-
-        let left_bound = new Bound(bound.top,bound.bottom,bound.left, x);
-        let right_bound = new Bound(bound.top,bound.bottom,x, bound.right);
-
-        let keys = voronoi_bounds.keys();
-        let left_voronoi_bounds = new Map();
-        let right_voronoi_bounds = new Map();
-
-        for (let k of keys) {
-            let b = voronoi_bounds.get(k);
-            if (intersectBounds(voronoi_bounds.get(k),left_bound)) {
-                left_voronoi_bounds.set(k,b);
-            }
-
-            if (intersectBounds(voronoi_bounds.get(k), right_bound)) {
-                right_voronoi_bounds.set(k,b);
-            }
-        }
-
-
-        if (left_voronoi_bounds.size <= 3) {
-            this.root.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
-        } else {
-            this.root.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
-        }
-
-        if (right_voronoi_bounds.size <= 3) {
-            this.root.right = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
-        } else {
-            this.root.right = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
-        }
+        this.root = this.createTree(Partition_Node_Type.X,voronoi_bounds,bound)
     }
 
     // right now im writing it in a non random order, so i dont know how balanced the tree will be
     // i dont think we can really use the randomized method that regular trapmaps use anyway, since we want the bounding box to shrink
 
     createTree(type,voronoi_bounds,bound) {
+
+        //console.log("BOUND",type,voronoi_bounds,bound)
+
+        // get how many cells the left and right bounds intersect with
+        let keys = voronoi_bounds.keys();
+        let voronoi_bounds_1 = new Map();
+        let voronoi_bounds_2 = new Map();
+        let bound_1 = null
+        let bound_2 = null
+        let bound_arr = Array.from(voronoi_bounds.values());
+        bound_arr.push(bound);
+
+        let node = null
+
         if (type === Partition_Node_Type.X) {
             // see what bisector has the most median x in the current bound
             let middle_x = Math.floor((bound.left + bound.right) / 2);
-            let bound_arr = Array.from(voronoi_bounds.values());
-            bound_arr.push(bound);
             let x = computeClosestBound(bound_arr, middle_x);
 
-
-            let node = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
+            node = new PartitionTreeNode(Partition_Node_Type.X, {x: x});
 
             // splits bounding box up into a left and right
-            let left_bound = new Bound(bound.top,bound.bottom,bound.left, x);
-            let right_bound = new Bound(bound.top,bound.bottom,x, bound.right);
-           
-            // get how many cells the left and right bounds intersect with
-            let keys = voronoi_bounds.keys();
-            let left_voronoi_bounds = new Map();
-            let right_voronoi_bounds = new Map();
+            bound_1 = new Bound(bound.top,bound.bottom,bound.left, x);
+            bound_2 = new Bound(bound.top,bound.bottom,x, bound.right);
 
             for (let k of keys) {
                 let b = voronoi_bounds.get(k);
-                if (intersectBounds(voronoi_bounds.get(k),left_bound)) {
-                    left_voronoi_bounds.set(k,b);
+                if (intersectBoundsNoEquals(voronoi_bounds.get(k),bound_1)) {
+                    voronoi_bounds_1.set(k,b);
                 }
                 
-                if (intersectBounds(voronoi_bounds.get(k), right_bound)) {
-                    right_voronoi_bounds.set(k,b);
+                if (intersectBoundsNoEquals(voronoi_bounds.get(k), bound_2)) {
+                    voronoi_bounds_2.set(k,b);
                 }
             }
-
-            // we now know there are only 3 or less cells a point can be in if its left to the median
-            if (left_voronoi_bounds.size <= 3 || x === bound.left || x === bound.right) {
-                node.left = this.createTree(Partition_Node_Type.CELL, left_voronoi_bounds, left_bound);
-            } else {
-                node.left = this.createTree(Partition_Node_Type.Y, left_voronoi_bounds, left_bound);
-            }
-
-            // same with right
-            if (right_voronoi_bounds.size <= 3 || x === bound.left || x === bound.right) {
-                node.right = this.createTree(Partition_Node_Type.CELL, right_voronoi_bounds, right_bound);
-            } else {
-                node.right = this.createTree(Partition_Node_Type.Y, right_voronoi_bounds, right_bound);
-            }
-            return node;
 
             // nearly identical to the x case, just shrinks the bound vertically instead of horizontally
         } else if (type === Partition_Node_Type.Y) {
             let middle_y = Math.floor((bound.top + bound.bottom) / 2);
-            let bound_arr = Array.from(voronoi_bounds.values());
-            bound_arr.push(bound);
             let y = computeClosestBound(bound_arr, middle_y, true);
 
 
-            let node = new PartitionTreeNode(Partition_Node_Type.Y, {y: y});
-            let top_bound = new Bound(y, bound.bottom, bound.left, bound.right);
-            let bottom_bound = new Bound(bound.top, y, bound.left, bound.right);
+            node = new PartitionTreeNode(Partition_Node_Type.Y, {y: y});
+            bound_1 = new Bound(y, bound.bottom, bound.left, bound.right);
+            bound_2 = new Bound(bound.top, y, bound.left, bound.right);
            
             // get how many cells the left and right bounds intersect with
-            let keys = voronoi_bounds.keys();
-            let top_voronoi_bounds = new Map();
-            let bottom_voronoi_bounds = new Map();
 
             for (let k of keys) {
                 let b = voronoi_bounds.get(k);
-                if (intersectBounds(voronoi_bounds.get(k),top_bound)) {
-                    top_voronoi_bounds.set(k,b);
+                if (intersectBoundsNoEquals(voronoi_bounds.get(k),bound_1)) {
+                    voronoi_bounds_1.set(k,b);
                 }
                 
-                if (intersectBounds(voronoi_bounds.get(k), bottom_bound)) {
-                    bottom_voronoi_bounds.set(k,b);
+                if (intersectBoundsNoEquals(voronoi_bounds.get(k), bound_2)) {
+                    voronoi_bounds_2.set(k,b);
                 }
             }
-
-            // we now know there are only 3 cells a point can be in if its above our current median
-            if (top_voronoi_bounds.size <= 3 || y === bound.bottom || y === bound.top) {
-                node.above = this.createTree(Partition_Node_Type.CELL, top_voronoi_bounds, top_bound);
-            } else {
-                node.above = this.createTree(Partition_Node_Type.X, top_voronoi_bounds, top_bound);
-            }
-
-            // same with right
-            if (bottom_voronoi_bounds.size <= 3 || y === bound.top || y === bound.bottom) {
-                node.below = this.createTree(Partition_Node_Type.CELL, bottom_voronoi_bounds, bottom_bound);
-            } else {
-                node.below = this.createTree(Partition_Node_Type.X, bottom_voronoi_bounds, bottom_bound);
-            }
-            return node;
         // cell case
         } else {
             let k = [...voronoi_bounds.keys()]; // turns cell indexes into an array
-            let outside = k.length > 1 ? k.slice(1) : null;
-            let data = {index: k[0], outside: outside};
+            let data = {outside: k};
             return new PartitionTreeNode(Partition_Node_Type.CELL,data);
         }
+
+        let bound_area = boundArea(bound)
+        let bound_area_1 = boundArea(bound_1)
+        let bound_area_2 = boundArea(bound_2)
+        let sub_nodes = [
+            type === Partition_Node_Type.X?"left":"below",
+            type === Partition_Node_Type.X?"right":"above",
+        ]
+
+        let next_type = type === Partition_Node_Type.X?Partition_Node_Type.Y:Partition_Node_Type.X
+
+        // we now know there are only 3 or less cells a point can be in if its left to the median
+        if (voronoi_bounds_1.size <= 1 || isZero(bound_area_1) || isZero(bound_area-bound_area_1)) {
+
+            node[sub_nodes[0]] = this.createTree(Partition_Node_Type.CELL, voronoi_bounds_1, bound_1);
+        } else {
+            node[sub_nodes[0]] = this.createTree(next_type, voronoi_bounds_1, bound_1);
+        }
+
+        // same with right
+        if (voronoi_bounds_2.size <= 1 || isZero(bound_area_2) || isZero(bound_area-bound_area_2)) {
+            node[sub_nodes[1]] = this.createTree(Partition_Node_Type.CELL, voronoi_bounds_2, bound_2);
+        } else {
+            node[sub_nodes[1]] = this.createTree(next_type, voronoi_bounds_2, bound_2);
+        }
+        return node;
     }
 
-    findCurrentCell(point) {
+    findCurrentCell(voronoi,sites,point) {
+        let boundary = voronoi.boundary
         let x = point.x;
         let y = point.y;
-        let bound = computeBoundingBox(polygon);
+        let bound = computeBoundingBox(boundary);
         let curr = this.root; // assuming we have a proper root
 
         // if point isnt in voronoi
-        if (x > bound.right || x < bound.left || y > bound.top || y < bound.bottom) {
-            return null;
+        if (!inBound(point,bound)) {
+            return -1;
         }
-
         while (curr.type !== Partition_Node_Type.CELL) {
             if (curr.type === Partition_Node_Type.X) {
                 if (x < curr.x) {
@@ -226,14 +180,14 @@ export class PartitionTree {
         // effectively pseudocode because we dont have an exact .contains function
         // if this is also just checking the bounding box of that cell then
 
-        for (i in curr.outside) {
-            if (voronoi.cells[i].calculateVoronoiCellBounds.contains(point)) {
-                return i;
-            }
-        }
 
-        // for the case where curr.outside is null, meaning the only possible cell we can be in is the current
-        return curr.index;
+        for (let i = 0; i < curr.outside.length; i++) {
+            let index = curr.outside[i]
+            if (voronoi.cells[index].contains(boundary,sites,point)) {
+                return index;
+            }
+        }   
+        return -1
     }
 }
 
