@@ -4,7 +4,7 @@ import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
 import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
 
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, pointNearPolygonBorder} from "../../geometry/utils.js"
 import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 
@@ -250,7 +250,7 @@ export class Canvas {
          while (amt > 0) {
             let point = new Point(-1, -1);
 
-            while(!pointInPolygon(point, boundary)) {
+            while(!pointInPolygon(point, boundary) || pointNearPolygonBorder(point, boundary)) {
                let x = Math.random() * (border.right - border.left) + border.left
                let y = Math.random() * (border.top - border.bottom) + border.bottom
                point = new Point(x,y);

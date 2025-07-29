@@ -4,12 +4,13 @@ import { calculateHilbertDistance, computeBoundingBox, euclideanDistance, isZero
 export class Cluster {
     constructor(indices, canvas) {
         this.indices = indices;
-        this.color = canvas.getNewColor(); // have to write this
+        this.color = canvas.getNewColor(); 
     }
 
     draw(canvas) {
         canvas.sites.forEach((s,i) => {
             if (this.indices.includes(i)) {
+                s.setColor(this.color);
                 s.cluster_color = this.color;
                 s.draw_cluster(canvas.ctx);
             }
