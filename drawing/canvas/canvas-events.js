@@ -126,6 +126,9 @@ export function initEvents(canvas) {
    });
 
    document.getElementById('generateRandomSites').addEventListener('click', () => {
+      if(!canvas.boundary || canvas.boundary.polygon.points.length < 3){
+            canvas.generateRandomGon();
+      }
       let amt = parseInt(document.getElementById('randomSitesAmt').value);
       if (amt > 0) {
          canvas.generateRandomSites(amt);
