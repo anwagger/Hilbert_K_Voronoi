@@ -24,7 +24,8 @@ import { pointInPolygon,
     boundOfBounds,
     centroid,
     isZero,
-    inBound} from "./utils.js";
+    inBound,
+    hilbertCentroid} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -315,8 +316,11 @@ export class VoronoiDiagram {
             for(let i = 0; i < point_is.length; i++){
                 points.push(sites[point_is[i]].drawable_point.point)
             }
-            centroids.push(centroid(points))
-
+            //centroids.push(centroid(points))
+            if(points.length > 0){
+                centroids.push(hilbertCentroid(this.boundary,points,5*points.length,1000))
+            }
+            
             
             for (let b in c.bisector_data) {
                 let data = c.bisector_data[b]

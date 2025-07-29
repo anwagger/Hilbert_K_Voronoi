@@ -464,6 +464,69 @@ export function convexHull(points) {
   return lower.concat(upper);
 }
 
+
+export function convexHullIndex(points) {
+  if (points.length === 0) {
+      console.warn('convexHull called with an empty array.');
+      return {points: [],indices:[]};
+  }
+  if (points.length === 1) {
+      return {points: [points[0]],indices:[0]};
+  }
+  if (points.length === 2) {
+      return {points: points,indices:[0,1]};
+  }
+
+  // Clone and sort the points
+  let sortedPoints = points.slice().sort((a, b) => {
+      if (a.x !== b.x) return a.x - b.x;
+      return a.y - b.y;
+  });
+  let indices = []
+  for(let i = 0; i < points.length; i++){
+    indices.push(i)
+  }
+  let sortedIndices = indices.slice().sort((a, b) => {
+      if (points[a].x !== points[b].x) return points[a].x - points[b].x;
+      return points[a].y - points[b].y;
+  });
+
+  const cross = (o, a, b) => {
+      return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  };
+
+  let lower_index = []
+  let lower = [];
+  for (let i in sortedPoints) {
+      let p = sortedPoints[i]
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) {
+          lower.pop();
+          lower_index.pop();
+      }
+      lower_index.push(sortedIndices[i]);
+      lower.push(p);
+  }
+
+  let upper_index = []
+  let upper = [];
+  for (let i = sortedPoints.length - 1; i >= 0; i--) {
+      let p = sortedPoints[i];
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) {
+          upper.pop();
+          upper_index.pop();
+      }
+      upper.push(p);
+      upper_index.push(sortedIndices[i])
+  }
+
+  // Concatenate lower and upper to get full hull, excluding last point of each (duplicates)
+  lower.pop();
+  lower_index.pop();
+  upper.pop();
+  upper_index.pop();
+  return {points: lower.concat(upper),indices:lower_index.concat(upper_index)}
+}
+
 export function centroid(points) {
   let x = 0;
   let y = 0;
@@ -876,4 +939,70 @@ export function moveInHilbert(boundary,point,r,theta){
   }
 }
 
+
+export function hilbertMidpoint(boundary,p1,p2){
+    if(isZero(euclideanDistance(p1,p2)**2)){
+        return p1
+    }
+    let dist = calculateHilbertDistance(boundary,p1,p2)
+    let angle = Math.atan2(p1.y-p2.y,p1.x-p2.x)
+
+    let start = p1
+
+    if(isLeZero(euclideanDistance(p1,p2)-euclideanDistance(p2,moveInHilbert(boundary,p1,dist/2,angle)))){
+      start = p2
+    }
+    
+    let mid = moveInHilbert(boundary,start,dist/2,angle)
+    if(!mid){
+      mid = centroid([p1,p2])
+    }
+    return mid
+}
+
+export function hilbertCentroid(boundary,points,min = 0,max=-1,count = 0){
+    if(points.length == 1){
+        return points[0]
+    }
+    if(points.length == 0){
+      return null
+    }
+    if(max >= 0 && count > max){
+      return centroid(points)
+    }
+    if(min < 0 || count > min){
+        let euclidean_centroid = centroid(points)
+        let converged = true
+        for(let i = 0; i < points.length; i++){
+          if(!isLeZero(euclideanDistance(euclidean_centroid,points[i]) - 0.1)){
+            converged = false
+            break;
+          }
+        }
+        if(converged){
+          return euclidean_centroid
+        }
+    }
+    
+
+    let convex = convexHullIndex(points)
+    let convex_indices = convex.indices
+    let new_points = []
+    for(let i = 0; i < convex_indices.length; i++){
+        let p1 = points[convex_indices[i]]
+        let p2 = points[convex_indices[(i+1) % convex_indices.length]]
+        let mid = hilbertMidpoint(boundary,p1,p2)
+        new_points.push(mid)
+    }
+    let used = {}
+    for(let i = 0; i < convex_indices.length; i++){
+        used[convex_indices[i]] = true
+    }
+    for(let i = 0; i < points.length; i++){
+        if(!used[i]){
+            new_points.push(points[i])
+        }
+    }
+    return hilbertCentroid(boundary,new_points,min,max,count+1)
+}
   

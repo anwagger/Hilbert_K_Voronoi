@@ -615,7 +615,9 @@ export class DrawableVoronoiCell {
     for(let i = 0; i < this.voronoi_cell.boundary_points.length; i++){ 
       points.push(this.voronoi_cell.boundary_points[i])
     }
-    points = convexHull(points)
+    if(points.length > 0){
+      points = convexHull(points)
+    }
     for(let i = 0; i < this.voronoi_cell.bisector_segments.length; i++){
       let b_s = this.voronoi_cell.bisector_segments[i]
       let b_start = b_s.start

@@ -4,7 +4,7 @@ import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
 import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
 
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid} from "../../geometry/utils.js"
 import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 
@@ -720,21 +720,20 @@ export class Canvas {
 
 
    calculateBisectorIntersections(){
-      /** 
-      this.bisector_intersections = []
-      for(let i = 0; i < this.bisectors.length; i++){
-         for(let j = i+1; j < this.bisectors.length; j++){
-            let b1 = this.bisectors[i].bisector
-            let b2 = this.bisectors[j].bisector
-            let intersection = intersectBisectors(this.boundary.polygon,b1,b2)
-
-            if (intersection){
-               this.bisector_intersections.push(new DrawablePoint(intersection))
-               this.bisector_intersections[this.bisector_intersections.length-1].color = "red"
-            }
-         }
+      /**
+      let points = []
+      for(let i = 0; i < this.sites.length; i++){
+         points.push(this.sites[i].drawable_point.point)
       }
-         */
+      let min = 5 * points.length
+      let max = 1000
+      let centroid = hilbertCentroid(this.boundary.polygon,points,min,max)
+      this.bisector_intersections = []
+      if(centroid){
+         this.bisector_intersections.push(new DrawablePoint(centroid))
+      }
+          */
+     
    }
 
    setFastVoronoi(event,degree){
@@ -972,9 +971,9 @@ export class Canvas {
          }
       }
       
-      if (change_bisector){
+      //if (change_bisector){
          this.calculateBisectorIntersections()
-      }
+      //}
 
       let change_z_region = false
       for(let z = 0; z < this.z_regions.length; z++){

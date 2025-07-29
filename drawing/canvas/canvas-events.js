@@ -105,7 +105,7 @@ export function initEvents(canvas) {
    canvas.canvas.addEventListener('dblclick', (event) => {
       if (canvas.mode === 'boundary' && canvas.boundaryType === 'freeDraw'){
             canvas.addPolygonPoint(event);
-      }else if(canvas.mode === 'site' || canvas.mode === 'voronoi'){
+      }else if(canvas.mode === 'site' || canvas.mode === 'voronoi' || canvas.mode === "balls" || canvas.mode === "clusters"){
          if(!event.shiftKey){
             canvas.addSite(event)
          }
@@ -535,6 +535,15 @@ export function initEvents(canvas) {
       }
    })
 
+   document.getElementById('centroidDepth').addEventListener('input', (event) => {
+      let k = event.target.value;
+
+      canvas.centroid_depth = parseInt(k)
+      console.log("DEPTH",k)
+      canvas.calculateBisectorIntersections()
+      canvas.drawAll()
+   })
+
    document.getElementById('hilbert-image-select').addEventListener('change', (event) => {
       let files = event.target.files
       if(files.length > 0){
@@ -581,7 +590,7 @@ export function initEvents(canvas) {
    canvasElement.onmousedown = (event) => {
        CAMERA.move_lock = false
 
-       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls"){
+       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls" || canvas.mode === "clusters"){
          if (event.shiftKey){
             canvas.selecting = true;
             const {x,y} = canvas.getMousePos(event)
@@ -631,7 +640,7 @@ export function initEvents(canvas) {
    canvasElement.onmouseup = (event) => {
        CAMERA.move_lock = true
 
-       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls"){
+       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls" || canvas.mode === "clusters"){
          if (event.shiftKey){
             canvas.selectSites()
          }else{
@@ -652,7 +661,7 @@ export function initEvents(canvas) {
    
    canvasElement.onmousemove = (event) => {
 
-      if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls"){
+      if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls" || canvas.mode === "clusters"){
          if(event.shiftKey){
             if (canvas.selecting){
                const {x, y} = canvas.getMousePos(event);
