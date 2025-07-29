@@ -16,6 +16,7 @@
                     <option value="boundary">Set Boundary</option>
                     <option value="site">Insert Sites</option>
                     <option value="balls">Balls</option>
+                    <option value="clusters">Clustering</option>
                     <option value="view">Zoom</option>
                     <option value="voronoi">Voronoi</option>
                     <option value="image">Hilbert Images</option>
@@ -143,6 +144,12 @@
 
         <div id="siteContainer">
             <!-- SITE -->
+            <div>
+              <input type="button" id="generateRandomSites" name="generateRandomSites" value="Generate Random Sites"><br>
+              <input type="range" id="amtOfSites" min="1" max="200" value="1" step = "1" oninput="randomSitesAmt.value=amtOfSites.value"/>
+              <input type="text" id="randomSitesAmt" name="randomSitesAmt" value="1">
+
+            </div>
             <div class="collapsible" id="siteCollapsible">
                 <div id= "siteHeader" class="collapsible-header">Site<span class="plus-minus-icon"></span></div>
                   <div class="content" style="display: none;">
@@ -276,6 +283,20 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div id="clustersContainer">
+          <input type="radio" id="generateKClusters" name="clusterType" value="Generate K Clusters"> Generate K-Clusters <br>
+          <input type="radio" id="generateThresholdClusters" name="clusterType" value="Generate Clusters by Threshold"> Generate Clusters by Threshold
+
+          <div id="threshDiv">
+            <input type="range" id="thresholdAmtRange" name="thresholdAmtRange" min="0.01" max="1" step="0.01" value="0.1" oninput="thresholdAmt.value=thresholdAmtRange.value"> Threshold
+            <input type="text" id="thresholdAmt" name="thresholdAmt" value="0.01">
+          </div>
+          <div id="kDiv">
+            <input type="range" id="clusterAmtRange" name="clusterAmtRange" min="1" max="100" step="1" value="1" checked="false" oninput="clusterAmt.value=clusterAmtRange.value"> K-Amt
+            <input type="text" id="clusterAmt" name="clusterAmt" value="1">
+          </div>
       </div>
 
 

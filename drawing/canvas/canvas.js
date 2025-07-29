@@ -4,10 +4,9 @@ import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
 import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
 
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance} from "../../geometry/utils.js"
 import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
-import { KCluster } from "../../geometry/clustering.js";
 
 import { loadBoundary, loadSites, loadBisectors, loadSegments, loadBruteForceVoronoi, loadFastVoronoi, loadZRegions, loadInfiniteBalls} from "./load.js";
 export class Canvas {
@@ -42,6 +41,7 @@ export class Canvas {
       this.boundaryType = 'freeDraw';
 
       this.sites = [];
+      this.clusters = null;
       this.segments = [];
       this.bisectors = [];
       this.bisector_intersections = [];
@@ -234,6 +234,40 @@ export class Canvas {
       this.createNgon(vertices);
    }
 
+   generateRandomSites(amt) {
+      this.delaunay = null;
+      this.brute_force_voronoi = null;
+      this.voronois = null;
+      this.voronoi_diagram = null; 
+      this.calculate_fast_voronoi = false;
+
+
+      if (this.boundary) {
+         const boundary = this.boundary.polygon;
+         const border = computeBoundingBox(boundary);
+         console.log(border);
+
+         while (amt > 0) {
+            let point = new Point(-1, -1);
+
+            while(!pointInPolygon(point, boundary)) {
+               let x = Math.random() * (border.right - border.left) + border.left
+               let y = Math.random() * (border.top - border.bottom) + border.bottom
+               point = new Point(x,y);
+            }
+
+            let site = new Site(new DrawablePoint(point));
+            site.drawable_point.color = this.getNewColor();
+            site.color = site.drawable_point.color;
+            this.sites.push(site);
+
+            amt -= 1;
+         }
+
+         this.drawAll();
+      }
+   }
+
    getMousePos(event) {
       const rect = this.canvas.getBoundingClientRect();
       const rawX = event.clientX - rect.left;
@@ -255,6 +289,10 @@ export class Canvas {
          idx = Math.floor(Math.random() * colorNames.length);
       }
       return colorNames[idx];
+   }
+
+   resetUsedColors() {
+      this.usedColors = [];
    }
 
    addSite(event){
@@ -1100,12 +1138,21 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
          }
       }
 
-      this.sites.forEach((site) => {
-         site.draw(this.ctx)
-         if (site.drawable_point.showInfo){
-            site.drawable_point.drawInfoBox(this, this.dpr); 
-         } 
-      })
+      // dont draw sites if in cluster mode exist (which would draw sites twice)
+      if (this.mode !== 'clusters' || !this.clusters) {
+         this.sites.forEach((site) => {
+            site.draw(this.ctx)
+            if (site.drawable_point.showInfo){
+               site.drawable_point.drawInfoBox(this, this.dpr); 
+            } 
+         })
+      }
+
+      if (this.clusters) {
+         this.clusters.forEach((c) => {
+            c.draw(this);
+         });
+      }
 
       this.drawSelectBox()
  

@@ -4,6 +4,7 @@ import {Point } from "../../geometry/primitives.js";
 import { cleanArray, cleanJason, fieldsToIgnore, pointInPolygon } from "../../geometry/utils.js";
 import { VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
 import { CAMERA, DrawableBruteForceVoronoi, HilbertImage } from "../drawable.js";
+import { singleLinkKHilbert, singleLinkThresholdHilbert } from "../../geometry/clustering.js";
 
 // from nithins
 export function initEvents(canvas) {
@@ -11,6 +12,9 @@ export function initEvents(canvas) {
    document.getElementById('mode-select').addEventListener('change', (event) => {
       canvas.mode = event.target.value
       toggleContainers(canvas);
+      if (canvas.mode !== 'clusters') {
+         canvas.clusters = null;
+      }
    });
 
    function toggleContainers(canvas) {
@@ -18,6 +22,7 @@ export function initEvents(canvas) {
       document.getElementById('polygonContainer').style.display = (canvas.mode === "boundary") ? 'block' : 'none';
       document.getElementById('siteContainer').style.display = canvas.mode === "site" ? 'block' : 'none';
       document.getElementById('ballContainer').style.display = canvas.mode === "balls" ? 'block' : 'none';
+      document.getElementById('clustersContainer').style.display = canvas.mode === "clusters" ? 'block' : 'none';
       document.getElementById('zoomContainer').style.display = canvas.mode === "view" ? 'block' : 'none';
       document.getElementById('voronoiContainer').style.display = canvas.mode === "voronoi" ? 'block' : 'none';
       document.getElementById('imageContainer').style.display = canvas.mode === "image" ? 'block' : 'none';
@@ -118,6 +123,118 @@ export function initEvents(canvas) {
          }
       }
    });
+
+   document.getElementById('generateRandomSites').addEventListener('click', () => {
+      let amt = parseInt(document.getElementById('randomSitesAmt').value);
+      if (amt > 0) {
+         canvas.generateRandomSites(amt);
+      } else {
+         alert("Amount must be positive");
+      }
+   })
+
+   document.getElementById('generateKClusters').addEventListener('input', (event) => {
+      if (event.target.checked) {
+         canvas.clusters = null;
+         document.getElementById("kDiv").style.display = "block";
+         document.getElementById("threshDiv").style.display = "none";
+         canvas.resetUsedColors();
+
+         let k = document.getElementById('clusterAmt').value;
+
+         let points = [];
+         canvas.sites.forEach((s) => {
+            points.push(s.drawable_point.point);
+         })
+
+         canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k);
+         canvas.drawAll();
+      } else {
+         canvas.clusters = null;
+      }
+   });
+
+   document.getElementById('clusterAmt').addEventListener('input', (event) => {
+      document.getElementById("clusterAmtRange").max = canvas.sites.length;
+      let k = event.target.value;
+
+      if (k <= canvas.sites.length && k > 0) {
+         let points = [];
+         canvas.sites.forEach((s) => {
+            points.push(s.drawable_point.point);
+         })
+
+         canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k);
+         canvas.drawAll();
+      } else {
+         alert("k must be > 0 and no more than the total amount of sites!")
+      }
+   })
+
+   document.getElementById('clusterAmtRange').addEventListener('input', (event) => {
+      document.getElementById("clusterAmtRange").max = canvas.sites.length;
+      let k = event.target.value;
+
+      if (k <= canvas.sites.length && k > 0) {
+         let points = [];
+         canvas.sites.forEach((s) => {
+            points.push(s.drawable_point.point);
+         })
+
+         canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k);
+         canvas.drawAll();
+      } else {
+         alert("k must be > 0 and no more than the total amount of sites!")
+      }
+   })
+
+   document.getElementById('generateThresholdClusters').addEventListener('change', (event) => {
+      
+      if (event.target.checked) {
+         canvas.clusters = null;
+         document.getElementById("kDiv").style.display = "none";
+         document.getElementById("threshDiv").style.display = "block";
+         canvas.resetUsedColors();
+
+         let thresh = document.getElementById('thresholdAmt').value;
+
+         let points = [];
+         canvas.sites.forEach((s) => {
+            points.push(s.drawable_point.point);
+         })
+
+         canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh);
+         canvas.drawAll();
+      }
+   });
+
+   document.getElementById('thresholdAmt').addEventListener('input', (event) => {
+      let thresh = event.target.value;
+      let points = [];
+      canvas.sites.forEach((s) => {
+         points.push(s.drawable_point.point);
+      })
+
+      canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh);
+      canvas.drawAll();
+   })
+
+   document.getElementById('thresholdAmtRange').addEventListener('input', (event) => {
+      let thresh = event.target.value;
+
+      if (thresh > 0) {
+         let points = [];
+         canvas.sites.forEach((s) => {
+            points.push(s.drawable_point.point);
+         })
+         canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh);
+         console.log(canvas.clusters);
+         canvas.drawAll();
+      } else {
+         alert("thresh must be > 0")
+      }
+   })
+
 
    // changes position of all selected sites
    // regex not working rn i think :(
