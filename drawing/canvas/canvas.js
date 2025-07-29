@@ -185,6 +185,23 @@ export class Canvas {
       });
    }
 
+   drawVoronoi(){
+      if(this.brute_force_voronoi){
+         this.brute_force_voronoi.drawBruteForce(this,false);  
+         this.brute_force_voronoi.update = false
+      }
+
+      if (this.calculate_fast_voronoi){
+         if(this.current_voronoi_cell_index >= 0){
+            if(this.voronoi_diagram.drawable_cells[this.current_voronoi_cell_index]){
+               this.voronoi_diagram.drawable_cells[this.current_voronoi_cell_index].drawFill(this.ctx)
+            }
+         }
+         this.voronoi_diagram.draw(this.ctx)
+         
+      }
+   }
+
    createNgon(n) {
       const canvasCenterX = this.canvas.width / (2 * this.dpr);
       const canvasCenterY = this.canvas.height / (2 * this.dpr);
@@ -1050,12 +1067,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       this.absolute_border.draw(this.ctx);
 
-      this.boundary.points.forEach((point) => {
-         if (point.showInfo){
-            point.drawInfoBox(this, this.dpr); 
-         }
-      })
-      this.boundary.draw(this.ctx);
+      
 
       if(this.draw_hilbert_image && this.hilbert_image){
          this.hilbert_image.draw(this.ctx)
@@ -1063,19 +1075,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
          //pointer.draw(ctx)
       }
 
-      if(this.brute_force_voronoi){
-         this.brute_force_voronoi.drawBruteForce(this,false);  
-         this.brute_force_voronoi.update = false
-      }
-
-      if (this.calculate_fast_voronoi){
-         this.voronoi_diagram.draw(this.ctx)
-         if(this.current_voronoi_cell_index >= 0){
-            if(this.voronoi_diagram.drawable_cells[this.current_voronoi_cell_index]){
-               this.voronoi_diagram.drawable_cells[this.current_voronoi_cell_index].drawFill(this.ctx)
-            }
-         }
-      }
+      this.drawVoronoi()
 
       this.drawSegments()
 
@@ -1084,6 +1084,13 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
       this.drawZRegions()
 
       this.drawInfiniteBalls();
+
+      this.boundary.points.forEach((point) => {
+         if (point.showInfo){
+            point.drawInfoBox(this, this.dpr); 
+         }
+      })
+      this.boundary.draw(this.ctx);
 
       const degree = parseInt(document.getElementById('voronoiDegree').value);
 

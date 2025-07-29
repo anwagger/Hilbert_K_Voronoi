@@ -286,6 +286,7 @@ export class DrawableBisectorSegment {
         this.drawable_conic_segments.push(new DrawableConicSegment(partial_c_s))
         
     }
+    this.draw_bounding_box = false
   }
 
   draw(ctx){
@@ -299,14 +300,15 @@ export class DrawableBisectorSegment {
      // bisector bounding box
     
     
-     /*
-    let b_s = this.bisector_segment
-    ctx.beginPath();
-    ctx.setLineDash([5, 5]); 
-    ctx.rect(CAMERA.x(b_s.bound.left),CAMERA.y(b_s.bound.top),CAMERA.x(b_s.bound.right) - CAMERA.x(b_s.bound.left),CAMERA.y(b_s.bound.bottom) - CAMERA.y(b_s.bound.top))
-    ctx.stroke(); 
-    ctx.setLineDash([]); 
-    */
+    if(this.draw_bounding_box){
+
+      let b_s = this.bisector_segment
+      ctx.beginPath();
+      ctx.setLineDash([5, 5]); 
+      ctx.rect(CAMERA.x(b_s.bound.left),CAMERA.y(b_s.bound.top),CAMERA.x(b_s.bound.right) - CAMERA.x(b_s.bound.left),CAMERA.y(b_s.bound.bottom) - CAMERA.y(b_s.bound.top))
+      ctx.stroke(); 
+      ctx.setLineDash([]); 
+    }
   }
 }
 
@@ -345,6 +347,7 @@ export class DrawableConicSegment {
       P: 30,
     }
     this.drawable_segments = this.createPolygon(segment_num_map[this.conic_segment.parameterized_conic.type])
+    this.draw_bounding_box = false
   }
 
   createPolygon(num_of_points){
@@ -402,14 +405,13 @@ export class DrawableConicSegment {
     // bisector bounding box
     
 
-    /**
-    
-    ctx.beginPath();
-    ctx.setLineDash([1, 3]); 
-    ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
-    ctx.stroke(); 
-    ctx.setLineDash([]); 
-     */
+    if(this.draw_bounding_box){
+      ctx.beginPath();
+      ctx.setLineDash([1, 3]); 
+      ctx.rect(CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.top),CAMERA.x(c_s.bound.right) - CAMERA.x(c_s.bound.left),CAMERA.y(c_s.bound.bottom) - CAMERA.y(c_s.bound.top))
+      ctx.stroke(); 
+      ctx.setLineDash([]); 
+    }
 
   }
   /*
@@ -572,6 +574,7 @@ export class DrawableVoronoiCell {
       this.drawable_bisector_segments.push(d_b_s)
     })
     this.drawable_polygon = this.createPolygon()
+    this.draw_bounding_box = false
   }
 
   draw(ctx){
@@ -579,12 +582,14 @@ export class DrawableVoronoiCell {
       b_s.draw(ctx)
     })
     
-    let v_c = this.voronoi_cell
-    ctx.beginPath();
-    ctx.setLineDash([5, 5]); 
-    ctx.rect(CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.top),CAMERA.x(v_c.bound.right) - CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.bottom) - CAMERA.y(v_c.bound.top))
-    ctx.stroke(); 
-    ctx.setLineDash([]);   
+    if(this.draw_bounding_box){
+      let v_c = this.voronoi_cell
+      ctx.beginPath();
+      ctx.setLineDash([5, 5]); 
+      ctx.rect(CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.top),CAMERA.x(v_c.bound.right) - CAMERA.x(v_c.bound.left),CAMERA.y(v_c.bound.bottom) - CAMERA.y(v_c.bound.top))
+      ctx.stroke(); 
+      ctx.setLineDash([]);  
+    }
   }
   drawFill(ctx){
     this.drawable_polygon.drawFill(ctx)
