@@ -147,7 +147,7 @@ export function initEvents(canvas) {
             points.push(s.drawable_point.point);
          })
 
-         canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k);
+         canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k, canvas);
          canvas.drawAll();
       } else {
          canvas.clusters = null;
@@ -164,7 +164,7 @@ export function initEvents(canvas) {
             points.push(s.drawable_point.point);
          })
 
-         canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k);
+         canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k, canvas);
          canvas.drawAll();
       } else {
          alert("k must be > 0 and no more than the total amount of sites!")
@@ -181,7 +181,7 @@ export function initEvents(canvas) {
             points.push(s.drawable_point.point);
          })
 
-         canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k);
+         canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k, canvas);
          canvas.drawAll();
       } else {
          alert("k must be > 0 and no more than the total amount of sites!")
@@ -203,7 +203,7 @@ export function initEvents(canvas) {
             points.push(s.drawable_point.point);
          })
 
-         canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh);
+         canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh, canvas);
          canvas.drawAll();
       }
    });
@@ -215,7 +215,7 @@ export function initEvents(canvas) {
          points.push(s.drawable_point.point);
       })
 
-      canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh);
+      canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh, canvas);
       canvas.drawAll();
    })
 
@@ -227,7 +227,7 @@ export function initEvents(canvas) {
          canvas.sites.forEach((s) => {
             points.push(s.drawable_point.point);
          })
-         canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh);
+         canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh, canvas);
          console.log(canvas.clusters);
          canvas.drawAll();
       } else {

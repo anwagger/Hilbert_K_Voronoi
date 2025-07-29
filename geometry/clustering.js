@@ -2,13 +2,12 @@ import { Point } from "./primitives.js"
 import { calculateHilbertDistance, computeBoundingBox, euclideanDistance, isZero, pointInPolygon, pointOnPolygon, matrix } from "./utils.js"
 
 export class Cluster {
-    constructor(indices) {
+    constructor(indices, canvas) {
         this.indices = indices;
-        this.color = null; // have to write this
+        this.color = canvas.getNewColor(); // have to write this
     }
 
     draw(canvas) {
-        this.color = canvas.getNewColor();
         canvas.sites.forEach((s,i) => {
             if (this.indices.includes(i)) {
                 s.drawable_point.color = this.color;
@@ -65,7 +64,7 @@ class UnionFind {
     }
 }
 
-export function singleLinkThresholdHilbert(boundary, points, threshold) {
+export function singleLinkThresholdHilbert(boundary, points, threshold, canvas) {
     if (threshold <= 0) {
         alert("threshold must be greater than 0");
         return null;
@@ -98,13 +97,13 @@ export function singleLinkThresholdHilbert(boundary, points, threshold) {
 
     let clusters = [];
     for (let idxs of indices.values()) {
-        clusters.push(new Cluster(idxs));
+        clusters.push(new Cluster(idxs, canvas));
     }
 
     return clusters;
 }
 
-export function singleLinkKHilbert(boundary, points, k) {
+export function singleLinkKHilbert(boundary, points, k, canvas) {
     let n = points.length;
 
     if (k < 0 || k > n) {
@@ -156,7 +155,7 @@ export function singleLinkKHilbert(boundary, points, k) {
 
     let clusters = [];
     for (let idxs of indices.values()) {
-        clusters.push(new Cluster(idxs));
+        clusters.push(new Cluster(idxs, canvas));
     }
 
     return clusters;

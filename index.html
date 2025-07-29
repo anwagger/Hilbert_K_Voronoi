@@ -286,10 +286,10 @@
       </div>
 
       <div id="clustersContainer">
-          <input type="radio" id="generateKClusters" name="clusterType" value="Generate K Clusters"> Generate K-Clusters <br>
+          <input type="radio" id="generateKClusters" name="clusterType" value="Generate K Clusters" checked="true"> Generate K-Clusters <br>
           <input type="radio" id="generateThresholdClusters" name="clusterType" value="Generate Clusters by Threshold"> Generate Clusters by Threshold
 
-          <div id="threshDiv">
+          <div id="threshDiv" style="display:none">
             <input type="range" id="thresholdAmtRange" name="thresholdAmtRange" min="0.01" max="1" step="0.01" value="0.1" oninput="thresholdAmt.value=thresholdAmtRange.value"> Threshold
             <input type="text" id="thresholdAmt" name="thresholdAmt" value="0.01">
           </div>
