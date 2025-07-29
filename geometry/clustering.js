@@ -2,14 +2,15 @@ import { Point } from "./primitives.js"
 import { calculateHilbertDistance, computeBoundingBox, euclideanDistance, isZero, pointInPolygon, pointOnPolygon, matrix } from "./utils.js"
 
 export class Cluster {
-    constructor(indices, canvas) {
+    constructor(indices, color) {
         this.indices = indices;
-        this.color = canvas.getNewColor(); // have to write this
+        this.color = color; 
     }
 
     draw(canvas) {
         canvas.sites.forEach((s,i) => {
             if (this.indices.includes(i)) {
+                s.setColor(this.color);
                 s.cluster_color = this.color;
                 s.draw_cluster(canvas.ctx);
             }
@@ -96,8 +97,13 @@ export function singleLinkThresholdHilbert(boundary, points, threshold, canvas) 
 
 
     let clusters = [];
+    let i = 0;
     for (let idxs of indices.values()) {
-        clusters.push(new Cluster(idxs, canvas));
+        if (canvas.clusters && i < canvas.clusters.length) {
+            clusters.push(new Cluster(idxs, canvas.clusters[i++].color));   
+        } else {
+            clusters.push(new Cluster(idxs, canvas.getNewColor())); 
+        }
     }
 
     return clusters;
@@ -112,7 +118,11 @@ export function singleLinkKHilbert(boundary, points, k, canvas) {
     } else if (k == n) {
         let clusters = [];
         for (let i in points) {
-            clusters.push(new Cluster([i], canvas));
+            if (i > canvas.clusters.length) {
+                clusters.push(new Cluster([i], canvas.getNewColor()));    
+            } else {
+                clusters.push(new Cluster([i], canvas.clusters[i].color));
+            }
         }
     }
 
@@ -154,8 +164,14 @@ export function singleLinkKHilbert(boundary, points, k, canvas) {
 
 
     let clusters = [];
+    let i = 0;
     for (let idxs of indices.values()) {
-        clusters.push(new Cluster(idxs, canvas));
+        if (canvas.clusters && i < canvas.clusters.length) {
+            clusters.push(new Cluster(idxs, canvas.clusters[i].color));
+            i++;   
+        } else {
+            clusters.push(new Cluster(idxs, canvas.getNewColor())); 
+        }
     }
 
     return clusters;

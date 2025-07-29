@@ -359,6 +359,20 @@ export function pointOnPolygon(point,polygon){
     return false
 }
 
+export function pointNearPolygonBorder(point,polygon){
+    const points = polygon.points;
+    const n = points.length;
+
+    for (let i = 0; i < n; i++) {
+        const p1 = points[i];
+        const p2 = points[(i + 1) % n];
+        if (pointSegDistance(point,new Segment(p1,p2)) < 10){
+          return true
+        }
+    }
+    return false
+}
+
 // uses ray casting to determine if a point is in a polygon
 // not correct?
 export function pointInPolygon(point, polygon) {

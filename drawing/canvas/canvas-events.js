@@ -126,6 +126,9 @@ export function initEvents(canvas) {
    });
 
    document.getElementById('generateRandomSites').addEventListener('click', () => {
+      if(!canvas.boundary || canvas.boundary.polygon.points.length < 3){
+            canvas.generateRandomGon();
+      }
       let amt = parseInt(document.getElementById('randomSitesAmt').value);
       if (amt > 0) {
          canvas.generateRandomSites(amt);
@@ -533,15 +536,6 @@ export function initEvents(canvas) {
          canvas.recalculateBruteForceVoronoi();
          canvas.drawAll();
       }
-   })
-
-   document.getElementById('centroidDepth').addEventListener('input', (event) => {
-      let k = event.target.value;
-
-      canvas.centroid_depth = parseInt(k)
-      console.log("DEPTH",k)
-      canvas.calculateBisectorIntersections()
-      canvas.drawAll()
    })
 
    document.getElementById('hilbert-image-select').addEventListener('change', (event) => {
