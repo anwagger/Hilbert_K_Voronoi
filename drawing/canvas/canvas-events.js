@@ -15,6 +15,7 @@ export function initEvents(canvas) {
       if (canvas.mode !== 'clusters') {
          canvas.clusters = null;
       }
+      canvas.drawAll();
    });
 
    function toggleContainers(canvas) {

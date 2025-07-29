@@ -188,6 +188,15 @@ export class DrawablePoint {
       }
   }
 
+  draw_cluster(ctx, color) {
+    if (this.drawPoint) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(CAMERA.x(this.point.x), CAMERA.y(this.point.y), this.radius, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+  }
+
   drawWithRing(ctx, ringColor = "red", ringRadius = 8) {
     // outer ring
     ctx.beginPath();
@@ -453,6 +462,7 @@ export class Site {
     this.drawable_point = drawable_point;
     this.drawable_point.color = "blue";
     this.color = "blue";
+    this.cluster_color = "blue";
     this.drawable_spokes = drawable_spokes
     this.radius = radius;
     this.selected = false
@@ -478,7 +488,11 @@ export class Site {
         this.balls.forEach((b) => {
           b.draw(ctx);
         })
-    }
+  }
+
+  draw_cluster(ctx) {
+    this.drawable_point.draw_cluster(ctx, this.cluster_color);
+  }
 
   drawSelectionRing(ctx){
     ctx.strokeStyle = this.color;

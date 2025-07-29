@@ -10,8 +10,8 @@ export class Cluster {
     draw(canvas) {
         canvas.sites.forEach((s,i) => {
             if (this.indices.includes(i)) {
-                s.drawable_point.color = this.color;
-                s.draw(canvas.ctx);
+                s.cluster_color = this.color;
+                s.draw_cluster(canvas.ctx);
             }
         });
     }
@@ -112,7 +112,7 @@ export function singleLinkKHilbert(boundary, points, k, canvas) {
     } else if (k == n) {
         let clusters = [];
         for (let i in points) {
-            clusters.push(new Cluster([i]));
+            clusters.push(new Cluster([i], canvas));
         }
     }
 

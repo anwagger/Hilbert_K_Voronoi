@@ -27,7 +27,7 @@ export const colorNames = Array.from(Object.keys(colors))
 
 export const fieldsToIgnore = ["canvas","ctx","dpr","absolute_border","mode","activeManager", "voronois", 
                                "voronoi_image", "hilbert_image", "draw_hilbert_image", "draggingPoint",
-                               "selectionAnchor", "selectionPointer", "selecting", "delaunay_degree", "voronoi_diagram", "space"];
+                               "selectionAnchor", "selectionPointer", "selecting", "delaunay_degree", "voronoi_diagram", "space", "clusters"];
 
 export function euclideanDistance(point1,point2){
     let dx = point1.x - point2.x
