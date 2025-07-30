@@ -4,7 +4,7 @@ import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
 import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
 
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid,pointNearPolygonBorder} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid,pointNearPolygonBorder, centroid, hilbertCentroidList, convexHull} from "../../geometry/utils.js"
 import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 
@@ -69,6 +69,12 @@ export class Canvas {
       this.selectionAnchor = new Point(0,0);
       this.selectionPointer = new Point(0,0);
       this.selecting = false
+
+      this.draw_hilbert_rose = false
+      this.hilbert_rose = []
+      this.hilbert_rose_depth = 0
+      this.draw_hilbert_centroid = false
+      this.hilbert_centroid = null
 
    }
 
@@ -202,6 +208,19 @@ export class Canvas {
       }
    }
 
+   drawCentroids(){
+      if(this.draw_hilbert_rose){
+         this.hilbert_rose.forEach((d_p) => {
+            d_p.draw(this.ctx)
+         })
+      }
+      if(this.draw_hilbert_centroid){
+         if(this.hilbert_centroid){
+            this.hilbert_centroid.draw(this.ctx)
+         }
+      }
+   }
+
    createNgon(n) {
       const canvasCenterX = this.canvas.width / (2 * this.dpr);
       const canvasCenterY = this.canvas.height / (2 * this.dpr);
@@ -312,6 +331,8 @@ export class Canvas {
          this.recalculateFastVoronoi()
          this.recalculateHilbertDelaunay()
          this.recalculateBruteForceVoronoi()
+         this.recalculateHilbertCentroid()
+         this.recalculateHilbertRose()
 
          this.drawAll()
       }      
@@ -720,20 +741,39 @@ export class Canvas {
 
 
    calculateBisectorIntersections(){
-      /**
+   }
+
+   recalculateHilbertRose(){
+      if(!this.draw_hilbert_rose){
+         return 
+      }
       let points = []
       for(let i = 0; i < this.sites.length; i++){
          points.push(this.sites[i].drawable_point.point)
       }
-      let min = 5 * points.length
-      let max = 1000
-      let centroid = hilbertCentroid(this.boundary.polygon,points,min,max)
-      this.bisector_intersections = []
-      if(centroid){
-         this.bisector_intersections.push(new DrawablePoint(centroid))
+      this.hilbert_rose = []
+
+   
+      for(let i = 0; i < this.hilbert_rose_depth; i++){
+         
+         let hilbert_centroid = hilbertCentroidList(this.boundary.polygon,points,-1,i)
+        let color = 255*i / this.hilbert_rose_depth
+        this.hilbert_rose.push(new DrawablePolygon(new Polygon(convexHull(hilbert_centroid)),"rgb("+color+","+color+","+color+")"))
       }
-          */
-     
+      
+   }
+   recalculateHilbertCentroid(){
+      if(!this.draw_hilbert_centroid){
+         return 
+      }
+      let points = []
+      for(let i = 0; i < this.sites.length; i++){
+         points.push(this.sites[i].drawable_point.point)
+      }
+      let hilbert_centroid = hilbertCentroid(this.boundary.polygon,points)
+      if(hilbert_centroid){
+         this.hilbert_centroid = new DrawablePoint(hilbert_centroid)
+      }
    }
 
    setFastVoronoi(event,degree){
@@ -870,6 +910,8 @@ export class Canvas {
             this.recalculateSite(this.draggingPoint);
             this.recalculateFastVoronoi()
             this.recalculateHilbertDelaunay()
+            this.recalculateHilbertCentroid()
+            this.recalculateHilbertRose()
             // DONT RECALCULATE BRUTE FORCE HERE!
          }
          this.drawAll()
@@ -1002,20 +1044,6 @@ export class Canvas {
          points.push(this.sites[i].drawable_point.point)
       }
       
-      
-      // a little buggy
-      /**
-      let k_cluster = new KCluster(this.boundary.polygon,3,points)
-      let d_ps = []
-      k_cluster.centroids.forEach((point) => {
-         let d_p = new DrawablePoint(point)
-         d_p.color = "red"
-         d_p.radius = 5
-         d_ps.push(d_p)
-      })
-      
-      this.bisector_intersections = d_ps
-       */
    }
 
    recalculateAll(){
@@ -1038,6 +1066,8 @@ export class Canvas {
       this.recalculateHilbertDelaunay()
       this.recalculateBruteForceVoronoi()
       this.recalculateHilbertImage()
+      this.recalculateHilbertCentroid()
+      this.recalculateHilbertRose()
 
    }
 
@@ -1116,6 +1146,8 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
 
       this.drawSegments()
 
+      this.drawCentroids()
+
       this.drawBisectors()
 
       this.drawZRegions()
@@ -1138,7 +1170,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
       }
 
       // dont draw sites if in cluster mode exist (which would draw sites twice)
-      if (this.mode !== 'clusters' || !this.clusters) {
+      if (!this.hide_sites && (this.mode !== 'clusters' || !this.clusters)) {
          this.sites.forEach((site) => {
             site.draw(this.ctx)
             if (site.drawable_point.showInfo){

@@ -997,8 +997,6 @@ export function hilbertCentroid(boundary,points,min = 0,max=-1,count = 0){
           return euclidean_centroid
         }
     }
-    
-
     let convex = convexHullIndex(points)
     let convex_indices = convex.indices
     let new_points = []
@@ -1018,5 +1016,49 @@ export function hilbertCentroid(boundary,points,min = 0,max=-1,count = 0){
         }
     }
     return hilbertCentroid(boundary,new_points,min,max,count+1)
+}
+  
+export function hilbertCentroidList(boundary,points,min = 0,max=-1,count = 0){
+    if(points.length == 1){
+        return points
+    }
+    if(points.length == 0){
+      return []
+    }
+    if(max >= 0 && count > max){
+      return points
+    }
+    if(min < 0 || count > min){
+        let euclidean_centroid = centroid(points)
+        let converged = true
+        for(let i = 0; i < points.length; i++){
+          if(!isLeZero(euclideanDistance(euclidean_centroid,points[i]) - 0.1)){
+            converged = false
+            break;
+          }
+        }
+        if(converged){
+          return points
+        }
+    }
+    let convex = convexHullIndex(points)
+    let convex_indices = convex.indices
+    let new_points = []
+    for(let i = 0; i < convex_indices.length; i++){
+        let p1 = points[convex_indices[i]]
+        let p2 = points[convex_indices[(i+1) % convex_indices.length]]
+        let mid = hilbertMidpoint(boundary,p1,p2)
+        new_points.push(mid)
+    }
+    let used = {}
+    for(let i = 0; i < convex_indices.length; i++){
+        used[convex_indices[i]] = true
+    }
+    for(let i = 0; i < points.length; i++){
+        if(!used[i]){
+            new_points.push(points[i])
+        }
+    }
+    return hilbertCentroidList(boundary,new_points,min,max,count+1)
 }
   

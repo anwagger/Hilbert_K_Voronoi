@@ -222,8 +222,37 @@
                 </div>
             </div>
 
-            <div id="allinfo">
+            <div class="collapsible" id="allCollapsible">
+              <div id="allHeader"class="collapsible-header">All<span class="plus-minus-icon"></span></div>
+                  <div class="content" style="display: none;">
 
+                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                        <label for="hideSites" class="checkbox-label">Hide Sites</label>
+                        <div style="position: relative;">
+                        <input style="width: 15px; height: 15px;" type="checkbox" id="hideSites" class="checkbox-input">
+                        <span class="checkbox-background"></span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                        <label for="siteDrawCentroid" class="checkbox-label">Draw Hilbert Centroid</label>
+                        <div style="position: relative;">
+                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawCentroid" class="checkbox-input">
+                        <span class="checkbox-background"></span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                        <label for="siteDrawHilbertRose" class="checkbox-label">Draw Hilbert Rose</label>
+                        <div style="position: relative;">
+                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawHilbertRose" class="checkbox-input">
+                        <span class="checkbox-background"></span>
+                        </div>
+                    </div>
+                    <div id="roseDepth" style="display:block">
+                      <input type="range" id="roseDepthRange" name="roseDepthRange" min="1" max="200" step="1" value="1" oninput="roseDepthAmt.value=roseDepthRange.value"> Rose Depth
+                      <input style= "margin-top: 10px;" type="text" id="roseDepthAmt" name="roseDepthAmt" value="1" oninput="roseDepthRange.value=roseDepthAmt.value">
+                    </div>
+
+                </div>
             </div>
             <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
               <div style="display: flex; flex-direction: column;" >

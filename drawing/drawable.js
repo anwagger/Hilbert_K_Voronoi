@@ -100,6 +100,7 @@ export class DrawablePolygon {
     ctx.setLineDash([]) 
     if (this.show_vertices) {
       this.points.forEach((point) => {
+        point.color = this.color
         point.draw(ctx); 
       });
     }

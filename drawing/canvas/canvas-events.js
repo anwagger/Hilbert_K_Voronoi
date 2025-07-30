@@ -52,6 +52,11 @@ export function initEvents(canvas) {
       toggleCollapsible(canvas)
    })
 
+   document.getElementById('allHeader').addEventListener('click', (event) => {
+      canvas.activeManager = (canvas.activeManager != "allCollapsible") ?"allCollapsible":""
+      toggleCollapsible(canvas)
+   })
+
      
    document.getElementById('polygonColor').addEventListener('input', (event) => {
       canvas.setPolygonColor(event);
@@ -87,6 +92,44 @@ export function initEvents(canvas) {
          }
       });
    });
+
+   document.getElementById('hideSites').addEventListener('change', (event) => {
+            canvas.hide_sites = event.target.checked
+            canvas.drawAll()
+   });
+
+   document.getElementById('siteDrawCentroid').addEventListener('change', (event) => {
+            canvas.draw_hilbert_centroid = event.target.checked
+
+            canvas.recalculateHilbertCentroid();
+            canvas.drawAll()
+   });
+   document.getElementById('siteDrawHilbertRose').addEventListener('change', (event) => {
+            canvas.draw_hilbert_rose = event.target.checked
+            let k = document.getElementById('roseDepthRange').value;
+            if(k >= 0){
+               canvas.hilbert_rose_depth = Math.floor(k)
+            }
+            canvas.recalculateHilbertRose();
+            canvas.drawAll()
+   });
+   document.getElementById('roseDepthRange').addEventListener('input', (event) => {
+      let k = event.target.value;
+      if(k >= 0){
+         canvas.hilbert_rose_depth = Math.floor(k)
+      }
+      canvas.recalculateHilbertRose()
+      canvas.drawAll()
+   })
+
+   document.getElementById('roseDepthAmt').addEventListener('input', (event) => {
+      let k = event.target.value;
+      if(k >= 0){
+         canvas.hilbert_rose_depth = Math.floor(k)
+      }
+      canvas.recalculateHilbertRose()
+      canvas.drawAll()
+   })
 
    document.querySelectorAll('input[name="polygonType"]').forEach(radio => {
       radio.addEventListener('change', (event) => {
