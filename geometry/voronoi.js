@@ -101,93 +101,96 @@ export function calculateVoronoiCellBounds(bisectors,boundary_points){
     }
 }
 
-export function calculateVoronoiCellBoundary(boundary, sites, bisector_segments,bisector_data,contained_sites){
+export function calculateVoronoiCellBoundary(boundary, sites, bisector_segments,bisector_data,contained_sites,debug=false){
     
-    let debug = false
-    
+    if(debug){
+        console.log("DEBUG",bisector_segments,bisector_data)
+    }
     let potential_points = []
-    for(let i = 0; i < bisector_segments.length; i++){
-        let b_s = bisector_segments[i]
-        let bisector = bisector_segments[i].bisector
-        if (b_s.start === 0 || b_s.end === bisector.conic_segments.length){
-            let data = bisector_data[i]
-            let start_p = bisector.getPointFromT(0)
-            let end_p = bisector.getPointFromT(bisector.conic_segments.length)
-            let side_points = findPointsOnEitherSideOfBisector(boundary,bisector)
-            if(side_points){
-                let pos_point_order = []
-                //let neg_point_order = []
-                for(let i = 0; i < sites.length; i++){
-                    pos_point_order.push(i)
-                    //neg_point_order.push(i)
-                }
-                pos_point_order.sort((a,b) => {
-                    return calculateHilbertDistance(boundary,side_points[0],sites[a]) - calculateHilbertDistance(boundary,side_points[0],sites[b])
-                })
-                /**
-                neg_point_order.sort((a,b) => {
-                    return calculateHilbertDistance(boundary,side_points[1],sites[a]) - calculateHilbertDistance(boundary,side_points[1],sites[b])
-                })
-                */
-                if(debug){
-                    console.log("CELL",contained_sites)
-                    console.log("BISECTOR",data)
-                    console.log("POINT ORDER",pos_point_order)
-                }
-                let order = 1
-                let done = false
-                // if the first of the two sites is not in the cell, order is negative
-                for(let i = 0; i < sites.length; i++){
-                    for(let j = 0; j < data.length; j++){
-                        if(pos_point_order[i] === data[j]){
-                            if(debug){
-                                console.log("CHECK",pos_point_order[i],contained_sites & (2**pos_point_order[i]))
-                            }
-                            if((contained_sites & (2**pos_point_order[i])) === 0){
-                                order = -1
-                                done = true
-                                break;
-                            }else{
-                                done = true
-                                break;
-                            }
+    for(let b = 0; b < bisector_segments.length; b++){
+        let b_s = bisector_segments[b]
+        let bisector = b_s.bisector
+        
+        let data = bisector_data[b]
+        let start_p = bisector.getPointFromT(0)
+        let end_p = bisector.getPointFromT(bisector.conic_segments.length)
+        let side_points = findPointsOnEitherSideOfBisector(boundary,bisector)
+        if(side_points){
+            let pos_point_order = []
+            //let neg_point_order = []
+            for(let i = 0; i < sites.length; i++){
+                pos_point_order.push(i)
+                //neg_point_order.push(i)
+            }
+            pos_point_order.sort((a,b) => {
+                return calculateHilbertDistance(boundary,side_points[0],sites[a]) - calculateHilbertDistance(boundary,side_points[0],sites[b])
+            })
+            /**
+            neg_point_order.sort((a,b) => {
+                return calculateHilbertDistance(boundary,side_points[1],sites[a]) - calculateHilbertDistance(boundary,side_points[1],sites[b])
+            })
+            */
+            if(debug){
+                console.log("CELL",contained_sites)
+                console.log("BISECTOR",data)
+                console.log("POINT ORDER",pos_point_order)
+            }
+            let order = 1
+            let done = false
+            // if the first of the two sites is not in the cell, order is negative
+            for(let i = 0; i < sites.length; i++){
+                for(let j = 0; j < data.length; j++){
+                    if(pos_point_order[i] === data[j]){
+                        if(debug){
+                            console.log("CHECK",pos_point_order[i],contained_sites & (2**pos_point_order[i]))
+                        }
+                        if((contained_sites & (2**pos_point_order[i])) === 0){
+                            order = -1
+                            done = true
+                            break;
+                        }else{
+                            done = true
+                            break;
                         }
                     }
-                    if(done){
-                        break;
-                    }
                 }
-                if(debug){
-                    console.log("ORDER",order)
+                if(done){
+                    break;
                 }
-                let start_t = boundary.getTOfPoint(start_p)
-                if(isZero(start_t%1)){
-                    start_t = Math.sign(start_t)*Math.floor(Math.abs(start_t))
-                }
-                if(isZero((start_t%1)-1)){
-                    start_t = Math.sign(start_t)*Math.ceil(Math.abs(start_t))
-                }
-                let end_t = boundary.getTOfPoint(end_p)
-                if(isZero(end_t%1)){
-                    end_t = Math.sign(end_t)*Math.floor(Math.abs(end_t))
-                }
-                if(isZero((end_t%1)-1)){
-                    end_t = Math.sign(end_t)*Math.ceil(Math.abs(end_t))
-                }
+            }
+            if(debug){
+                console.log("ORDER",order)
+            }
+            let start_t = boundary.getTOfPoint(start_p)
+            if(isZero(start_t%1)){
+                start_t = Math.sign(start_t)*Math.floor(Math.abs(start_t))
+            }
+            if(isZero((start_t%1)-1)){
+                start_t = Math.sign(start_t)*Math.ceil(Math.abs(start_t))
+            }
+            let end_t = boundary.getTOfPoint(end_p)
+            if(isZero(end_t%1)){
+                end_t = Math.sign(end_t)*Math.floor(Math.abs(end_t))
+            }
+            if(isZero((end_t%1)-1)){
+                end_t = Math.sign(end_t)*Math.ceil(Math.abs(end_t))
+            }
 
-                let first = ((order === 1? Math.ceil(start_t): Math.floor(start_t) ) + boundary.points.length)% boundary.points.length
-                let last = ((order === 1? Math.floor(end_t): Math.ceil(end_t)) + boundary.points.length)% boundary.points.length
-                let boundary_points = []
-                for(let i = first; i != last; i = (i + order + boundary.points.length) %(boundary.points.length)){
+            let first = ((order === 1? Math.ceil(start_t): Math.floor(start_t) ) + boundary.points.length)% boundary.points.length
+            let last = ((order === 1? Math.floor(end_t): Math.ceil(end_t)) + boundary.points.length)% boundary.points.length
+            let boundary_points = []
+            for(let i = first; i != last; i = (i + order + boundary.points.length) %(boundary.points.length)){
+                if(i != start_t){
                     boundary_points.push(i)
                 }
-                if(first != last){
-                    boundary_points.push(last)
-                }
-                potential_points.push(boundary_points)
-                if(debug){
-                    console.log("BS",start_t,end_t,first,last,boundary_points)
-                }
+                
+            }
+            if(first != last && last != end_t){
+                boundary_points.push(last)
+            }
+            potential_points.push(boundary_points)
+            if(debug){
+                console.log("BS",start_t,end_t,first,last,boundary_points)
             }
         }
     }

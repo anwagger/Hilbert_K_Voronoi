@@ -2,7 +2,7 @@ import { Space } from "../../asteroids/space.js";
 import { calculateBisector, calculateHilbertPoint, HilbertPoint } from "../../geometry/hilbert.js";
 import {Point } from "../../geometry/primitives.js";
 import { cleanArray, cleanJason, fieldsToIgnore, pointInPolygon } from "../../geometry/utils.js";
-import { VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
+import { calculateVoronoiCellBoundary, VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
 import { CAMERA, DrawableBruteForceVoronoi, HilbertImage } from "../drawable.js";
 import { singleLinkKHilbert, singleLinkThresholdHilbert } from "../../geometry/clustering.js";
 
@@ -92,6 +92,29 @@ export function initEvents(canvas) {
          }
       });
    });
+   document.getElementById('siteSizeAmt').addEventListener('input', (event) => {
+      let radius = parseFloat(event.target.value);
+      canvas.sites.forEach((site, idx) =>{
+         if (site.selected && radius >= 0) {
+            site.radius = radius + 5
+            site.drawable_point.radius = radius
+         }
+      });
+      canvas.site_radius = radius
+      canvas.drawAll()
+   })
+
+   document.getElementById('siteSizeRange').addEventListener('input', (event) => {
+      let radius = parseFloat(event.target.value);
+      canvas.sites.forEach((site, idx) =>{
+         if (site.selected && radius >= 0) {
+            site.radius = radius + 5
+            site.drawable_point.radius = radius
+         }
+      });
+      canvas.site_radius = radius
+      canvas.drawAll()
+   })
 
    document.getElementById('hideSites').addEventListener('change', (event) => {
             canvas.hide_sites = event.target.checked
@@ -114,7 +137,7 @@ export function initEvents(canvas) {
             canvas.drawAll()
    });
    document.getElementById('roseDepthRange').addEventListener('input', (event) => {
-      let k = event.target.value;
+      let k = parseInt(event.target.value);
       if(k >= 0){
          canvas.hilbert_rose_depth = Math.floor(k)
       }
@@ -123,7 +146,7 @@ export function initEvents(canvas) {
    })
 
    document.getElementById('roseDepthAmt').addEventListener('input', (event) => {
-      let k = event.target.value;
+      let k = parseInt(event.target.value);
       if(k >= 0){
          canvas.hilbert_rose_depth = Math.floor(k)
       }
@@ -150,14 +173,13 @@ export function initEvents(canvas) {
             canvas.addPolygonPoint(event);
       }else if(canvas.mode === 'site' || canvas.mode === 'voronoi' || canvas.mode === "balls" || canvas.mode === "clusters"){
          if(!event.shiftKey){
-            canvas.addSite(event)
+            canvas.addSite(event) 
          }
       } else if (canvas.mode === "balls") {
          const radius = document.getElementById('ballRadius').value
          canvas.addSite(event);
          let selectedBalls = getCheckedBalls()
          canvas.addBalls(canvas.sites.length - 1, selectedBalls, radius);
-         console.log(canvas.sites[canvas.sites.length - 1].balls)
          canvas.drawAll();
       } else if(canvas.mode == 'image'){
          if(canvas.hilbert_image){
@@ -275,7 +297,6 @@ export function initEvents(canvas) {
             points.push(s.drawable_point.point);
          })
          canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh, canvas);
-         console.log(canvas.clusters);
          canvas.drawAll();
       } else {
          alert("thresh must be > 0")
@@ -460,9 +481,31 @@ export function initEvents(canvas) {
    });
 
 
+   function setCameraUI(){
+      const zoomRange = document.getElementById('zoomRange')
+      zoomRange.value = CAMERA.scale.x
+      const zoomAmt = document.getElementById('zoomAmt')
+      zoomAmt.value = CAMERA.scale.x
+      const xAmt = document.getElementById('xAmt')
+      xAmt.value = CAMERA.offset.x
+      const yAmt = document.getElementById('yAmt')
+      yAmt.value = CAMERA.offset.y
+   }
 
    document.getElementById('zoomRange').addEventListener('input', (event) => {
       CAMERA.setScale(event.target.value);
+      canvas.drawAll();
+   })
+   document.getElementById('zoomAmt').addEventListener('input', (event) => {
+      CAMERA.setScale(event.target.value);
+      canvas.drawAll();
+   })
+   document.getElementById('xAmt').addEventListener('input', (event) => {
+      CAMERA.offset.x = event.target.value;
+      canvas.drawAll();
+   })
+   document.getElementById('yAmt').addEventListener('input', (event) => {
+      CAMERA.offset.y = event.target.value;
       canvas.drawAll();
    })
 
@@ -470,6 +513,7 @@ export function initEvents(canvas) {
       CAMERA.setScale(1);
       CAMERA.offset.x = 0;
       CAMERA.offset.y = 0;
+      setCameraUI()
       canvas.drawAll();
    })
 
@@ -693,7 +737,7 @@ export function initEvents(canvas) {
    
    canvasElement.onscroll = (event) => {
        CAMERA.changeScale(event.movementY)
-   
+      setCameraUI()
    }
    
    canvasElement.onmousemove = (event) => {
@@ -723,6 +767,7 @@ export function initEvents(canvas) {
                CAMERA.changeOffset(event.movementX,event.movementY)
                canvas.drawAll()
             }
+            setCameraUI()
          }
       }else{
          if (!CAMERA.move_lock){
@@ -730,6 +775,7 @@ export function initEvents(canvas) {
                CAMERA.changeOffset(event.movementX,event.movementY)
                canvas.drawAll()
             }
+            setCameraUI()
          }
       } 
       if(canvas.mode === "voronoi"){
@@ -742,9 +788,19 @@ export function initEvents(canvas) {
                points.push(site.drawable_point.point)
             })
             let voronoi = canvas.voronoi_diagram.voronoi
+            let last_index = canvas.current_voronoi_cell_index 
             canvas.current_voronoi_cell_index = voronoi.partition_tree.findCurrentCell(voronoi,points,point)
             console.log("CHAN",canvas.current_voronoi_cell_index)
-            canvas.drawAll()
+            if(last_index != canvas.current_voronoi_cell_index){
+               canvas.drawAll()
+               /**
+               if(canvas.current_voronoi_cell_index >= 0){
+                  let cell = voronoi.cells[canvas.current_voronoi_cell_index]
+                  console.log("BOUNDARY",calculateVoronoiCellBoundary(voronoi.boundary,points,cell.bisector_segments,cell.bisector_data,cell.contained_sites,true))
+               }
+               */
+            }
+            
          }
          
       }
@@ -754,7 +810,8 @@ export function initEvents(canvas) {
    }
    
    canvasElement.onscroll = (event) => {
-       CAMERA.changeOffset(event.movementX,event.movementY)
+      CAMERA.changeOffset(event.movementX,event.movementY)
+      setCameraUI()
    }
 
    document.getElementById('createSpace').addEventListener('click', (event) => {
@@ -764,12 +821,15 @@ export function initEvents(canvas) {
          }
 
          canvas.space = new Space(canvas.boundary.polygon)
-         canvas.space.storeOriginalOriginalGeometry()
-         canvas.space.storeOriginalGeometry()
-
+         
          canvas.space.runSpace(canvas)
       }else{
          canvas.space.reset()
+      }
+   })
+   document.getElementById('projectPoints').addEventListener('change', (event) => {
+      if (canvas.space) {
+         canvas.space.useProjection = event.target.checked
       }
    })
    document.getElementById('showAsteroids').addEventListener('change', (event) => {

@@ -14,7 +14,8 @@ calculateHilbertDistance,
 isBetween,
 pointInPolygon,
 getVoronoiColor,
-colors} from "../geometry/utils.js";
+colors,
+orderByAngle} from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -458,14 +459,15 @@ export class DrawableConicSegment {
 }
  
 export class Site {
-  constructor(drawable_point, drawable_spokes, radius = 8) {
+  constructor(drawable_point, drawable_spokes, radius = 3,) {
     this.draw_spokes = false
     this.drawable_point = drawable_point;
     this.drawable_point.color = "blue";
     this.color = "blue";
     this.cluster_color = "blue";
     this.drawable_spokes = drawable_spokes
-    this.radius = radius;
+    this.radius = radius + 5
+    this.drawable_point.radius = radius;
     this.selected = false
     this.balls = []
   }
@@ -665,7 +667,7 @@ export class DrawableVoronoiCell {
         }
       }
     }
-    return new DrawablePolygon(new Polygon(points),"gray")
+    return new DrawablePolygon(new Polygon(orderByAngle(points)),"gray")
   }
 }
 

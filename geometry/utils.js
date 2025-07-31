@@ -1061,4 +1061,20 @@ export function hilbertCentroidList(boundary,points,min = 0,max=-1,count = 0){
     }
     return hilbertCentroidList(boundary,new_points,min,max,count+1)
 }
-  
+
+export function orderByAngle(points){
+  let bound = computeBoundingBox(new Polygon(points))
+  let euclidean_centroid = new Point((bound.left + bound.right)/2,(bound.top + bound.bottom)/2)//centroid(points)
+  let point_data = []
+  for(let i = 0; i < points.length; i++){
+    point_data.push({index:i,angle:(Math.atan2(euclidean_centroid.y - points[i].y,euclidean_centroid.x - points[i].x))})
+  }
+  point_data.sort((a,b) => {
+    return a.angle - b.angle
+  })
+  let final_points = []
+  for(let i = 0; i < points.length; i++){
+    final_points.push(points[point_data[i].index])
+  }
+  return final_points
+}

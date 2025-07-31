@@ -41,6 +41,7 @@ export class Canvas {
       this.boundaryType = 'freeDraw';
 
       this.sites = [];
+      this.site_radius = 3
       this.clusters = null;
       this.segments = [];
       this.bisectors = [];
@@ -275,7 +276,7 @@ export class Canvas {
                point = new Point(x,y);
             }
 
-            let site = new Site(new DrawablePoint(point));
+            let site = new Site(new DrawablePoint(point),[],this.site_radius);
             site.drawable_point.color = this.getNewColor();
             site.color = site.drawable_point.color;
             this.sites.push(site);
@@ -320,7 +321,7 @@ export class Canvas {
       let point = new Point(CAMERA.ix(x), CAMERA.iy(y))
 
       if (!pointOnPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.absolute_border.polygon)){
-         let site = new Site(new DrawablePoint(point))
+         let site = new Site(new DrawablePoint(point),[],this.site_radius)
          site.drawable_point.label = this.sites.length  + ""
          this.sites.push(site);
          let color = this.getNewColor(this.sites)
@@ -756,11 +757,10 @@ export class Canvas {
    
       for(let i = 0; i < this.hilbert_rose_depth; i++){
          
-         let hilbert_centroid = hilbertCentroidList(this.boundary.polygon,points,-1,i)
+         let hilbert_centroid = hilbertCentroidList(this.boundary.polygon,points,Infinity,i)
         let color = 255*i / this.hilbert_rose_depth
-        this.hilbert_rose.push(new DrawablePolygon(new Polygon(convexHull(hilbert_centroid)),"rgb("+color+","+color+","+color+")"))
-      }
-      
+        this.hilbert_rose.push(new DrawablePolygon(new Polygon(convexHull(hilbert_centroid)),"rgb("+color+","+color+","+color+")","black",false))
+      }      
    }
    recalculateHilbertCentroid(){
       if(!this.draw_hilbert_centroid){

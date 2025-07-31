@@ -139,6 +139,7 @@ function unNormalizePoint(pt, info) {
 export class Asteroid{
     constructor(point,radius = 0.1,color = "gray"){
         this.point = point
+        this.projected_point = point
         this.radius = radius +  radius*(Math.random() - 0.5)
         this.color = color
 
@@ -174,7 +175,11 @@ export class Asteroid{
 
     draw(ctx,space){
         if(space.useProjection){
-
+            let boundary = space.boundary.polygon
+            let pointWithSpokes = calculateHilbertPoint(boundary,this.projected_point);
+            const ball = new Ball(pointWithSpokes,Ball_Types.HILBERT, boundary, this.radius);
+            const d_ball = new DrawableBall(ball,this.color);
+            d_ball.polygon.drawFill(ctx)
         }else{
             let boundary = space.original_boundary.polygon
             let pointWithSpokes = calculateHilbertPoint(boundary,this.point);
@@ -213,6 +218,7 @@ export class Asteroid{
 export class Laser{
     constructor(point,angle,radius = 0.01,color = "cyan"){
         this.point = point
+        this.projected_point = point
         this.radius = radius
         this.color = color 
 
@@ -236,7 +242,11 @@ export class Laser{
     draw(ctx, space) {
 
         if(space.useProjection){
-
+            let boundary = space.boundary.polygon
+            let pointWithSpokes = calculateHilbertPoint(boundary,this.projected_point);
+            const ball = new Ball(pointWithSpokes,Ball_Types.HILBERT, boundary, this.radius);
+            const d_ball = new DrawableBall(ball,this.color);
+            d_ball.polygon.drawFill(ctx);
         }else{
             let boundary = space.original_boundary.polygon
             let pointWithSpokes = calculateHilbertPoint(boundary,this.point);
@@ -377,7 +387,7 @@ export class Ship{
 }
 
 export class Space {
-    constructor(polygon){
+    constructor(polygon,useProjection = false){
         this.boundary = new DrawablePolygon(polygon,"black")
         this.original_boundary = new DrawablePolygon(polygon,"black")
         this.asteroids = []
@@ -393,7 +403,7 @@ export class Space {
 
         this._origJohn = null;
 
-        this.useProjection = false
+        this.useProjection = useProjection
         
         let ship_pos = this.ship.pos
 
@@ -406,11 +416,14 @@ export class Space {
             this.asteroids.push(new Asteroid(point,0.3,"gray"))
             
         }
+        this.storeOriginalOriginalGeometry()
+        this.storeOriginalGeometry()
     }
 
     reset() {
         this.boundary = new DrawablePolygon(this.original_boundary.polygon,"black")
         this.original_boundary = new DrawablePolygon(this.original_boundary.polygon,"black")
+        
         this.asteroids = []
         //this.showAsteroids = true
 
@@ -433,6 +446,8 @@ export class Space {
             this.asteroids.push(new Asteroid(point,0.3,"gray"))
             
         }
+        this.storeOriginalOriginalGeometry()
+        this.storeOriginalGeometry()
     }
     storeOriginalGeometry() {
         const vertices = this.original_boundary.polygon.points;
@@ -462,12 +477,7 @@ export class Space {
             };
         });
 
-        this._normOriginalAsteroids = this.asteroids.map(asteroid => {
-            return {
-                x: (asteroid.point.x - cx) * scale,
-                y: (asteroid.point.y - cy) * scale
-            };
-        });
+        
     }
     storeOriginalOriginalGeometry() {
         this._origJohn = computeJohnEllipsoid(this.original_boundary.polygon.points);
@@ -519,19 +529,34 @@ export class Space {
         );
         this.boundary = newPolygon;
 
-        /**
+        this._normOriginalAsteroids = this.asteroids.map(asteroid => {
+            return {
+                x: (asteroid.point.x - this.ship.anchor.x) * this._normInfo.scale,
+                y: (asteroid.point.y - this.ship.anchor.y) * this._normInfo.scale
+            };
+        });
 
-        const newAsteroidPositions = this._normOriginalAsteroids.map(siteNorm => projectPoint(siteNorm, scaledV))
+        const newAsteroidPositions = this._normOriginalAsteroids.map((asteroid) => projectPoint(asteroid, scaledV))
 
         if (this.showAsteroids) {
             for (let i = 0; i < this.asteroids.length; i++) {
                 const asteroid = this.asteroids[i];
                 const y = mapJohnToUnitCircle(newAsteroidPositions[i], newJohnEllipsoid);
                 const mappedPt = mapUnitCircleToJohn(y, this._origJohn);
-                asteroid.point = mappedPt;
+                asteroid.projected_point = mappedPt;
+                console.log("ASTEROID",i,this.asteroids[i].point,this._normOriginalAsteroids[i],newAsteroidPositions[i],mappedPt)
+
             }
         }
-             */
+
+        const newLaserPositions = this.ship.lasers.map((laser) => projectPoint(laser.point, scaledV))
+
+        for (let i = 0; i < this.ship.lasers.length; i++) {
+            const laser = this.ship.lasers[i];
+            const y = mapJohnToUnitCircle(newLaserPositions[i], newJohnEllipsoid);
+            const mappedPt = mapUnitCircleToJohn(y, this._origJohn);
+            laser.projected_point = mappedPt;
+        }
     }
 
     runSpace(canvas){
