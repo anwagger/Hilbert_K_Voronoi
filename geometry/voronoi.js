@@ -224,7 +224,7 @@ export class VoronoiDiagram {
         this.degree = degree
         this.partition_tree = partition_tree
         this.metric = "hilbert"; // might make this an enum later idk
-        this.mode = "kth"; // can be "kth" or "k"
+        this.mode = "k"; // can be "kth" or "k"
         this.p = 2; // for minkowski, defaults to euclidean
     }
 

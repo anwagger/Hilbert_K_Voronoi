@@ -4,7 +4,7 @@ import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
 import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
 
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid,pointNearPolygonBorder, centroid, hilbertCentroidList, convexHull, hilbertCentroidHarmonic, testCentroidRegion, calculateHilbertDistance} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid,pointNearPolygonBorder, centroid, hilbertCentroidList, convexHull, hilbertCentroidHarmonic, testCentroidRegion, calculateHilbertDistance, isZero, isLeZero} from "../../geometry/utils.js"
 import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 
@@ -824,6 +824,56 @@ export class Canvas {
       if(hilbert_centroid){
          this.hilbert_centroid = new DrawablePoint(hilbert_centroid)
       }
+
+      if(this.brute_force_voronoi){
+         if(this.brute_force_voronoi.voronoi.mode === "variance"){
+            let grid = this.brute_force_voronoi.grid
+            let boundary = this.brute_force_voronoi.voronoi.boundary
+
+            let polygon_bound = computeBoundingBox(boundary)
+
+            let width = 1000
+            let height = 1000
+            let low_x = Math.floor(Math.max(0,polygon_bound.left))
+            let low_y = Math.floor(Math.max(0,polygon_bound.bottom))
+            let high_x = Math.ceil(Math.min(width,polygon_bound.right))
+            let high_y = Math.ceil(Math.max(height,polygon_bound.top))
+
+            let min_variance = {
+               point: new Point(0,0),
+               variance: Infinity,
+            }
+            let min_points = []
+            for (let x = low_x; x < high_x; x++) {
+               for (let y = low_y; y < high_y; y++) {
+                  if(pointInPolygon(new Point(x,y),boundary) && !pointOnPolygon(new Point(x,y),boundary)){
+                     let cell = grid[x][y]
+                     let variance = 0
+                        for (let d = 0; d < cell.length; d++) {
+                        const dist = cell[d].dist;
+                        variance += dist**(2)
+                     }
+                     if(isLeZero(Math.abs(variance - min_variance.variance)-0.1)){
+                        min_points.push(new Point(x,y))
+                     }else if(variance < min_variance.variance){
+                        min_variance.point = new Point(x,y)
+                        min_points = [min_variance.point]
+                        min_variance.variance = variance 
+                     }
+                  }
+                  
+               }
+            }
+            this.bisector_intersections = []
+            min_points.forEach((p,i) => {
+               let d_p = new DrawablePoint(p)
+               d_p.color = "red"
+               this.bisector_intersections.push(d_p)
+            })
+            
+         }
+      }
+
    }
 
    

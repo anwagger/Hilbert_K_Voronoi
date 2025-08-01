@@ -1,9 +1,9 @@
 import { Space } from "../../asteroids/space.js";
 import { calculateBisector, calculateHilbertPoint, HilbertPoint } from "../../geometry/hilbert.js";
 import {Point } from "../../geometry/primitives.js";
-import { cleanArray, cleanJason, fieldsToIgnore, pointInPolygon } from "../../geometry/utils.js";
+import { calculateHilbertDistance, cleanArray, cleanJason, fieldsToIgnore, pointInPolygon } from "../../geometry/utils.js";
 import { calculateVoronoiCellBoundary, VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
-import { CAMERA, DrawableBruteForceVoronoi, HilbertImage } from "../drawable.js";
+import { CAMERA, DrawableBruteForceVoronoi, DrawableVoronoiDiagram, HilbertImage } from "../drawable.js";
 import { singleLinkKHilbert, singleLinkThresholdHilbert } from "../../geometry/clustering.js";
 
 // from nithins
@@ -738,6 +738,7 @@ export function initEvents(canvas) {
          canvas.selectSingleSite(event)
          canvas.selecting = false;
          canvas.recalculateBruteForceVoronoi()
+         canvas.recalculateHilbertCentroid()
          canvas.drawAll()
        }
    }
@@ -749,6 +750,19 @@ export function initEvents(canvas) {
    }
    
    canvasElement.onmousemove = (event) => {
+      /**
+      const {x,y} = canvas.getMousePos(event)
+      let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
+      let dists = []
+      canvas.sites.forEach((site,i) => {
+         dists.push(calculateHilbertDistance(canvas.boundary.polygon,point,site.drawable_point.point))
+      })
+      let variance = 0
+      dists.forEach((d) => {
+         variance+= d**2
+      })
+      console.log("VAR ",x,y,":",variance)
+       */
 
       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls" || canvas.mode === "clusters"){
          if(event.shiftKey){

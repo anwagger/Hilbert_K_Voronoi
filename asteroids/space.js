@@ -536,6 +536,8 @@ export class Space {
             };
         });
 
+        console.log("ASTEROIDS",scaledV)
+
         const newAsteroidPositions = this._normOriginalAsteroids.map((asteroid) => projectPoint(asteroid, scaledV))
 
         if (this.showAsteroids) {

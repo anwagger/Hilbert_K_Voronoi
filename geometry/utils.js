@@ -846,6 +846,30 @@ export function getVoronoiColor(canvas,cell,degree) {
       g = g/degree;
       b = b/degree;
       return {r:r,g:g,b:b};
+    break;
+    case "variance":
+      
+      let variance = 0
+      for (let d = 0; d < cell.length; d++) {
+        const dist = cell[d].dist;
+        variance += dist**(2)
+      }
+      let r_val = 0;
+      let g_val = 0;
+      let b_val = 0;
+
+      let r_thresh = 5/cell.length
+      let g_thresh = 1/cell.length
+      if(variance > r_thresh){
+        r_val = 5/ variance
+      }else if(variance > g_thresh){
+        g_val = 1/ variance
+      }else{
+        b_val = 1/(variance)
+      } 
+      return {r:255*r_val,g:255*g_val,b:255*b_val}
+
+    break;
   }     
 } 
 
