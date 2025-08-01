@@ -1,10 +1,10 @@
-import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall, DrawableZRegion, DrawableInfiniteBalls } from "../drawable.js"
+import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall, DrawableZRegion, DrawableInfiniteBalls, DrawableDistance } from "../drawable.js"
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
 import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
 
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid,pointNearPolygonBorder, centroid, hilbertCentroidList, convexHull} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid,pointNearPolygonBorder, centroid, hilbertCentroidList, convexHull, hilbertCentroidHarmonic, testCentroidRegion, calculateHilbertDistance} from "../../geometry/utils.js"
 import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 
@@ -77,6 +77,8 @@ export class Canvas {
       this.draw_hilbert_centroid = false
       this.hilbert_centroid = null
 
+      this.distances = []
+
    }
 
     load(data) {
@@ -145,9 +147,9 @@ export class Canvas {
         this.reindexBisectors()
         this.reindexZRegions()
         this.reindexInfiniteBalls();
+        this.reindexDistances();
 
         this.sites = cleanArray(this.sites)
-        console.log(this.absolute_border);
         this.recalculateAll()
         this.drawAll();
     }
@@ -265,7 +267,6 @@ export class Canvas {
       if (this.boundary) {
          const boundary = this.boundary.polygon;
          const border = computeBoundingBox(boundary);
-         console.log(border);
 
          while (amt > 0) {
             let point = new Point(-1, -1);
@@ -678,7 +679,6 @@ export class Canvas {
                   let h_p2 = calculateHilbertPoint(boundary,point2)
                   let bisector = calculateBisector(boundary,h_p1,h_p2)
                   let {ball1, ball2} = calculateInfiniteBalls(boundary,h_p1,h_p2,bisector)
-                  console.log(ball1);
                   this.addInfiniteBalls(ball1, ball2, p1, p2);
                }
             }else{
@@ -760,7 +760,57 @@ export class Canvas {
          let hilbert_centroid = hilbertCentroidList(this.boundary.polygon,points,Infinity,i)
         let color = 255*i / this.hilbert_rose_depth
         this.hilbert_rose.push(new DrawablePolygon(new Polygon(convexHull(hilbert_centroid)),"rgb("+color+","+color+","+color+")","black",false))
-      }      
+      }     
+
+      /**
+      let n = points.length
+      let all_orders = []
+      for(let i = 0; i < n**n; i++){
+         all_orders.push([])
+         let exists = {}
+         for(let j = 0; j < n; j++){
+            exists[j] = false
+            all_orders[i].push(Math.floor(i/(n**j)) % n )
+         }
+         let use = true
+         for(let j = 0; j < n; j++){
+            if(exists[all_orders[i][j]]){
+               use = false
+               break;
+            }
+            exists[all_orders[i][j]] = true
+         }
+         if(!use){
+            all_orders[i] = false
+         }
+      }
+      
+      let troids = []
+      for(let i = 0; i < all_orders.length; i++){
+         if(all_orders[i]){
+            let new_points = []
+            for(let j = 0; j < all_orders[i].length; j++){
+               new_points.push(points[all_orders[i][j]])
+            }
+            troids.push(hilbertCentroidHarmonic(this.boundary.polygon,new_points))
+         }
+         
+      }
+      troids.push(new DrawablePolygon(new Polygon(convexHull(troids)),"red",null,false))
+      troids.forEach((p,i) => {
+         if(p.x){
+            let d_p = new DrawablePoint(p)
+            d_p.color = "red"
+            //this.hilbert_rose.push(d_p)
+         }else{
+            this.hilbert_rose.push(p)
+         }
+         
+      })
+       */
+
+      
+
    }
    recalculateHilbertCentroid(){
       if(!this.draw_hilbert_centroid){
@@ -774,6 +824,91 @@ export class Canvas {
       if(hilbert_centroid){
          this.hilbert_centroid = new DrawablePoint(hilbert_centroid)
       }
+   }
+
+   
+   addDistance(p1,p2) {
+      let c1 = this.sites[p1].color 
+      let c2 = this.sites[p2].color
+      let c3 = avgColor(c1,c2)
+
+      let d = calculateHilbertDistance(this.boundary.polygon,this.sites[p1].drawable_point.point,this.sites[p2].drawable_point.point)
+      let dist = new DrawableDistance(this,p1,p2,d,c3)
+      this.distances.push(dist);
+   }
+
+   setDistances(event) {
+      let selectedSites = []
+      this.sites.forEach((site,i) =>{
+         if (site.selected){
+
+            selectedSites.push(i)
+         }
+      })      
+      for(let i = 0; i < selectedSites.length; i++){
+         let p1 = selectedSites[i]
+         for(let j = i+1; j < selectedSites.length; j++){
+            let p2 = selectedSites[j]
+            if (event.target.checked){
+               let needNew = true
+               this.distances.forEach((distance,d) => {
+                  if ((distance.p1 === p1 && distance.p2 === p2) || (distance.p1 === p2 && distance.p2 === p1)){
+                     needNew = false
+                     this.recalculateDistance(d)
+                  }
+               })
+               if(needNew){
+                  this.addDistance(p1,p2)
+               }
+            }else{
+               this.deleteDistance(p1,p2)
+            }            
+         }
+      }
+   }
+
+   // run after deleting sites, but before cleaning!
+   reindexDistances(){
+      let indexMap = []
+      let index = 0
+      for(let i = 0; i < this.sites.length; i++){
+         if(this.sites[i]){
+            indexMap.push(index)
+            index ++
+         }else{
+            indexMap.push(-1)
+         }
+      }
+      for(let b = 0; b < this.distances.length; b++){
+         let distance = this.distances[b]
+         distance.p1 = indexMap[distance.p1]
+         distance.p2 = indexMap[distance.p2]
+         distance.changeDistance(distance.distance)
+         if(distance.p1 === -1 || distance.p2 === -1){
+            this.distances[b].box.remove()
+            this.distances[b] = null
+         }
+      }
+      this.distances = cleanArray(this.distances)
+   }
+
+   recalculateDistance(b){
+      let distance = this.distances[b]
+      let boundary = this.boundary.polygon
+      let point1 = this.sites[distance.p1].drawable_point.point
+      let point2 = this.sites[distance.p2].drawable_point.point
+      let d = calculateHilbertDistance(boundary,point1,point2)
+      distance.changeDistance(d)
+   }
+
+   deleteDistance(p1,p2){
+      this.distances.forEach((distance,b) => {
+         if ((distance.p1 === p1 && distance.p2 === p2) || (distance.p1 === p2 && distance.p2 === p1)){
+            this.distances[b].box.remove()
+            this.distances[b] = null
+         }
+      })
+      this.distances = cleanArray(this.distances)
    }
 
    setFastVoronoi(event,degree){
@@ -821,8 +956,6 @@ export class Canvas {
          if(degree){
             this.delaunay_degree = degree
          }
-         
-         console.log("DEGREE",this.delaunay_degree)
          this.delaunay = this.voronois[this.delaunay_degree-1].hilbertDelaunay(this.sites);
       }
    }
@@ -963,6 +1096,7 @@ export class Canvas {
       this.reindexBisectors()
       this.reindexZRegions()
       this.reindexInfiniteBalls();
+      this.reindexDistances();
 
       this.sites = cleanArray(this.sites) // removes any null elts from array
       this.recalculateAll()
@@ -978,6 +1112,15 @@ export class Canvas {
          }
       }
       this.bisectors = cleanArray(this.bisectors)
+
+      for(let b = 0; b < this.distances.length; b++ ){
+         let distance = this.distances[b]
+         if(distance.p1 === idx || distance.p2 === idx){
+            this.distances[b].box.remove()
+            this.distances[b] = null
+         }
+      }
+      this.distances = cleanArray(this.distances)
 
       for(let z = 0; z < this.z_regions.length; z++ ){
          let z_r = this.z_regions[z]
@@ -1016,6 +1159,13 @@ export class Canvas {
       //if (change_bisector){
          this.calculateBisectorIntersections()
       //}
+
+      for(let b = 0; b < this.distances.length; b++){
+         let distance = this.distances[b]
+         if(distance.p1 == index || distance.p2 == index){
+            this.recalculateDistance(b)
+         }
+      }
 
       let change_z_region = false
       for(let z = 0; z < this.z_regions.length; z++){
@@ -1058,6 +1208,9 @@ export class Canvas {
       
       for(let b = 0; b < this.bisectors.length; b++){
          this.recalculateBisector(b)
+      }
+      for(let b = 0; b < this.distances.length; b++){
+         this.recalculateDistance(b)
       }
 
       this.calculateBisectorIntersections()

@@ -846,3 +846,44 @@ export class DrawableInfiniteBalls {
     this.ball2.draw(ctx);
   }
 }
+
+export class DrawableDistance {
+  constructor(canvas,i,j,distance,color = "black"){
+    this.box = this.drawDistanceBox(canvas,i,j,distance,color)
+    this.p1 = i
+    this.p2 = j
+    this.color = color
+    this.distance = distance
+  }
+  changeColor(c){
+    this.color = c
+    this.box.style.borderColor = c
+  }
+  changeDistance(d){
+    this.distance = d
+    if(this.box){
+      this.box.textContent = `(${this.p1}, ${this.p2}): ${d}` 
+    }
+    
+  }
+  drawDistanceBox(canvas,i,j,d,color) {
+    let canvasElement = canvas.canvas
+    const container = document.getElementById('distances');
+
+    
+    // Create the infoBox element only if it doesn't already exist
+    let box = document.createElement('div');
+    box.className = 'distanceBox';
+    container.appendChild(box);
+        
+    box.style.display = "block"
+
+    box.textContent = 
+      `(${i}, ${j}): ${d}` 
+
+    box.style.borderColor = color;
+    box.style.zIndex = 999;
+    return box
+  }
+}
+

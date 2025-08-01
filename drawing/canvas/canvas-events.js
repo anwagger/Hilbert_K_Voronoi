@@ -84,6 +84,10 @@ export function initEvents(canvas) {
    document.getElementById('polygonShowInfo').addEventListener('change', (event) => {
       canvas.setPolygonShowInfo(event);
    });
+   
+   document.getElementById('showDistance').addEventListener('input', (event) => {
+      canvas.setDistances(event);
+    });
 
    document.getElementById('siteShowInfo').addEventListener('change', (event) => {
       canvas.sites.forEach((site, idx) =>{
@@ -318,6 +322,10 @@ export function initEvents(canvas) {
                   site.drawable_point.point.x = parseInt(p.x);
                   site.drawable_point.point.y = parseInt(p.y);
                   canvas.recalculateSite(idx);
+                  canvas.recalculateFastVoronoi()
+                  canvas.recalculateHilbertDelaunay()
+                  canvas.recalculateHilbertCentroid()
+                  canvas.recalculateHilbertRose()
                }
             });
             canvas.drawAll();

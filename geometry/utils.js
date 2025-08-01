@@ -1,4 +1,5 @@
 import { getPointOnSpoke } from "./balls.js";
+import { calculateHilbertPoint, calculateMidsector } from "./hilbert.js";
 import {Bound, Point, Segment, Polygon} from "./primitives.js"
 
 export const colors = {"aqua":"#00ffff","aquamarine":"#7fffd4",
@@ -974,6 +975,27 @@ export function hilbertMidpoint(boundary,p1,p2){
     return mid
 }
 
+export function hilbertPercentagePoint(boundary,p1,p2,percentage){
+    if(isZero(euclideanDistance(p1,p2)**2)){
+        return p1
+    }
+    let dist = calculateHilbertDistance(boundary,p1,p2)
+    let angle = Math.atan2(p1.y-p2.y,p1.x-p2.x)
+
+    let start = p1
+
+    if(isLeZero(euclideanDistance(p1,p2)-euclideanDistance(p2,moveInHilbert(boundary,p1,dist*percentage,angle)))){
+      start = p2
+      percentage = 1-percentage
+    }
+    
+    let mid = moveInHilbert(boundary,start,dist*percentage,angle)
+    if(!mid){
+      mid = centroid([p1,p2])
+    }
+    return mid
+}
+
 export function hilbertCentroid(boundary,points,min = 0,max=-1,count = 0){
     if(points.length == 1){
         return points[0]
@@ -1060,6 +1082,53 @@ export function hilbertCentroidList(boundary,points,min = 0,max=-1,count = 0){
         }
     }
     return hilbertCentroidList(boundary,new_points,min,max,count+1)
+}
+
+export function hilbertCentroidHarmonic(boundary,points,offset=0){
+  let n = points.length
+
+  if(n === 1){
+    return points[0]
+  }
+  let end_points = []
+  let current_centroid = points[(0+offset)%n]
+  end_points.push(current_centroid)
+  for(let i = 1; i < n; i++){
+    current_centroid = hilbertPercentagePoint(boundary,current_centroid,points[(i+offset)%n],1/(i+1))
+    end_points.push(current_centroid)
+  }
+  return current_centroid
+}
+
+// doesnt work
+export function testCentroidRegion(boundary,points,offset=0){
+  let n = points.length
+
+  if(n === 1){
+    return points[0]
+  }
+  let current_centroids = [points[(0+offset)%n]]
+  for(let i = 1; i < n; i++){
+    let end_points = []
+    let h_p2 = calculateHilbertPoint(boundary,points[(i+offset)%n])
+
+    current_centroids.forEach((p) => {
+      let h_p1 = calculateHilbertPoint(boundary,p)
+      let midsector = calculateMidsector(boundary,h_p1,h_p2)
+      for(let j = 0; j < midsector.polygon.points.length; j++){
+        let point = midsector.polygon.points[j]
+        if(!isZero(euclideanDistance(point,p)) && !isZero(euclideanDistance(point,points[(i+offset)%n]))){
+          end_points.push(point)
+        }
+      }
+    })
+    current_centroids = []
+    end_points.forEach((p,i) => {
+      current_centroids.push(hilbertPercentagePoint(boundary,p,points[(i+offset)%n],1/(i+1)))
+    })
+  }
+  console.log("TROIDS",current_centroids)
+  return current_centroids
 }
 
 export function orderByAngle(points){
