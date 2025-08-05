@@ -15,7 +15,11 @@ isBetween,
 pointInPolygon,
 getVoronoiColor,
 colors,
-orderByAngle} from "../geometry/utils.js";
+orderByAngle,
+euclideanDistance,
+isZero,
+convexHullIndex,
+orderByAngleIndex} from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -590,7 +594,7 @@ export class DrawableVoronoiCell {
       d_b_s.color = "black"
       this.drawable_bisector_segments.push(d_b_s)
     })
-    this.drawable_polygon = this.createPolygon()
+    this.drawable_polygon = this.createPolygon2()
     this.draw_bounding_box = false
   }
 
@@ -612,7 +616,100 @@ export class DrawableVoronoiCell {
     this.drawable_polygon.drawFill(ctx)
   }
     
+  createPolygon2(){
+    let cell = this.voronoi_cell
+    let relevant_points = []
+    let point_data = []
+    // setup polygon points
+    for(let i = 0; i < cell.boundary_points.length; i++){
+      relevant_points.push(cell.boundary_points[i])
+      point_data.push({
+        boundary:true,
+      })
+    }
+    // add points for the edge of the bisector segments
+    for(let i = 0; i < cell.bisector_segments.length; i++){
+      let b_s = cell.bisector_segments[i]
+      let start = b_s.bisector.getPointFromT(b_s.start)
+      let end = b_s.bisector.getPointFromT(b_s.end)
+      let start_added = false
+      let end_added = false
+      // remove duplicate points!
+      for(let j = 0; j < relevant_points.length; j++){
+        if(isZero(euclideanDistance(relevant_points[j],start))){
+          if("start" in point_data[j]){
+            point_data[j].start[i] = true
+          }else{
+            point_data[j].start = {
+              [i]:true
+            }
+          }
+          start_added = true
+        }
+        if(isZero(euclideanDistance(relevant_points[j],end))){
+          
+          if("end" in point_data[j]){
+            point_data[j].end[i] = true
+          }else{
+            point_data[j].end = {
+              [i]:true
+            }
+          }
+          end_added = true
+        }
+      }
+      if(!start_added){
+        relevant_points.push(start)
+        point_data.push({
+          start:{[i]:true},
+        })
+      }
+      if(!end_added){
+        relevant_points.push(end)
+        point_data.push({
+          end:{[i]:true},
+        })
+      }
+    }
+    //let {points:convex_points,indices:indices} = convexHullIndex(relevant_points)
+    let {points:convex_points,indices:indices} = orderByAngleIndex(relevant_points)
+    let points = []
 
+    console.log("CELL",this.voronoi_cell.contained_sites,"DATA",point_data,"ORDER",indices)
+
+    let used_bisectors = {}
+    for(let i = 0; i < convex_points.length; i++){
+      let data = point_data[indices[i]]
+      let next_data = point_data[indices[(i+1) % convex_points.length]]      
+      if("start" in data){
+        for(let start in data.start){
+          if(!used_bisectors[start] && ("end" in next_data && next_data.end[start])){
+            let b_s_points = cell.bisector_segments[start].getPoints()
+          for(let p = 0; p < b_s_points.length; p++){
+            points.push(b_s_points[p])
+          }
+          used_bisectors[start] = true
+          }
+        }
+      }
+      if("end" in data ){
+        for(let end in data.end){
+          if(!used_bisectors[end] && ("start" in next_data && next_data.start[end])){
+            let b_s_points = cell.bisector_segments[end].getPoints()
+            // add points in reverse!
+            for(let p = b_s_points.length-1; p >= 0; p--){
+              points.push(b_s_points[p])
+            }
+            used_bisectors[end] = true
+          }
+        }
+      }
+      if("boundary" in data && !("start" in data) && !("end" in data)){
+        points.push(convex_points[i])
+      }
+    }
+    return new DrawablePolygon(new Polygon(points),"gray")
+  }
   createPolygon(){
     let points = []
     for(let i = 0; i < this.voronoi_cell.boundary_points.length; i++){ 
@@ -622,50 +719,8 @@ export class DrawableVoronoiCell {
       points = convexHull(points)
     }
     for(let i = 0; i < this.voronoi_cell.bisector_segments.length; i++){
-      let b_s = this.voronoi_cell.bisector_segments[i]
-      let b_start = b_s.start
-      let b_end = b_s.end
-      let conic_segments = b_s.bisector.conic_segments
-      let c_s_to_draw = []
-      for (let i = Math.floor(b_start); i < Math.ceil(b_end); i++){
-          let conic_segment = conic_segments[i];
-          let p_conic = conic_segment.parameterized_conic
-
-          let start_percentage = 0
-          let end_percentage = 1
-          let range = conic_segment.getRange()
-
-          if (i < b_start) {
-
-              start_percentage = (b_start % 1)
-              
-          } 
-          if (i > (b_end-1)){
-              end_percentage = (b_end % 1)
-              
-          }
-          
-          let start_t = conic_segment.start + range * start_percentage
-          let end_t = conic_segment.start + range * end_percentage
-
-          let new_bound = calculateConicSegmentBounds(p_conic,start_t,end_t,conic_segment.direction)
-          let partial_c_s = new ConicSegment(p_conic,start_t,end_t,new_bound,conic_segment.direction)
-          c_s_to_draw.push(partial_c_s)
-          
-      }
-      for(let j = 0; j < c_s_to_draw.length; j++){
-        let c_s = c_s_to_draw[j]
-        let length = c_s.getRange()
-        let num_of_points  = 10
-
-        let dt = length / num_of_points;
-        let start = c_s.start
-        
-        for (let i = 0; i <= num_of_points; i++) {
-          let t1 = start + dt * i;          
-          points.push(c_s.parameterized_conic.getPointFromT(t1))
-        }
-      }
+      let new_points = this.voronoi_cell.bisector_segments[i].getPoints()
+      new_points.forEach((p)=> points.push(p))
     }
     return new DrawablePolygon(new Polygon(orderByAngle(points)),"gray")
   }

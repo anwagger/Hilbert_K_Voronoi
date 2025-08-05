@@ -99,6 +99,10 @@ export function calculateHilbertDistance(boundary,point1,point2){
   const points = boundary.points;
   const ints = [null,null];
   let count = 0;
+  let euclidean = euclideanDistance(point1,point2)
+  if(isZero(euclidean)){
+    return 0
+  }
   for (let p = 0; p < points.length; p++) {
       const p2 = (p + 1) % points.length;
       const seg = new Segment(points[p], points[p2]);
@@ -815,6 +819,9 @@ export function pushOrCreateInObject(obj,index,value){
 }
 
 export function getVoronoiColor(canvas,cell,degree) {
+  let r = 0;
+  let g = 0;
+  let b = 0;
   switch(canvas.brute_force_voronoi.voronoi.mode) {
     case "kth":
       const s = cell[degree - 1].index;
@@ -828,9 +835,7 @@ export function getVoronoiColor(canvas,cell,degree) {
       }
     break;
     case "k":
-      let r = 0;
-      let g = 0;
-      let b = 0;
+      
       for (let d = 0; d < degree; d++) {
         const s = cell[d].index;
         const site = canvas.sites[s];
@@ -854,20 +859,33 @@ export function getVoronoiColor(canvas,cell,degree) {
         const dist = cell[d].dist;
         variance += dist**(2)
       }
-      let r_val = 0;
-      let g_val = 0;
-      let b_val = 0;
 
       let r_thresh = 5/cell.length
       let g_thresh = 1/cell.length
       if(variance > r_thresh){
-        r_val = 5/ variance
+        r = 5/ variance
       }else if(variance > g_thresh){
-        g_val = 1/ variance
+        g = 1/ variance
       }else{
-        b_val = 1/(variance)
+        b = 1/(variance)
       } 
-      return {r:255*r_val,g:255*g_val,b:255*b_val}
+      return {r:255*r,g:255*g,b:255*b}
+
+    break;
+    case "minmax":
+      
+      let max_dist = 0
+      for (let d = 0; d < cell.length; d++) {
+        const dist = cell[d].dist;
+        max_dist = Math.max(dist,max_dist)
+      }
+      let thresh = 10
+      r = max_dist/thresh;
+      g = 0;
+      b = 0;
+
+      
+      return {r:255*r,g:255*g,b:255*b}
 
     break;
   }     
@@ -983,7 +1001,7 @@ export function hilbertMidpoint(boundary,p1,p2){
     if(isZero(euclideanDistance(p1,p2)**2)){
         return p1
     }
-    let dist = calculateHilbertDistance(boundary,p1,p2)
+    let dist = calculateHilbertDistance(boundary,p1,p2)    
     let angle = Math.atan2(p1.y-p2.y,p1.x-p2.x)
 
     let start = p1
@@ -1170,4 +1188,88 @@ export function orderByAngle(points){
     final_points.push(points[point_data[i].index])
   }
   return final_points
+}
+
+export function orderByAngleIndex(points){
+  let bound = computeBoundingBox(new Polygon(points))
+  let euclidean_centroid = new Point((bound.left + bound.right)/2,(bound.top + bound.bottom)/2)//centroid(points)
+  let point_data = []
+  for(let i = 0; i < points.length; i++){
+    point_data.push({index:i,angle:(Math.atan2(euclidean_centroid.y - points[i].y,euclidean_centroid.x - points[i].x))})
+  }
+  point_data.sort((a,b) => {
+    return a.angle - b.angle
+  })
+  let final_points = []
+  let point_indices = []
+
+  for(let i = 0; i < points.length; i++){
+    final_points.push(points[point_data[i].index])
+    point_indices.push(point_data[i].index)
+  }
+  return {points:final_points,indices:point_indices}
+}
+
+export function hilbertFrechetMean(boundary,points,max=100){
+  let centroid_points = []
+  let current_centroid = centroid(points)
+  let weight = 0.02
+  let count = 0
+  while(count < max){
+    let dists = []
+    let angles = []
+    for(let i = 0; i < points.length; i++){  
+      dists.push(calculateHilbertDistance(boundary,points[i],current_centroid)**2)
+      let angle = Math.atan2(points[i].y-current_centroid.y,points[i].x-current_centroid.x)
+      angles.push(angle)
+
+    }
+    for(let i = 0; i < points.length; i++){
+      
+
+      let dist = dists[i]
+      let angle = angles[i] + Math.PI
+      let new_centroid = moveInHilbert(boundary,current_centroid,dist*weight,angle)
+      if(!new_centroid){
+        console.log("HELP",current_centroid,angle,dist)
+      }else{
+        //console.log("MOVE",current_centroid,new_centroid,dist*weight,angle)
+      }
+      current_centroid = new_centroid
+    }
+    //console.log("LAST MOVE",old_centroid,current_centroid)
+
+    centroid_points.push(current_centroid)
+    count++
+  }
+  return centroid_points
+}
+
+export function hilbertPull(boundary,points,point){
+  let current_centroid = point
+  let weight = 0.02
+    let dists = []
+    let angles = []
+    for(let i = 0; i < points.length; i++){  
+      dists.push(calculateHilbertDistance(boundary,points[i],current_centroid)**2)
+      let angle = Math.atan2(points[i].y-current_centroid.y,points[i].x-current_centroid.x)
+      angles.push(angle)
+
+    }
+    for(let i = 0; i < points.length; i++){
+      
+
+      let dist = dists[i]
+      let angle = angles[i] + Math.PI
+      let new_centroid = moveInHilbert(boundary,current_centroid,dist*weight,angle)
+      if(!new_centroid){
+        console.log("HELP",current_centroid,angle,dist)
+      }else{
+        //console.log("MOVE",current_centroid,new_centroid,dist*weight,angle)
+      }
+      current_centroid = new_centroid
+    }
+    //console.log("LAST MOVE",old_centroid,current_centroid)
+
+  return current_centroid
 }

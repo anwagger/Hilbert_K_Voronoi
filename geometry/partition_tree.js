@@ -1,5 +1,5 @@
 import { Bound } from "./primitives.js";
-import { boundArea, computeBoundingBox, computeClosestBound, inBound, intersectBounds,intersectBoundsNoEquals, isZero } from "./utils.js";
+import { boundArea, computeBoundingBox, computeClosestBound, inBound, intersectBounds,intersectBoundsNoEquals, isZero, pointInPolygon } from "./utils.js";
 import { calculateVoronoiCellBounds, VoronoiCell } from "./voronoi.js";
 
 const Partition_Node_Type = {
@@ -153,7 +153,7 @@ export class PartitionTree {
         let curr = this.root; // assuming we have a proper root
 
         // if point isnt in voronoi
-        if (!inBound(point,bound)) {
+        if (!inBound(point,bound) || !pointInPolygon(point,boundary)) {
             return -1;
         }
         while (curr.type !== Partition_Node_Type.CELL) {

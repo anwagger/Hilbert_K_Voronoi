@@ -1,4 +1,4 @@
-import {calculateConicSegmentBounds, intersectConicSegments } from "./conics.js"
+import {calculateConicSegmentBounds, ConicSegment, intersectConicSegments } from "./conics.js"
 import { Bound, Point, Segment } from "./primitives.js"
 import { boundOfBounds, convexHull, euclideanDistance, inBound, isBetween, isLeZero, isZero, pointInPolygon, pointOnPolygon } from "./utils.js"
 
@@ -85,6 +85,52 @@ export class BisectorSegment {
         this.start = start
         this.end = end
         this.bound = bound
+    }
+
+    getPoints(){
+        let points = []
+        let conic_segments = this.bisector.conic_segments
+        let c_s_to_draw = []
+        for (let i = Math.floor(this.start); i < Math.ceil(this.end); i++){
+            let conic_segment = conic_segments[i];
+            let p_conic = conic_segment.parameterized_conic
+
+            let start_percentage = 0
+            let end_percentage = 1
+            let range = conic_segment.getRange()
+
+            if (i < this.start) {
+
+                start_percentage = (this.start % 1)
+                
+            } 
+            if (i > (this.end-1)){
+                end_percentage = (this.end % 1)
+                
+            }
+            
+            let start_t = conic_segment.start + range * start_percentage
+            let end_t = conic_segment.start + range * end_percentage
+
+            let new_bound = calculateConicSegmentBounds(p_conic,start_t,end_t,conic_segment.direction)
+            let partial_c_s = new ConicSegment(p_conic,start_t,end_t,new_bound,conic_segment.direction)
+            c_s_to_draw.push(partial_c_s)
+            
+        }
+        for(let j = 0; j < c_s_to_draw.length; j++){
+            let c_s = c_s_to_draw[j]
+            let length = c_s.getRange()
+            let num_of_points  = 10
+
+            let dt = length / num_of_points;
+            let start = c_s.start
+            
+            for (let i = 0; i <= num_of_points; i++) {
+            let t1 = start + dt * i;          
+            points.push(c_s.parameterized_conic.getPointFromT(t1))
+            }
+        }
+        return points
     }
 }
 // get the bounding box for a bisector given t bounds

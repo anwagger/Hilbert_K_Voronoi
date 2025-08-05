@@ -3,7 +3,7 @@ import {Canvas} from "./drawing/canvas/canvas.js"
 import {Point, Polygon, Segment, Spoke} from "./geometry/primitives.js"
 import { calculateBisector, calculateMidsector, calculateSector,calculateSectorTesting,testBisectorSector, calculateSpokes, HilbertPoint,getSectorNeighbors } from "./geometry/hilbert.js";
 import { convexHull } from "./geometry/utils.js";
-import { Conic, ConicSegment, parameterizeConic,bisectorConicFromSector,getConicParameterBoundsInPolygon, ParameterizedConic, matrixConicIntersection } from "./geometry/conics.js";
+import { Conic, ConicSegment, parameterizeConic,bisectorConicFromSector,getConicParameterBoundsInSector, ParameterizedConic, matrixConicIntersection } from "./geometry/conics.js";
 import { invert33Matrix, makeMatrixComplex, transform,complex, scaleVector, addVectors, multiplyMatrix } from "./math/linear.js";
 
 

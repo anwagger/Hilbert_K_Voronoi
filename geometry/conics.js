@@ -1055,7 +1055,9 @@ export function bisectorConicFromSector(boundary,sector){
 }
 
 // gets the bounding t values of a conic inside a polyogn
-export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,start_point = null){
+export function getConicParameterBoundsInSector(parameterized_conic,sector,start_point = null){
+
+    let polygon = sector.polygon
 
     let intersections = parameterized_conic.conic.intersectPolygon(polygon)
 
@@ -1120,6 +1122,16 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
     // special case for crossed lines
     // specifically the case where the center-point is on the polygon
     if (parameterized_conic.type == Conic_Type.DEGENERATE && parameterized_conic.orientation == Conic_Orientation.NONE && start_point != null){
+        
+        let boundary_sector = false
+        for(let i = 0; i < sector.edge_spokes.length; i++){
+            let data = sector.edge_spokes[i]
+            if(data.p1_spoke === -1 || data.p2_spoke === -1){
+                boundary_sector = true
+                break;
+            }
+        }
+        
         let center_point = parameterized_conic.getPointFromT(0)
 
         if(pointOnPolygon(center_point,polygon)){
@@ -1130,14 +1142,17 @@ export function getConicParameterBoundsInPolygon(parameterized_conic,polygon,sta
             })
             end = [poss_ts[0],null,center_point]
         }else{
-            /**
+            if(boundary_sector && (end[1] < 0 || start[1] < 0)){
                 console.log("DN CENTER NOT ON:",center_point,polygon)
                 console.log("USING",start,end)
+                console.log("SECTOR",sector)
                 let zero = parameterized_conic.getPointFromT(0)
                 let pi = parameterized_conic.getPointFromT(Math.PI)
                 let two_pi = parameterized_conic.getPointFromT(2*Math.PI)  
                 console.log("ON CHECK",pointOnPolygon(zero,polygon),pointOnPolygon(pi,polygon),pointOnPolygon(two_pi,polygon))
-             */
+             
+            }
+             
         }
     }
 

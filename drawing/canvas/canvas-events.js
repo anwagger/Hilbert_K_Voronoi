@@ -1,10 +1,11 @@
 import { Space } from "../../asteroids/space.js";
 import { calculateBisector, calculateHilbertPoint, HilbertPoint } from "../../geometry/hilbert.js";
 import {Point } from "../../geometry/primitives.js";
-import { calculateHilbertDistance, cleanArray, cleanJason, fieldsToIgnore, pointInPolygon } from "../../geometry/utils.js";
+import { calculateHilbertDistance, cleanArray, cleanJason, euclideanDistance, fieldsToIgnore, hilbertFrechetMean, hilbertPull, pointInPolygon } from "../../geometry/utils.js";
 import { calculateVoronoiCellBoundary, VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
 import { CAMERA, DrawableBruteForceVoronoi, DrawableVoronoiDiagram, HilbertImage } from "../drawable.js";
 import { singleLinkKHilbert, singleLinkThresholdHilbert } from "../../geometry/clustering.js";
+import { pointToVector } from "../../math/linear.js";
 
 // from nithins
 export function initEvents(canvas) {
@@ -750,19 +751,28 @@ export function initEvents(canvas) {
    }
    
    canvasElement.onmousemove = (event) => {
-      /**
+      
       const {x,y} = canvas.getMousePos(event)
       let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
+      /**
       let dists = []
       canvas.sites.forEach((site,i) => {
-         dists.push(calculateHilbertDistance(canvas.boundary.polygon,point,site.drawable_point.point))
+         dists.push(calculateHilbertDistance(canvas.boundary.polygon,point,site.drawable_point.point)**2)
       })
-      let variance = 0
+      
+      let max = 0
       dists.forEach((d) => {
-         variance+= d**2
+         max += d
       })
-      console.log("VAR ",x,y,":",variance)
+      console.log("VAR ",x,y,":",max)
        */
+      let points = []
+      for(let i = 0; i < canvas.sites.length; i++){
+         points.push(canvas.sites[i].drawable_point.point)
+      }
+      //let new_p = hilbertPull(canvas.boundary.polygon,points,point)
+
+      //console.log("PULL",calculateHilbertDistance(canvas.boundary.polygon,point,new_p))
 
       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls" || canvas.mode === "clusters"){
          if(event.shiftKey){
@@ -812,7 +822,7 @@ export function initEvents(canvas) {
             let voronoi = canvas.voronoi_diagram.voronoi
             let last_index = canvas.current_voronoi_cell_index 
             canvas.current_voronoi_cell_index = voronoi.partition_tree.findCurrentCell(voronoi,points,point)
-            console.log("CHAN",canvas.current_voronoi_cell_index)
+            //console.log("CHAN",canvas.current_voronoi_cell_index)
             if(last_index != canvas.current_voronoi_cell_index){
                canvas.drawAll()
                /**

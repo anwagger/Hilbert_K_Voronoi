@@ -1,5 +1,5 @@
 import {Bisector} from "./bisectors.js"
-import { ConicSegment,bisectorConicFromSector,parameterizeConic,getConicParameterBoundsInPolygon,calculateConicSegmentBounds } from "./conics.js"
+import { ConicSegment,bisectorConicFromSector,parameterizeConic,getConicParameterBoundsInSector,calculateConicSegmentBounds } from "./conics.js"
 import { Polygon, Sector, Segment,Spoke } from "./primitives.js"
 import { convexHull, euclideanDistance, intersectSegments, pointInPolygon,isBetween, intersectSegmentsAsLines, pointSegDistance, pointOnPolygon, isZero, hasSign } from "./utils.js"
 
@@ -457,7 +457,7 @@ export function traverseBisector(boundary,h_p1,h_p2,sector,start_point){
          */
 
     // get the conic's t bounds. Where a lot of problems come from
-    let {start_t:start_t, start_segment:start_segment,start_point:s_point, end_t:end_t, end_segment:end_segment,end_point:e_point,direction:direction} = getConicParameterBoundsInPolygon(p_conic,sector.polygon,start_point)
+    let {start_t:start_t, start_segment:start_segment,start_point:s_point, end_t:end_t, end_segment:end_segment,end_point:e_point,direction:direction} = getConicParameterBoundsInSector(p_conic,sector,start_point)
 
     if (start_t === null || end_t === null){
         console.log("BAD T")
@@ -578,7 +578,7 @@ export function testBisectorSector(boundary,sector){
 
     let p_conic = parameterizeConic(conic)
 
-    return getConicParameterBoundsInPolygon(p_conic,sector.polygon)
+    return getConicParameterBoundsInSector(p_conic,sector)
     
 
 }

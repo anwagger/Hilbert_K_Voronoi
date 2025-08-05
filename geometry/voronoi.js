@@ -40,7 +40,7 @@ export class VoronoiCell {
         this.bound = bound
         this.contained_sites = contained_sites
         this.bisector_data = bisector_data
-        this.boundary_points
+        this.boundary_points = boundary_points
     }
 
     contains(boundary,sites,point){
