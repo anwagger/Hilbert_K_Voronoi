@@ -754,7 +754,6 @@ export function initEvents(canvas) {
       
       const {x,y} = canvas.getMousePos(event)
       let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
-      /**
       let dists = []
       canvas.sites.forEach((site,i) => {
          dists.push(calculateHilbertDistance(canvas.boundary.polygon,point,site.drawable_point.point)**2)
@@ -764,13 +763,13 @@ export function initEvents(canvas) {
       dists.forEach((d) => {
          max += d
       })
-      console.log("VAR ",x,y,":",max)
-       */
+      //console.log("VAR ",x,y,":",max)
+      
       let points = []
       for(let i = 0; i < canvas.sites.length; i++){
          points.push(canvas.sites[i].drawable_point.point)
       }
-      //let new_p = hilbertPull(canvas.boundary.polygon,points,point)
+      let new_p = hilbertPull(canvas.boundary.polygon,points,point)
 
       //console.log("PULL",calculateHilbertDistance(canvas.boundary.polygon,point,new_p))
 

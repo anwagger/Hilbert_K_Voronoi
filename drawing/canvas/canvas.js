@@ -4,7 +4,7 @@ import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
 import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
 
-import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid,pointNearPolygonBorder, centroid, hilbertCentroidList, convexHull, hilbertCentroidHarmonic, testCentroidRegion, calculateHilbertDistance, isZero, isLeZero, hilbertFrechetMean} from "../../geometry/utils.js"
+import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid,pointNearPolygonBorder, centroid, hilbertCentroidList, convexHull, hilbertCentroidHarmonic, testCentroidRegion, calculateHilbertDistance, isZero, isLeZero, hilbertFrechetMean, hilbertGradientDescent} from "../../geometry/utils.js"
 import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors } from "../../geometry/bisectors.js";
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 
@@ -225,8 +225,8 @@ export class Canvas {
    }
 
    createNgon(n) {
-      const canvasCenterX = this.canvas.width / (2 * this.dpr);
-      const canvasCenterY = this.canvas.height / (2 * this.dpr);
+      const canvasCenterX = Math.min(this.canvas.width,1000) / (2 * this.dpr);
+      const canvasCenterY = Math.min(this.canvas.height,1000) / (2 * this.dpr);
         
       const radius = Math.min(this.canvas.width, this.canvas.height) / (2.5 * this.dpr);
       
@@ -821,7 +821,7 @@ export class Canvas {
          points.push(this.sites[i].drawable_point.point)
       }
       //let hilbert_centroid = hilbertCentroid(this.boundary.polygon,points)
-      let hilbert_centroids = hilbertFrechetMean(this.boundary.polygon,points,1000)
+      let hilbert_centroids = hilbertGradientDescent(this.boundary.polygon,points,1000)
       if(hilbert_centroids){
          this.hilbert_centroid = new DrawablePoint(hilbert_centroids[hilbert_centroids.length-1])
       }
@@ -900,9 +900,8 @@ export class Canvas {
                         const dist = cell[d].dist;
                         variance += dist**(2)
                      }
-                     if(isLeZero(Math.abs(variance - min_variance.variance)-0.01)){
-                        min_points.push(new Point(x,y))
-                     }else if(variance < min_variance.variance){
+
+                     if(variance < min_variance.variance){
                         min_variance.point = new Point(x,y)
                         min_points = [min_variance.point]
                         min_variance.variance = variance 
@@ -921,14 +920,13 @@ export class Canvas {
           
          }
       }
-      let centroid_points = hilbertFrechetMean(this.boundary.polygon,points,1000)
-      /**   
+      let centroid_points = hilbertGradientDescent(this.boundary.polygon,points,1000)
       centroid_points.forEach((p,i) => {
             let d_p = new DrawablePoint(p)
             d_p.color = "green"
             this.bisector_intersections.push(d_p)
          })
-          */
+         
       let d_p = new DrawablePoint(centroid_points[centroid_points.length-1])
       d_p.color = "blue"
       this.bisector_intersections.push(d_p)

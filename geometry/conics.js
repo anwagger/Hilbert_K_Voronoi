@@ -1166,6 +1166,7 @@ export function getConicParameterBoundsInSector(parameterized_conic,sector,start
         console.log("POINTS",points)
         console.log("POLYGON",polygon)
         console.log(parameterized_conic)
+        console.log("SECTOR",sector)
     }
 
     // take shortest way around

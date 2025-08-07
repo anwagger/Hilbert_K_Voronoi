@@ -1273,3 +1273,88 @@ export function hilbertPull(boundary,points,point){
 
   return current_centroid
 }
+
+export function hilbertGradient(boundary,sites,p){
+  let gradient = new Point(0,0)
+  for(let i = 0; i < sites.length; i++){
+
+    let s = sites[i]
+    const mid = new Segment(p,s);
+    const points = boundary.points;
+    const ints = [null,null];
+    const ints_seg = [null,null];
+    let count = 0;
+    let euclidean = euclideanDistance(p,s)
+    if(isZero(euclidean)){
+      continue;
+    }
+    for (let j = 0; j < points.length; j++) {
+        const p2 = (j + 1) % points.length;
+        const seg = new Segment(points[j], points[p2]);
+        const int = intersectSegmentsAsLines(mid, seg);
+        if (int !== null) {
+        //println("GOOD",mid.start,mid.end,i,seg.start,seg.end,pointSegDistance(i,seg));
+            if (isZero(pointSegDistance(int, seg))) {
+                if (count > 0) {
+                    if (isZero(euclideanDistance(int, ints[0]))) {
+                        // replace point as to not have
+                        count--;
+                    }
+                }
+                ints[count] = int;
+                ints_seg[count] = seg
+                count++;
+            }
+        }
+
+        if (count > 1) break;
+    }
+
+    if (count === 2) {
+      const F = euclideanDistance(p, ints[0]) < euclideanDistance(s, ints[0])? ints_seg[0]:ints_seg[1];
+      const E = euclideanDistance(p, ints[0]) < euclideanDistance(s, ints[0])? ints_seg[1]:ints_seg[0];
+      //return hilbertMetric(F, p, s, E);
+      let {a:f1,b:f2,c:f3} = lineEquation(F)
+      let {a:e1,b:e2,c:e3} = lineEquation(E)
+      let log_term = Math.log(
+          ((p.x*e1+p.y*e2+e3)/(s.x*e1+s.y*e2+e3))*((s.x*f1+s.y*f2+f3)/(p.x*f1+p.y*f2+f3))
+        )
+      let x = log_term
+        *
+        (e1/(p.x*e1+p.y*e2+e3)-f1/(p.x*f1+p.y*f2+f3))
+      let y = log_term
+        *
+        (e2/(p.x*e1+p.y*e2+e3)- f2/(p.x*f1+p.y*f2+f3))
+      gradient = new Point(gradient.x + x,gradient.y + y)
+    }
+  }
+  return gradient
+}
+
+export function hilbertGradientDescent(boundary,points,max=100){
+  let centroid_points = []
+  let current_centroid = centroid(points)
+  let weight = 0.02
+  let count = 0
+  while(count < max){
+    
+      let gradient = hilbertGradient(boundary,points,current_centroid)
+
+      
+      let dist = Math.sqrt(gradient.x**2+gradient.y**2)
+      let angle = Math.atan2(-gradient.y,-gradient.x)
+
+      let old_centroid = current_centroid
+
+      current_centroid = moveInHilbert(boundary,current_centroid,dist*weight,angle)
+
+      let mag = Math.sqrt((old_centroid.x-current_centroid.x)**2+(old_centroid.y-current_centroid.y)**2)
+      let ang = Math.atan2(old_centroid.y-current_centroid.y,old_centroid.x-current_centroid.x)
+      console.log("GRADIENT",count,gradient,weight*dist,angle,mag,ang)
+
+
+    centroid_points.push(current_centroid)
+    count++
+  }
+  return centroid_points
+}
