@@ -675,7 +675,7 @@ export class DrawableVoronoiCell {
     let {points:convex_points,indices:indices} = orderByAngleIndex(relevant_points)
     let points = []
 
-    console.log("CELL",this.voronoi_cell.contained_sites,"DATA",point_data,"ORDER",indices)
+    //console.log("CELL",this.voronoi_cell.contained_sites,"DATA",point_data,"ORDER",indices)
 
     let used_bisectors = {}
     for(let i = 0; i < convex_points.length; i++){

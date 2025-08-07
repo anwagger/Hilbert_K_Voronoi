@@ -920,6 +920,7 @@ export class Canvas {
           
          }
       }
+      /**
       let centroid_points = hilbertGradientDescent(this.boundary.polygon,points,1000)
       centroid_points.forEach((p,i) => {
             let d_p = new DrawablePoint(p)
@@ -930,6 +931,7 @@ export class Canvas {
       let d_p = new DrawablePoint(centroid_points[centroid_points.length-1])
       d_p.color = "blue"
       this.bisector_intersections.push(d_p)
+       */
           
       
 

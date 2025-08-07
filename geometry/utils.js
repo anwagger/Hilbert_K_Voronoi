@@ -1316,7 +1316,7 @@ export function hilbertGradient(boundary,sites,p){
       //return hilbertMetric(F, p, s, E);
       let {a:f1,b:f2,c:f3} = lineEquation(F)
       let {a:e1,b:e2,c:e3} = lineEquation(E)
-      let log_term = Math.log(
+      let log_term = (1/2)*Math.log(
           ((p.x*e1+p.y*e2+e3)/(s.x*e1+s.y*e2+e3))*((s.x*f1+s.y*f2+f3)/(p.x*f1+p.y*f2+f3))
         )
       let x = log_term
@@ -1334,27 +1334,54 @@ export function hilbertGradient(boundary,sites,p){
 export function hilbertGradientDescent(boundary,points,max=100){
   let centroid_points = []
   let current_centroid = centroid(points)
-  let weight = 0.02
   let count = 0
-  while(count < max){
+  let prev_grad = false
+  let exit = false
+
+  let near = false
+  while(!exit){
     
       let gradient = hilbertGradient(boundary,points,current_centroid)
 
       
       let dist = Math.sqrt(gradient.x**2+gradient.y**2)
-      let angle = Math.atan2(-gradient.y,-gradient.x)
+      let angle = Math.atan2(gradient.y,gradient.x)
+
+      let dot = Math.acos((gradient.x*prev_grad.x + gradient.y*prev_grad.y)/(dist * Math.sqrt(prev_grad.x**2+prev_grad.y**2)))
+
+
+
+      if (isZero(dist)){
+        exit = true
+      }
+
+      if(isLeZero((17*Math.PI/20 - dot))){
+        near = true
+      }
+
+      //console.log("INITIAL",dist,angle,count,dot)
 
       let old_centroid = current_centroid
 
-      current_centroid = moveInHilbert(boundary,current_centroid,dist*weight,angle)
+      let mag =  -Math.sqrt(dist)
 
-      let mag = Math.sqrt((old_centroid.x-current_centroid.x)**2+(old_centroid.y-current_centroid.y)**2)
-      let ang = Math.atan2(old_centroid.y-current_centroid.y,old_centroid.x-current_centroid.x)
-      console.log("GRADIENT",count,gradient,weight*dist,angle,mag,ang)
+      if(!near){
+        mag = -1
+      }
+
+      current_centroid = new Point(current_centroid.x + mag*Math.cos(angle),current_centroid.y + mag*Math.sin(angle)) //moveInHilbert(boundary,current_centroid,weight*dist,angle)
+
+      prev_grad = gradient
+
 
 
     centroid_points.push(current_centroid)
     count++
+
+    if(count > 5000){
+      console.log("EJECT")
+      exit = true
+    }
   }
   return centroid_points
 }
