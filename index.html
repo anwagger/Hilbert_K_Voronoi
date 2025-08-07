@@ -314,11 +314,23 @@
       </div>
 
       <div id="clustersContainer">
-          <div>
-            <input type="button" id="generateRandomSites" name="generateRandomSites" value="Generate Random Sites"><br>
-            <input type="range" id="amtOfSites" min="1" max="200" value="1" step = "1" oninput="randomSitesAmt.value=amtOfSites.value"/>
-            <input type="text" id="randomSitesAmt" name="randomSitesAmt" value="1">
+        <div>
+          <input type="button" id="generateRandomSites" name="generateRandomSites" value="Generate Random Sites"><br>
+          <input type="range" id="amtOfSites" min="1" max="200" value="1" step = "1" oninput="randomSitesAmt.value=amtOfSites.value"/>
+          <input type="text" id="randomSitesAmt" name="randomSitesAmt" value="1">
+        </div>
+
+        <input type="radio" id="kmeans" name="clusteringType" value="Use kmeans" checked="true"> Kmeans Clustering <br>
+        <input type="radio" id="minLinkage" name="clusteringType" value="Use Single Linkage"> Single-linkage Clustering
+
+        <div id="kmeansClustering">
+          <div id="kmeansSliderDiv">
+            <input type="range" id="kmeansAmtRange" name="kmeansAmtRange" min="1" max="1000" step="1" value="1" oninput="kmeansAmt.value=kmeansAmtRange.value"> Amount of Means
+            <input type="text" id="kmeansAmt" name="kmeansAmt" value="1">
           </div>
+        </div>
+
+        <div id = "minLinkageClustering">
           <input type="radio" id="generateKClusters" name="clusterType" value="Generate K Clusters" checked="true"> Generate K-Clusters <br>
           <input type="radio" id="generateThresholdClusters" name="clusterType" value="Generate Clusters by Threshold"> Generate Clusters by Threshold
 
@@ -327,9 +339,10 @@
             <input type="text" id="thresholdAmt" name="thresholdAmt" value="0.01">
           </div>
           <div id="kDiv">
-            <input type="range" id="clusterAmtRange" name="clusterAmtRange" min="1" max="1000" step="1" value="1" oninput="clusterAmt.value=clusterAmtRange.value"> K-Amt
-            <input type="text" id="clusterAmt" name="clusterAmt" value="1">
+              <input type="range" id="clusterAmtRange" name="clusterAmtRange" min="1" max="1000" step="1" value="1" oninput="clusterAmt.value=clusterAmtRange.value"> K-Amt
+              <input type="text" id="clusterAmt" name="clusterAmt" value="1">
           </div>
+        </div>
       </div>
 
 

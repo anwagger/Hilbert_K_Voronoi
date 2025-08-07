@@ -4,7 +4,7 @@ import {Point } from "../../geometry/primitives.js";
 import { calculateHilbertDistance, cleanArray, cleanJason, euclideanDistance, fieldsToIgnore, hilbertFrechetMean, hilbertPull, pointInPolygon } from "../../geometry/utils.js";
 import { calculateVoronoiCellBoundary, VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
 import { CAMERA, DrawableBruteForceVoronoi, DrawableVoronoiDiagram, HilbertImage } from "../drawable.js";
-import { singleLinkKHilbert, singleLinkThresholdHilbert } from "../../geometry/clustering.js";
+import { kmeans, singleLinkKHilbert, singleLinkThresholdHilbert } from "../../geometry/clustering.js";
 import { pointToVector } from "../../math/linear.js";
 
 // from nithins
@@ -207,6 +207,53 @@ export function initEvents(canvas) {
       }
    })
 
+   document.getElementById('kmeans').addEventListener('input', (event) => {
+      if (event.target.checked) {
+         canvas.clusters = null;
+         document.getElementById("kmeansClustering").style.display = "block";
+         document.getElementById("minLinkageClustering").style.display = "none";
+         canvas.resetUsedColors();
+
+         let k = parseInt(document.getElementById('kmeansAmt').value);
+
+         // gets the actual coords in each site on canvas
+         let points = [];
+         canvas.sites.forEach((s) => {
+            points.push(s.drawable_point.point);
+         })
+
+         canvas.clusters = kmeans(k, points, canvas.boundary.polygon, canvas);
+         console.log(canvas.clusters);
+         canvas.drawAll();
+      } else {
+         canvas.clusters = null;
+      }
+   });
+
+   document.getElementById('kmeansAmt').addEventListener('input', (event) => {
+      document.getElementById("kmeansAmtRange").max = canvas.sites.length;
+      let k = event.target.value;
+
+      if (k <= canvas.sites.length && k > 0) {
+         let points = [];
+         canvas.sites.forEach((s) => {
+            points.push(s.drawable_point.point);
+         })
+
+         canvas.clusters = kmeans(k, points, canvas.boundary.polygon, canvas);
+         canvas.drawAll();
+      } else {
+         alert("k must be > 0 and no more than the total amount of sites!")
+      }
+   })
+
+   document.getElementById('minLinkage').addEventListener('input', (event) => {
+      canvas.clusters = null;
+      document.getElementById("kmeansClustering").style.display = "none";
+      document.getElementById("minLinkageClustering").style.display = "block";
+      canvas.resetUsedColors();
+   })
+
    document.getElementById('generateKClusters').addEventListener('input', (event) => {
       if (event.target.checked) {
          canvas.clusters = null;
@@ -263,7 +310,6 @@ export function initEvents(canvas) {
    })
 
    document.getElementById('generateThresholdClusters').addEventListener('change', (event) => {
-      
       if (event.target.checked) {
          canvas.clusters = null;
          document.getElementById("kDiv").style.display = "none";
