@@ -1,5 +1,5 @@
 import { Point } from "./primitives.js"
-import { calculateHilbertDistance, computeBoundingBox, euclideanDistance, isZero, pointInPolygon, pointOnPolygon, matrix } from "./utils.js"
+import { calculateHilbertDistance, calculateThompsonDistance, computeBoundingBox, euclideanDistance, isZero, pointInPolygon, pointOnPolygon, matrix, hilbertCentroid } from "./utils.js"
 
 export class Cluster {
     constructor(indices, color) {
@@ -186,4 +186,106 @@ export function generateHDistMatrix(boundary, points) {
         }
     }
     return result;
+}
+
+export function kmeans(k, points, boundary, canvas) {
+    let centroids = kpp(k, points, boundary);
+    let converged = false;
+    let clusters = [];
+
+    while(converged == false) {
+        clusters = [];
+
+        // how ive structured clusters is at clusters[i], theres another array
+        // let e = clusters[i], e[0] is the actual points (their coords), and e[1] is all the indices!
+        for (let i = 0; i < k; i++) {
+            clusters[i] = [[],[]];
+        }
+
+        for (let i = 0; i < points.length; i++) {
+            let point = points[i];
+            let closest_idx = 0;
+            let min_distance = calculateHilbertDistance(boundary, point, centroids[0]);
+
+            for (let j = 1; j < k - 1; j++) {
+                let d = calculateHilbertDistance(boundary, point, centroids[j]);
+
+                if (d < min_distance) {
+                    min_distance = d;
+                    closest_idx = j;
+                }
+            }
+
+            clusters[closest_idx][0].push(points[i]);
+            clusters[closest_idx][1].push(i);
+        }
+
+        let new_centroids = [];
+
+        let actual_points = [];
+
+        clusters.forEach((e) => {actual_points.push(e[0])});
+        for (let i = 0; i < k; i++) {
+            let new_centroid = hilbertCentroid(boundary, actual_points[i]);
+            new_centroids.push(new_centroid);
+        }
+
+        if (JSON.stringify(new_centroids) === JSON.stringify(centroids)) {
+            converged = true;
+        } else {
+            centroids = new_centroids;
+        }
+    }
+
+    let final_clusters = [];
+    console.log(clusters);
+    for (let i = 0; i < clusters.length; i++) {
+        if (canvas.clusters && i < canvas.clusters.length) {
+            final_clusters.push(new Cluster(clusters[i][1], canvas.clusters[i].color));
+            i++;   
+        } else {
+            final_clusters.push(new Cluster(clusters[i][1], canvas.getNewColor())); 
+        }
+    }
+    
+    return final_clusters;
+}
+
+export function kpp(k, points, boundary) {
+    console.log(k)
+    let centroids = [];
+    let first_idx = Math.floor(Math.random() * points.length);
+
+    centroids.push(points[first_idx]);
+
+    while(centroids.length < k) {   
+        let distances_sqrd = [];
+
+        for (let i = 0; i < points.length; i++) {
+            let point = points[i];
+            let min_distance = calculateHilbertDistance(boundary, point, centroids[0]);
+
+            for (let j = 1; j < centroids.length; j++) {
+                min_distance = Math.min(calculateHilbertDistance(boundary, point, centroids[j]), min_distance);
+            }
+
+            distances_sqrd.push(min_distance);
+        }
+
+        let total = distances_sqrd.reduce((e,acc) => {e + acc});
+        let threshold = Math.random() * total;
+
+        let cumulative = 0;
+
+        for (let i = 0; i < points.length; i++) {
+            cumulative = cumulative + distances_sqrd[i];
+            if (cumulative >= threshold) {
+                centroids.push(points[i]);
+                break;
+            }
+        }
+    }
+
+    console.log(centroids);
+    return centroids;
 }
