@@ -176,11 +176,12 @@ export function initEvents(canvas) {
    canvas.canvas.addEventListener('dblclick', (event) => {
       if (canvas.mode === 'boundary' && canvas.boundaryType === 'freeDraw'){
             canvas.addPolygonPoint(event);
-      }else if(canvas.mode === 'site' || canvas.mode === 'voronoi' || canvas.mode === "balls" || canvas.mode === "clusters"){
+      }else if(canvas.mode === 'site' || canvas.mode === 'voronoi' || canvas.mode === "clusters"){
          if(!event.shiftKey){
             canvas.addSite(event) 
          }
       } else if (canvas.mode === "balls") {
+         console.log("yay!");
          const radius = document.getElementById('ballRadius').value
          canvas.addSite(event);
          let selectedBalls = getCheckedBalls()
