@@ -1210,7 +1210,7 @@ export function orderByAngleIndex(points){
   return {points:final_points,indices:point_indices}
 }
 
-export function hilbertFrechetMean(boundary,points,max=100){
+export function hilbertPullMean(boundary,points,max=100){
   let centroid_points = []
   let current_centroid = centroid(points)
   let weight = 0.02
@@ -1331,7 +1331,7 @@ export function hilbertGradient(boundary,sites,p){
   return gradient
 }
 
-export function hilbertGradientDescent(boundary,points,max=100){
+export function hilbertGradientDescent(boundary,points,max=5000){
   let centroid_points = []
   let current_centroid = centroid(points)
   let count = 0
@@ -1378,10 +1378,15 @@ export function hilbertGradientDescent(boundary,points,max=100){
     centroid_points.push(current_centroid)
     count++
 
-    if(count > 5000){
+    if(count > max){
       console.log("EJECT")
       exit = true
     }
   }
   return centroid_points
+}
+
+export function hilbertFrechetMean(boundary,points,max=5000){
+  let centroids = hilbertGradientDescent(boundary,points,max)
+  return centroids[centroids.length-1]
 }

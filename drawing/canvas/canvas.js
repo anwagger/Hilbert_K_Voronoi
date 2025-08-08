@@ -228,7 +228,7 @@ export class Canvas {
       const canvasCenterX = Math.min(this.canvas.width,1000) / (2 * this.dpr);
       const canvasCenterY = Math.min(this.canvas.height,1000) / (2 * this.dpr);
         
-      const radius = Math.min(this.canvas.width, this.canvas.height) / (2.5 * this.dpr);
+      const radius = Math.min(this.canvas.width, this.canvas.height,1000) / (2.5 * this.dpr);
       
       this.deleteBoundaryPoints()
       this.boundary = new DrawablePolygon(new Polygon([]),this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);

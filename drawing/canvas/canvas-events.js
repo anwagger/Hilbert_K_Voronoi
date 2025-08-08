@@ -752,6 +752,7 @@ export function initEvents(canvas) {
    
    canvasElement.onmousemove = (event) => {
       
+      /**
       const {x,y} = canvas.getMousePos(event)
       let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
       let dists = []
@@ -773,6 +774,7 @@ export function initEvents(canvas) {
 
       //console.log("PULL",calculateHilbertDistance(canvas.boundary.polygon,point,new_p))
 
+       */
       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls" || canvas.mode === "clusters"){
          if(event.shiftKey){
             if (canvas.selecting){

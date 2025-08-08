@@ -25,7 +25,8 @@ import { pointInPolygon,
     centroid,
     isZero,
     inBound,
-    hilbertCentroid} from "./utils.js";
+    hilbertCentroid,
+    hilbertFrechetMean} from "./utils.js";
 
 class Pair {
   constructor(i, d) {
@@ -321,7 +322,7 @@ export class VoronoiDiagram {
             }
             //centroids.push(centroid(points))
             if(points.length > 0){
-                centroids.push(hilbertCentroid(this.boundary,points,5*points.length,1000))
+                centroids.push(hilbertFrechetMean(this.boundary,points,5000))
             }
             
             
