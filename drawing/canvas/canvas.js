@@ -40,6 +40,8 @@ export class Canvas {
       
       this.boundaryType = 'freeDraw';
 
+      this.selected_boundary = -1
+
       this.sites = [];
       this.site_radius = 3
       this.clusters = null;
@@ -395,6 +397,18 @@ export class Canvas {
 
       }
    }
+
+   dragBoundaryPoint(point){
+      if(this.selected_boundary >= 0){
+            this.boundaryType = 'freeDraw'
+            let points = this.boundary.polygon.points
+            points[this.selected_boundary] = point
+            this.boundary = this.boundary = new DrawablePolygon(new Polygon(convexHull(points)),this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
+            this.recalculateAll()
+            this.drawAll()
+      }
+   }
+
    deleteBoundaryPoints(){
       if (this.boundary && this.boundary.points){
          this.boundary.points.forEach((point) => {

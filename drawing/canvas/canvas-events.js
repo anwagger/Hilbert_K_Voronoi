@@ -1,7 +1,7 @@
 import { Space } from "../../asteroids/space.js";
 import { calculateBisector, calculateHilbertPoint, HilbertPoint } from "../../geometry/hilbert.js";
-import {Point } from "../../geometry/primitives.js";
-import { calculateHilbertDistance, cleanArray, cleanJason, euclideanDistance, fieldsToIgnore, hilbertFrechetMean, hilbertPull, pointInPolygon } from "../../geometry/utils.js";
+import {Point, Polygon } from "../../geometry/primitives.js";
+import { calculateHilbertDistance, cleanArray, cleanJason, convexHull, euclideanDistance, fieldsToIgnore, hilbertFrechetMean, hilbertPull, pointInPolygon } from "../../geometry/utils.js";
 import { calculateVoronoiCellBoundary, VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
 import { CAMERA, DrawableBruteForceVoronoi, DrawableVoronoiDiagram, HilbertImage } from "../drawable.js";
 import { kmeans, singleLinkKHilbert, singleLinkThresholdHilbert } from "../../geometry/clustering.js";
@@ -755,26 +755,25 @@ export function initEvents(canvas) {
             
          }
          
-       }
-       /* 
-       else if (canvas.mode === "boundary") {
-         if (event.shiftKey){
-            canvas.selecting = true;
-            const {x,y} = canvas.getMousePos(event)
-            canvas.selectionAnchor.x = CAMERA.ix(x)
-            canvas.selectionAnchor.y = CAMERA.iy(y)
-            canvas.selectionPointer.x = CAMERA.ix(x)
-            canvas.selectionPointer.y = CAMERA.iy(y)
-
-            canvas.drawAll()
-         }else{
-            canvas.selectDragPoint(event)
+       }else if (canvas.mode === "boundary") {
+         const {x,y} = canvas.getMousePos(event)
+         let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
+         if(canvas.boundary){
+            canvas.selected_boundary = -1
+            canvas.boundary.polygon.points.forEach((p,i) => {
+               if (euclideanDistance(point,p) <= 5){
+                  CAMERA.move_lock = true
+                  canvas.selected_boundary = i
+               }
+            })
          }
        }
-      */
+
    }
    canvasElement.onmouseup = (event) => {
        CAMERA.move_lock = true
+
+       canvas.selected_boundary = -1
 
        if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls" || canvas.mode === "clusters"){
          if (event.shiftKey){
@@ -788,6 +787,8 @@ export function initEvents(canvas) {
          canvas.recalculateHilbertCentroid()
          canvas.drawAll()
        }
+         
+       
    }
 
    
@@ -821,6 +822,13 @@ export function initEvents(canvas) {
       //console.log("PULL",calculateHilbertDistance(canvas.boundary.polygon,point,new_p))
 
        */
+
+      if(canvas.mode === "boundary"){
+         const {x,y} = canvas.getMousePos(event)
+         let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
+         canvas.dragBoundaryPoint(point)
+      }
+      
       if (canvas.mode === "site" || canvas.mode === "voronoi" || canvas.mode === "balls" || canvas.mode === "clusters"){
          if(event.shiftKey){
             if (canvas.selecting){
@@ -883,6 +891,8 @@ export function initEvents(canvas) {
          }
          
       }
+
+
 
       //test_render()
       //canvas.drawAll()
