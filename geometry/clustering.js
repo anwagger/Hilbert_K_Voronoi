@@ -207,7 +207,7 @@ export function kmeans(k, points, boundary, canvas) {
             let closest_idx = 0;
             let min_distance = calculateHilbertDistance(boundary, point, centroids[0]);
 
-            for (let j = 1; j < k - 1; j++) {
+            for (let j = 1; j < k; j++) {
                 let d = calculateHilbertDistance(boundary, point, centroids[j]);
 
                 if (d < min_distance) {
@@ -238,25 +238,21 @@ export function kmeans(k, points, boundary, canvas) {
     }
 
     let final_clusters = [];
-    console.log(clusters);
     for (let i = 0; i < clusters.length; i++) {
-        if (canvas.clusters && i < canvas.clusters.length) {
-            final_clusters.push(new Cluster(clusters[i][1], canvas.clusters[i].color));  
-        } else {
-            final_clusters.push(new Cluster(clusters[i][1], canvas.getNewColor())); 
-        }
+         final_clusters.push(new Cluster(clusters[i][1], canvas.getNewColor()));
     }
     
     return final_clusters;
 }
 
 export function kpp(k, points, boundary) {
+    console.log(k)
     let centroids = [];
     let first_idx = Math.floor(Math.random() * points.length);
 
     centroids.push(points[first_idx]);
 
-    while(centroids.length < k) {
+    while(centroids.length < k) {   
         let distances_sqrd = [];
 
         for (let i = 0; i < points.length; i++) {
@@ -270,12 +266,13 @@ export function kpp(k, points, boundary) {
             distances_sqrd.push(min_distance);
         }
 
-        let total = distances_sqrd.reduce((acc, e) => e + acc);
+        let total = distances_sqrd.reduce((e,acc) => e + acc);
         let threshold = Math.random() * total;
+
         let cumulative = 0;
 
         for (let i = 0; i < points.length; i++) {
-            cumulative += distances_sqrd[i];
+            cumulative = cumulative + distances_sqrd[i];
             if (cumulative >= threshold) {
                 centroids.push(points[i]);
                 break;

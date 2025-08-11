@@ -248,6 +248,23 @@ export function initEvents(canvas) {
       }
    })
 
+   document.getElementById('kmeansAmtRange').addEventListener('input', (event) => {
+      document.getElementById("kmeansAmtRange").max = canvas.sites.length;
+      let k = event.target.value;
+
+      if (k <= canvas.sites.length && k > 0) {
+         let points = [];
+         canvas.sites.forEach((s) => {
+            points.push(s.drawable_point.point);
+         })
+
+         canvas.clusters = kmeans(k, points, canvas.boundary.polygon, canvas);
+         canvas.drawAll();
+      } else {
+         alert("k must be > 0 and no more than the total amount of sites!")
+      }
+   })
+
    document.getElementById('minLinkage').addEventListener('input', (event) => {
       canvas.clusters = null;
       document.getElementById("kmeansClustering").style.display = "none";
