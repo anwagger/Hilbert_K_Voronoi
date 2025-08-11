@@ -423,8 +423,9 @@ export function n3lognVoronoi(boundary,points){
     for(let i = 0; i < n; i++){
         for(let j = i+1; j < n; j++){
             for(let k = j+1; k < n; k++){
-                let c = calculateCircumcenter(boundary, bisectors[i][j],bisectors[j][k],bisectors[i][k])
-                if(c){
+                let circs = calculateCircumcenter(boundary, bisectors[i][j],bisectors[j][k],bisectors[i][k])
+                if(circs){
+                    let {circumcenter:c,12:c12,23:c23,13:c13} = circs
                     circumcenters.push(c)
                     let data = {
                         i:i,
@@ -437,6 +438,11 @@ export function n3lognVoronoi(boundary,points){
                     }
                     // calculate t's and orientation
                     let ps = [i,j,k]
+                    let cs = [
+                                [false,c12,c13],
+                                [c12,false,c23],
+                                [c13,c23,false],
+                            ]
                     for(let p = 0; p < ps.length; p++){
                         let i1 = ps[p]
                         for(let q = p+1; q < ps.length; q++){
@@ -445,12 +451,13 @@ export function n3lognVoronoi(boundary,points){
                             let r = 0
                             while(p === r || q === r) r+=1;
                             let i3 = ps[r]
+                            let c_point = cs[p][q]?cs[p][q]:c
                             data[i1][i2] = {
-                                t: bisectors[i1][i2].getTOfPoint(c),
+                                t: bisectors[i1][i2].getTOfPoint(c_point),
                             }
 
                             if (!data[i1][i2].t){
-                                console.log("NO T GOTTEN!",c,bisectors[i1][i2])
+                                console.log("NO T GOTTEN!",c,c_point,bisectors[i1][i2])
                                 console.log("CIRC T",i1,i2,data[i1][i2].t)
                             }
                             
@@ -621,9 +628,9 @@ export function n3lognVoronoi(boundary,points){
         voronoi_cell.bound = calculateVoronoiCellBounds(voronoi_cell.bisector_segments,voronoi_cell.boundary_points)
         voronoi_lists[degree-1].push(voronoi_cell)
     }
+    console.timeEnd("voronoi creation")
 
-    //console.log("VORONOI CELLS",voronoi_lists)
-
+    console.time("partition trees")
     // combine the cells into diagrams
     let voronois = []
     for(let d = 1; d <= n; d++){
@@ -637,7 +644,7 @@ export function n3lognVoronoi(boundary,points){
         voronoi.partition_tree = partition_tree
         voronois.push(voronoi)
     }
-    console.timeEnd("voronoi creation")
+    console.timeEnd("partition trees")
 
     //console.log("VORONOIS",voronois)
 

@@ -8,16 +8,19 @@ In this software, we implement k-th order voronoi diagrams in the Hilbert Metric
 
 # Installation
 
-1. Install [Node.js](https://nodejs.org/en/download) (Includes Node Package Manager)
 
-2. Download software files
+1. Download software files
 
-3. Inside the software folder, run
+2. If hosting locally:
+    1. Install [Node.js](https://nodejs.org/en/download) (Includes Node Package Manager)
+    2. Inside the software folder, run
 ```npm install --force``` on a command line
 
-4. Run ```npm start``` or ```node server.js``` to start up the software
+    2. Run ```npm start``` or ```node server.js``` to start up the software
 
-5. Open [localhost:3000](http://localhost:3000)
+    3. Open [localhost:3000](http://localhost:3000)
+3. If hosting from a web server:
+    1. Only need to serve ```index.html```
 
 # Usage
 
@@ -85,8 +88,13 @@ Our algorithm calculates every degree voronoi diagram at once
 
 3. For each bisector:
     1. Order the circumcenters on that bisector with respect to t
-    2. Calculate the degree and 
+    2. Calculate the degree and associated sites of the first bisector section
+    3. At each circumcenter, the degree and sites change predictably.
+    4. Each bisector sectionn can then be added to its two voronoi cells
 
 ## Partition Tree
+
+Allows the software to quickly determine which cell a point is in
+
 
 ## Hilbertroids

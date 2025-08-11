@@ -33,7 +33,7 @@ export class Bisector {
             if(inBound(point,c_s.bound)){
                 // check if the point if valid for the segment
                 let t = c_s.parameterized_conic.getTOfPoint(point,true) // force point to be on
-                if(t){
+                if(!isNaN(t)){
                     // convert conic segment t to bisector t
                     let range = c_s.getRange()
                     // puts the t between 0 and 2PI
@@ -67,6 +67,7 @@ export class Bisector {
             }
         }
         console.log("NOTING RETURNED!")
+        return NaN
     }
     
     getBoundaryDirection(boundary){
@@ -247,14 +248,18 @@ export function calculateCircumcenter(boundary,b1,b2,b3){
         return false
     }
     let i13 = intersectBisectors(boundary,b1,b3)
+    if (checkIfBisectorsIntersect(b2,b3) === -1){
+        return false
+    }
+    let i23 = intersectBisectors(boundary,b2,b3)
     let sensitivity = 1e-2
     // if both intersections exist, check if they're close enough and get the avg
-    if (i12 && i13){
+    if (i12 && i13 && i23){
         let circumcenter = new Point((i12.x + i13.x)/2,(i12.y + i13.y)/2)
         if(
             euclideanDistance(i12,i13)**2 <= sensitivity
         ){
-            return circumcenter
+            return {circumcenter: circumcenter,12:i12,13:i13,23:i23}
         }else{
             console.log("TOOOOO FARRR",i12,i13,euclideanDistance(i12,i13)**2)
         }

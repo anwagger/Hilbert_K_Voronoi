@@ -588,33 +588,6 @@ export class ParameterizedConic {
                         
                     break;
                     case Conic_Orientation.NONE:
-                        /**
-                         * // old way, breaks on near-squares
-                        x_func = (t) => {
-                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
-                                return (this.x_mult*Math.sin(t) + x_off)
-                            }else{
-                                return (-this.x_mult*Math.sin(t) + x_off)
-                            }
-                        }
-                        y_func = (t) => {
-                            if (isLeZero(Math.abs(t-Math.PI) - Math.PI/2)){
-                                return this.y_mult*(this.x_mult*Math.sin(t))+y_off
-                            }else{
-                                return this.y_mult*(this.x_mult*Math.sin(t))+y_off
-                            }   
-                        }
-                        xi_func = (x) => {
-                            let asin = -Math.asin((x - x_off)/this.x_mult)
-                            return [asin < 0 ? asin+2*Math.PI: asin,asin+Math.PI]
-                        }
-                        yi_func = (y) => {
-                            let asin = Math.asin((y - y_off)/(this.x_mult*this.y_mult))
-                            return [
-                                asin < 0 ? asin+2*Math.PI: asin,-asin+Math.PI
-                            ]
-                        }
-                        */
                        x_func = (t) => {
                             if (isLeZero(Math.abs(t) - Math.PI)){
                                 return (this.x_mult*Math.tan(-t) + x_off)
@@ -711,10 +684,22 @@ export class ParameterizedConic {
                 y_func = (t) => this.y_mult*Math.sin(t) + y_off
 
                 xi_func = (x) => {
+                    if(((x - x_off)/this.x_mult) > 1 && isZero((x - x_off)/this.x_mult - 1)){
+                        return [0]
+                    }
+                    if(((x - x_off)/this.x_mult) < -1 && isZero((x - x_off)/this.x_mult + 1)){
+                        return [Math.PI]
+                    }
                     let t = Math.acos((x - x_off)/this.x_mult)
                     return [t,-t]
                 }
                 yi_func = (y) => {
+                    if(((y - y_off)/this.y_mult) > 1 && isZero((y - y_off)/this.y_mult - 1)){
+                        return [Math.PI/2]
+                    }
+                    if(((y - y_off)/this.y_mult) < -1 && isZero((y - y_off)/this.y_mult + 1)){
+                        return [-Math.PI/2]
+                    }
                     let t = Math.asin((y - y_off)/this.y_mult)
                     return [t, Math.PI - t]
                 }
@@ -747,7 +732,12 @@ export class ParameterizedConic {
 
                         xi_func = (x) => {
                             // was Math.acos(this.x_mult/(x - x_off)
-                            
+                            if((this.x_mult/(x - x_off)) > 1 && isZero(this.x_mult/(x - x_off) - 1)){
+                                return [0]
+                            }
+                            if((this.x_mult/(x - x_off)) < -1 && isZero(this.x_mult/(x - x_off) + 1)){
+                                return [Math.PI]
+                            }
                             let t = Math.acos(this.x_mult/(x - x_off))
                             return [t,-t]
                         }
@@ -794,7 +784,12 @@ export class ParameterizedConic {
                             return [t, t + Math.PI] 
                         }
                         yi_func = (y) => {
-                            //Math.acos(this.y_mult/(y - y_off))
+                            if((this.y_mult/(y - y_off)) > 1 && isZero(this.y_mult/(y - y_off) - 1)){
+                                return [0]
+                            }
+                            if((this.y_mult/(y - y_off)) < -1 && isZero(this.y_mult/(y - y_off) + 1)){
+                                return [Math.PI]
+                            }
                             let t = Math.acos(this.y_mult/(y - y_off))//1/Math.acos((y - y_off)/this.y_mult)
 
                             return [t,-t]
@@ -896,7 +891,7 @@ export class ParameterizedConic {
 
                     let is_valid = false
                     if(x_ts[i] != Infinity && y_ts[j] != Infinity){
-                        is_valid = isZero(euclideanDistance(p_x,p_y)**2)
+                        is_valid = isZero(euclideanDistance(p_x,p_y)**2) || isZero(x_ts[i]-y_ts[j])
                     }else if(x_ts[i] === Infinity){
 
                         is_valid = isZero(euclideanDistance(point,p_y)**2)
