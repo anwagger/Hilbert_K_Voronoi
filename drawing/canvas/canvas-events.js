@@ -231,7 +231,7 @@ export function initEvents(canvas) {
       }
    });
 
-   document.getElementById('kmeansAmt').addEventListener('input', (event) => {
+   document.getElementById('kmeansAmt').addEventListener('change', (event) => {
       document.getElementById("kmeansAmtRange").max = canvas.sites.length;
       let k = event.target.value;
 
@@ -293,7 +293,7 @@ export function initEvents(canvas) {
       }
    });
 
-   document.getElementById('clusterAmt').addEventListener('input', (event) => {
+   document.getElementById('clusterAmt').addEventListener('change', (event) => {
       document.getElementById("clusterAmtRange").max = canvas.sites.length;
       let k = event.target.value;
 
@@ -346,7 +346,7 @@ export function initEvents(canvas) {
       }
    });
 
-   document.getElementById('thresholdAmt').addEventListener('input', (event) => {
+   document.getElementById('thresholdAmt').addEventListener('change', (event) => {
       let thresh = event.target.value;
       let points = [];
       canvas.sites.forEach((s) => {
@@ -704,17 +704,14 @@ export function initEvents(canvas) {
          const file = files[0];
          const reader = new FileReader();
          let img = new Image();
-         reader.addEventListener(
-            "load",
-            () => {
-               // convert image file to base64 string
-               img.src = reader.result;
-               canvas.hilbert_image = new HilbertImage(canvas.boundary.polygon,img,300,true)
+         reader.addEventListener("load", () => {
+            img.onload = () => {
+               canvas.hilbert_image = new HilbertImage(canvas.boundary.polygon, img, 300, true)
+               canvas.hilbert_image.loadImageData()
                canvas.recalculateHilbertImage()
-            },
-            false,
-         );
-
+            }
+            img.src = reader.result;
+         }, false);
          if (file) {
             reader.readAsDataURL(file);
          }else{
@@ -736,6 +733,30 @@ export function initEvents(canvas) {
          canvas.drawAll()
       }
       
+   })
+
+   document.getElementById('loopImage').addEventListener('input', (event) => {
+      if (canvas.hilbert_image) {
+         canvas.hilbert_image.looping = event.target.value;
+         canvas.recalculateHilbertImage();
+         canvas.drawAll();
+      }
+   })
+
+   document.getElementById('imageScaleRange').addEventListener('input', (event) => {
+      if (canvas.hilbert_image) {
+         canvas.hilbert_image.scale = event.target.value;
+         canvas.recalculateHilbertImage();
+         canvas.drawAll();
+      }
+   })
+
+   document.getElementById('imageScale').addEventListener('change', (event) => {
+      if (canvas.hilbert_image) {
+         canvas.hilbert_image.scale = event.target.value;
+         canvas.recalculateHilbertImage();
+         canvas.drawAll();
+      }
    })
    
 

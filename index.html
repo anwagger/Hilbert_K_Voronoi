@@ -452,6 +452,15 @@
           <input style="width: 20px; height: 20px;" type="checkbox" id="drawHilbertImage" class="checkbox-input">
           <span class="checkbox-background"> Draw Hilbert Image</span>
         </div>
+        <div style="position: relative; margin: 10px;">
+          <input style="width: 20px; height: 20px;" type="checkbox" id="loopImage" class="checkbox-input" value="checked">
+          <span class="checkbox-background">Loop Image</span>
+        </div>
+        <div style = "margin-bottom: 15px;">
+          <input type="range" id="imageScaleRange" name="imageScaleRange" min="100" max="10000" value="1000" step="10" oninput="imageScale.value=imageScaleRange.value"/>
+          Image Scale
+          <input type="text" id="imageScale" name="imageScale" value="1000" oninput="zoomRange.value=zoomAmt.value">
+        </div>
 
       </div>
       <div id="spaceContainer">

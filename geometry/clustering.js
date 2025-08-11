@@ -242,11 +242,11 @@ export function kmeans(k, points, boundary, canvas) {
          final_clusters.push(new Cluster(clusters[i][1], canvas.getNewColor()));
     }
     
+    console.log(final_clusters.length)
     return final_clusters;
 }
 
 export function kpp(k, points, boundary) {
-    console.log(k)
     let centroids = [];
     let first_idx = Math.floor(Math.random() * points.length);
 

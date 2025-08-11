@@ -763,19 +763,12 @@ export class HilbertImage {
     imgCanvas.width = this.image.width;
     imgCanvas.height = this.image.height;
     const imgCtx = imgCanvas.getContext('2d',{willReadFrequently:true,desynchronized:true,preserveDrawingBuffer:true});
-    console.log("IMAGE",this.image)
 
     let img_sum = 0
     imgCtx.drawImage(this.image,0,0,this.image.width,this.image.height)
     this.image_data = imgCtx.getImageData(0,0,this.image.width, this.image.height);
     img_sum = this.image_data.data.reduce((accumulator, currentValue) => accumulator + currentValue,
     0)
-    console.log("SUM",img_sum)
-    console.log("DATA",this.image_data.data)
-    
-
-    
-
   }
 
   renderHilbertImage(){
@@ -795,6 +788,7 @@ export class HilbertImage {
     let low_y = Math.floor(Math.max(0,polygon_bound.bottom))
     let high_x = Math.ceil(Math.min(width,polygon_bound.right))
     let high_y = Math.ceil(Math.min(height,polygon_bound.top))
+    // center around shape vs center around pointer somewhere here?
     for (let x = low_x; x < high_x; x++) {
       for (let y = low_y; y < high_y; y++) {
         let point = new Point(x, y);
