@@ -54,8 +54,12 @@ export class Polygon {
         t = t % this.points.length
         let start_i = Math.floor(t)
         let end_i = Math.ceil(t) % this.points.length
+        
         let start_p = this.points[start_i]
         let end_p = this.points[end_i]
+        if(!start_p || !end_p){
+            console.log("HUH POLYGON",t,start_i,"->",start_p,end_i,"->",end_p,this)
+        }
         let dx = end_p.x - start_p.x
         let dy = end_p.y - start_p.y
 

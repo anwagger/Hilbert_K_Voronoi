@@ -2,7 +2,7 @@ import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSp
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
-import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls} from "../../geometry/balls.js";
+import { Ball_Types, Ball, calculateZRegion, calculateInfiniteBalls, makeEnclosingBall} from "../../geometry/balls.js";
 
 import {pointInPolygon,isBetween, euclideanDistance, cleanArray, hexToRgb, colorNameToHex, avgColor, pointOnPolygon, colors, colorNames, computeBoundingBox, calculateThompsonDistance, hilbertMidpoint, hilbertCentroid,pointNearPolygonBorder, centroid, hilbertCentroidList, convexHull, hilbertCentroidHarmonic, testCentroidRegion, calculateHilbertDistance, isZero, isLeZero, hilbertFrechetMean, hilbertGradientDescent} from "../../geometry/utils.js"
 import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors } from "../../geometry/bisectors.js";
@@ -81,6 +81,9 @@ export class Canvas {
 
       this.distances = []
 
+      this.draw_enclosing_ball = false
+      this.enclosing_ball = null
+
    }
 
     load(data) {
@@ -146,10 +149,7 @@ export class Canvas {
         for (let i = 0; i < deleteSiteIndex.length; i++){
             this.deleteSite(deleteSiteIndex[i])
         }
-        this.reindexBisectors()
-        this.reindexZRegions()
-        this.reindexInfiniteBalls();
-        this.reindexDistances();
+        this.reindexAll()
 
         this.sites = cleanArray(this.sites)
         this.recalculateAll()
@@ -226,6 +226,12 @@ export class Canvas {
       }
    }
 
+   drawEnclosingBall(){
+      if(this.draw_enclosing_ball){
+         this.enclosing_ball.draw(this.ctx)
+      }
+   }
+
    createNgon(n) {
       const canvasCenterX = Math.min(this.canvas.width,1000) / (2 * this.dpr);
       const canvasCenterY = Math.min(this.canvas.height,1000) / (2 * this.dpr);
@@ -281,6 +287,7 @@ export class Canvas {
 
             let site = new Site(new DrawablePoint(point),[],this.site_radius);
             site.drawable_point.color = this.getNewColor();
+            site.drawable_point.label = this.sites.length+""
             site.color = site.drawable_point.color;
             this.sites.push(site);
 
@@ -332,11 +339,8 @@ export class Canvas {
          site.setColor(color)
          // calculate the new point
          this.recalculateSite(this.sites.length-1)
-         this.recalculateFastVoronoi()
-         this.recalculateHilbertDelaunay()
+         this.recalculateSingleSiteDependent()
          this.recalculateBruteForceVoronoi()
-         this.recalculateHilbertCentroid()
-         this.recalculateHilbertRose()
 
          this.drawAll()
       }      
@@ -464,6 +468,21 @@ export class Canvas {
          site.drawable_point.deleteInfoBox();
       }
       this.drawAll();
+   }
+
+   recalculateSingleSiteDependent(){
+      this.recalculateFastVoronoi()
+      this.recalculateHilbertDelaunay()
+      this.recalculateHilbertCentroid()
+      this.recalculateHilbertRose()
+      this.recalculateEnclosingBall()
+   }
+
+   reindexAll(){
+      this.reindexBisectors()
+      this.reindexZRegions()
+      this.reindexInfiniteBalls();
+      this.reindexDistances();
    }
 
 
@@ -951,6 +970,18 @@ export class Canvas {
 
    }
 
+   recalculateEnclosingBall(){
+      if(this.draw_enclosing_ball){
+         let points = []
+      for(let i = 0; i < this.sites.length; i++){
+         points.push(this.sites[i].drawable_point.point)
+      }
+         this.enclosing_ball = new DrawableBall(makeEnclosingBall(this.boundary.polygon,points),"black")
+      }
+      
+
+   }
+
    
    addDistance(p1,p2) {
       let c1 = this.sites[p1].color 
@@ -1166,10 +1197,7 @@ export class Canvas {
             site.drawable_point.point.x = mouse.x
             site.drawable_point.point.y = mouse.y
             this.recalculateSite(this.draggingPoint);
-            this.recalculateFastVoronoi()
-            this.recalculateHilbertDelaunay()
-            this.recalculateHilbertCentroid()
-            this.recalculateHilbertRose()
+            this.recalculateSingleSiteDependent()
             // DONT RECALCULATE BRUTE FORCE HERE!
          }
          this.drawAll()
@@ -1218,10 +1246,7 @@ export class Canvas {
             this.deleteSite(idx)
          }
       });
-      this.reindexBisectors()
-      this.reindexZRegions()
-      this.reindexInfiniteBalls();
-      this.reindexDistances();
+      this.reindexAll()
 
       this.sites = cleanArray(this.sites) // removes any null elts from array
       this.recalculateAll()
@@ -1340,12 +1365,9 @@ export class Canvas {
 
       this.calculateBisectorIntersections()
 
-      this.recalculateFastVoronoi()
-      this.recalculateHilbertDelaunay()
+      this.recalculateSingleSiteDependent()
       this.recalculateBruteForceVoronoi()
       this.recalculateHilbertImage()
-      this.recalculateHilbertCentroid()
-      this.recalculateHilbertRose()
 
    }
 
@@ -1425,6 +1447,8 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
       this.drawSegments()
 
       this.drawCentroids()
+
+      this.drawEnclosingBall()
 
       this.drawBisectors()
 

@@ -239,6 +239,13 @@
                         </div>
                     </div>
                     <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                        <label for="minBall" class="checkbox-label">Minimum Enclosing Ball</label>
+                        <div style="position: relative;">
+                        <input style="width: 15px; height: 15px;" type="checkbox" id="minBall" class="checkbox-input">
+                        <span class="checkbox-background"></span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
                         <label for="siteDrawCentroid" class="checkbox-label">Draw Hilbert Centroid</label>
                         <div style="position: relative;">
                         <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawCentroid" class="checkbox-input">
@@ -252,7 +259,7 @@
                         <span class="checkbox-background"></span>
                         </div>
                     </div>
-                    <div id="roseDepth" style="display:block">
+                    <div id="roseDepth" style="display:block; margin-bottom: 15px;">
                       <input type="range" id="roseDepthRange" name="roseDepthRange" min="1" max="200" step="1" value="1" oninput="roseDepthAmt.value=roseDepthRange.value"> Rose Depth
                       <input style= "margin-top: 10px;" type="text" id="roseDepthAmt" name="roseDepthAmt" value="1" oninput="roseDepthRange.value=roseDepthAmt.value">
                     </div>

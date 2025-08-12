@@ -16,7 +16,7 @@ export const colors = {"aqua":"#00ffff","aquamarine":"#7fffd4",
     "lime":"#00ff00","limegreen":"#32cd32","magenta":"#ff00ff","maroon":"#800000","mediumaquamarine":"#66cdaa","mediumblue":"#0000cd","mediumorchid":"#ba55d3","mediumpurple":"#9370d8","mediumseagreen":"#3cb371","mediumslateblue":"#7b68ee",
     "mediumspringgreen":"#00fa9a","mediumturquoise":"#48d1cc","mediumvioletred":"#c71585","midnightblue":"#191970","moccasin":"#ffe4b5",
     "navy":"#000080","olive":"#808000","olivedrab":"#6b8e23","orange":"#ffa500","orangered":"#ff4500","orchid":"#da70d6",
-    "palegoldenrod":"#eee8aa","palegreen":"#98fb98","paleturquoise":"#afeeee","palevioletred":"#d87093","peachpuff":"#ffdab9","peru":"#cd853f","pink":"#ffc0cb","plum":"#dda0dd","powderblue":"#b0e0e6","purple":"#800080",
+    "palegreen":"#98fb98","paleturquoise":"#afeeee","palevioletred":"#d87093","peachpuff":"#ffdab9","peru":"#cd853f","pink":"#ffc0cb","plum":"#dda0dd","powderblue":"#b0e0e6","purple":"#800080",
     "rebeccapurple":"#663399","red":"#ff0000","rosybrown":"#bc8f8f","royalblue":"#4169e1",
     "saddlebrown":"#8b4513","salmon":"#fa8072","sandybrown":"#f4a460","seagreen":"#2e8b57","sienna":"#a0522d","silver":"#c0c0c0","skyblue":"#87ceeb","slateblue":"#6a5acd","slategray":"#708090","springgreen":"#00ff7f","steelblue":"#4682b4",
     "tan":"#d2b48c","teal":"#008080","thistle":"#d8bfd8","tomato":"#ff6347","turquoise":"#40e0d0",
@@ -1389,4 +1389,21 @@ export function hilbertGradientDescent(boundary,points,max=5000){
 export function hilbertFrechetMean(boundary,points,max=5000){
   let centroids = hilbertGradientDescent(boundary,points,max)
   return centroids[centroids.length-1]
+}
+
+export function shuffledArray(array) {
+    // Perform Durstenfeld shuffle.
+    let shuffled = array.slice();
+    for (let i = array.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+export function crossProduct(px, py, qx, qy, rx, ry){
+  const pqx = qx - px;
+  const pqy = qy - py;
+  const prx = rx - px;
+  const pry = ry - py;
+  return pqx * pry - pqy * prx;
 }

@@ -159,6 +159,13 @@ export function initEvents(canvas) {
       canvas.drawAll()
    })
 
+      document.getElementById('minBall').addEventListener('change', (event) => {
+            canvas.draw_enclosing_ball = event.target.checked
+
+            canvas.recalculateEnclosingBall();
+            canvas.drawAll()
+   });
+
    document.querySelectorAll('input[name="polygonType"]').forEach(radio => {
       radio.addEventListener('change', (event) => {
          if (event.target.value === 'customNgon') {
@@ -387,10 +394,7 @@ export function initEvents(canvas) {
                   site.drawable_point.point.x = parseInt(p.x);
                   site.drawable_point.point.y = parseInt(p.y);
                   canvas.recalculateSite(idx);
-                  canvas.recalculateFastVoronoi()
-                  canvas.recalculateHilbertDelaunay()
-                  canvas.recalculateHilbertCentroid()
-                  canvas.recalculateHilbertRose()
+                  canvas.recalculateSingleSiteDependent()
                }
             });
             canvas.drawAll();

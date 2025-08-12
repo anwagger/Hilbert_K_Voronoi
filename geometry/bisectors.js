@@ -42,21 +42,24 @@ export class Bisector {
                     }
                     
                     if(range < 0){
-                        if (t < c_s.start + range){
+                        if(isZero((t-c_s.start)**2)){
+                        }else if (t < c_s.start + range){
                             t += 2*Math.PI
-                        }else if (t > c_s.start){
+                        }else if (t > c_s.start){ //added
                             t -= 2*Math.PI
                         }
                     }else{
-                        if (t > c_s.start + range){
+                        if(isZero((t-c_s.start)**2)){
+                            
+                        }else if (t > c_s.start + range){
                             t -= 2*Math.PI
-                        }else if (t < c_s.start){
+                        }else if (t < c_s.start){ //added
                             t += 2*Math.PI
                         }
                     }
                     // turn the t into a percentage of the way through the conic segment
                     let percentage = (t - c_s.start)/range//1 - (t - c_s.start)/range
-                    if(isLeZero(percentage-1) && isLeZero(-percentage)){
+                    if(isZero(percentage**2) || (isLeZero((percentage-1)) && isLeZero(-percentage))){
                         return c + percentage
                     }else{
                         console.log("INVALID PERCENTAGE WHEN GETTING T OF POINT",percentage,t,c_s.start,range)
@@ -301,8 +304,43 @@ export function calculateCircumcenter3(boundary,b1,b2,b3){
 export function findPointsOnEitherSideOfBisector(boundary,bisector){
     let start_p = bisector.getPointFromT(0)
     let end_p = bisector.getPointFromT(bisector.conic_segments.length)
+    
     let start_t = boundary.getTOfPoint(start_p)
+    if(start_t ===  undefined){
+        let ints = bisector.conic_segments[0].parameterized_conic.conic.intersectPolygon(boundary)
+        let closest = null
+        ints.forEach((i) => {
+            i.forEach((p) => {
+                if(closest){
+                    if(euclideanDistance(p,start_p) < euclideanDistance(closest,start_p)){
+                        closest = p
+                    }
+                }else{
+                    closest = p
+                }
+            })
+            
+        })
+        start_t = boundary.getTOfPoint(closest)
+        console.log("NEXT START",start_t,"OLD",start_p,"NEW",closest)
+    }
+
     let end_t = boundary.getTOfPoint(end_p)
+    if(end_t ===  undefined){
+        let ints = bisector.conic_segments[bisector.conic_segments.length].parameterized_conic.conic.intersectPolygon(boundary)
+        let closest = null
+        ints.forEach((p) => {
+            if(closest){
+                if(euclideanDistance(p,end_p) < euclideanDistance(closest,end_p)){
+                    closest = p
+                }
+            }else{
+                closest = p
+            }
+        })
+        end_t = boundary.getTOfPoint(closest)
+        console.log("NEXT END",end_t,"OLD",end_p,"NEW",closest)
+    }
 
     let range1 = (end_t - start_t)
     if (range1 < 0){
@@ -322,6 +360,9 @@ export function findPointsOnEitherSideOfBisector(boundary,bisector){
         let pos_t = (start_t + range1*percentage + boundary.points.length) % (boundary.points.length)
         let neg_t = (start_t - range2*percentage + boundary.points.length) % (boundary.points.length)
 
+        if(isNaN(pos_t) || isNaN(neg_t)){
+            console.log("POLY ISSUE!",bisector,"endpoints",start_p,end_p,"bound t",start_t,end_t)
+        }
         pos_mid = boundary.getPointFromT(pos_t)
         neg_mid = boundary.getPointFromT(neg_t)
         let mid_seg = new Segment(pos_mid,neg_mid)

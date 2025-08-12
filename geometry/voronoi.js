@@ -181,6 +181,9 @@ export function calculateVoronoiCellBoundary(boundary, sites, bisector_segments,
             let last = ((order === 1? Math.floor(end_t): Math.ceil(end_t)) + boundary.points.length)% boundary.points.length
             let boundary_points = []
             for(let i = first; i != last; i = (i + order + boundary.points.length) %(boundary.points.length)){
+                if(boundary_points.length >= boundary.points.length){
+                    console.log("TOO MNY BOUND PTS",boundary_points)
+                }
                 if(i != start_t){
                     boundary_points.push(i)
                 }

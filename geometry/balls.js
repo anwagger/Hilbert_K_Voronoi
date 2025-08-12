@@ -1,7 +1,9 @@
 import { Canvas } from "../drawing/canvas/canvas.js";
-import { calculateHilbertPoint, HilbertPoint } from "./hilbert.js";
+import { calculateCircumcenter } from "./bisectors.js";
+import { bisectorConicFromSector, calculateConicSegmentBounds, getConicParameterBoundsInSector, parameterizeConic } from "./conics.js";
+import { calculateBisector, calculateHilbertPoint, calculateMidsector, HilbertPoint } from "./hilbert.js";
 import { Point, Polygon } from "./primitives.js";
-import { calculateHilbertDistance, convexHull, createPolygonIntersection, euclideanDistance, isZero, pointOnPolygon } from "./utils.js";
+import { calculateHilbertDistance, convexHull, createPolygonIntersection, crossProduct, euclideanDistance, isZero, pointInPolygon, pointOnPolygon, shuffledArray } from "./utils.js";
 
 export const Ball_Types = {
     HILBERT: 0,
@@ -127,8 +129,127 @@ export function calculateInfiniteBalls(boundary,h_p1,h_p2,bisector) {
     dt *= 10
   }while(dt < 0.1 &&  (!pointOnPolygon(h_p1.point,ball1.polygon) || !pointOnPolygon(h_p2.point,ball2.polygon)))
   
-    console.log("DT",dt,"1",dist11,dist12,"2",dist21,dist22)
+    //console.log("DT",dt,"1",dist11,dist12,"2",dist21,dist22)
 
   
   return {ball1: ball1, ball2: ball2}
 }
+
+
+export function makeEnclosingBall(boundary,points){
+  let shuffled = shuffledArray(points)
+
+  let ball = null;
+  shuffled.forEach((p, i) => {
+    //console.log("Checking point p: (", p.x, ",", p.y, ")");
+    if (ball === null || !pointInPolygon(p,ball.polygon)) {
+      // console.log("Calling makeBallOnepoint for point (", p.x, ",", p.y, ")");
+      // console.log("points:", shuffled.slice(0, i));
+      ball = makeBallOnePoint(boundary,shuffled.slice(0, i), p);
+      //console.log("Ball enclosing p: ", ball);
+    }
+  });
+  return ball;
+}
+
+export function makeBallOnePoint(boundary,points, p) {
+    // Create Hilbert Ball of radius 0 centered at point p.
+    let ball = new Ball(calculateHilbertPoint(boundary,p),Ball_Types.HILBERT,boundary,0);
+    // console.log("makeBallOnePoint parameter p: ", p);
+    // console.log("makeBallOnePoint initial ball:", ball.x, ball.y, ball.ballRadius);
+    points.forEach((q, i) => {
+      // console.log("Checking point q: (", q.x, ",", q.y, ")");
+      if (!pointInPolygon(q,ball.polygon)) {
+        /* If site q is not contained within our current MEB, call necessary functions
+        to recompute MEB to contain both p and q on its boundary. */
+        // console.log("q is not contained in current meb.")
+        if (ball.radius == 0) {
+          // console.log("Calling makeBottomLeftMost for point q (", q.x, ",", q.y, ")");
+          ball = makeBottomLeftMost(boundary,p, q);
+        } else {
+          // console.log("Calling makeBallTwoPoints for point q (", q.x, ",", q.y, ")");
+          ball = makeBallTwoPoints(boundary,points.slice(0, i), p, q);
+        }
+      }
+    });
+    return ball;
+  }
+
+export function makeBottomLeftMost(boundary,p, q) {
+    /* Return Hilbert Ball whose radius is equivalent to H(p,q)/2 and whose center
+    is at the left-bottommost point of the two sites' geodesic region. */
+    let middleSectorPQ = calculateMidsector(boundary,calculateHilbertPoint(boundary,p),calculateHilbertPoint(boundary,q))
+    let conic = bisectorConicFromSector(boundary,middleSectorPQ)
+    let p_c = parameterizeConic(conic)
+    let p_c_b = getConicParameterBoundsInSector(p_c,middleSectorPQ)
+    let center;
+    let firstEndpoint = p_c_b.start_point;
+    // console.log("firstEndpoint:", firstEndpoint.x, firstEndpoint.y);
+    let secondEndpoint = p_c_b.end_point;
+    // console.log("secondEndpoint:", secondEndpoint.x, secondEndpoint.y);
+    if (firstEndpoint.y < secondEndpoint.y) {
+      center = firstEndpoint;
+    } else if (firstEndpoint.y == secondEndpoint.y) {
+      if (firstEndpoint.x < secondEndpoint.x) {
+        center = firstEndpoint;
+      } else {
+        center = secondEndpoint;
+      }
+    } else {
+      center = secondEndpoint;
+    }
+    // console.log("center has been updated for bottom-leftmost: ", center.x, center.y);
+    let radius = calculateHilbertDistance(boundary, center, p);
+    // console.log("radius has been udpated for bottom-leftmost: ", radius);
+    let ball = new Ball(calculateHilbertPoint(boundary,center),Ball_Types.HILBERT,boundary,radius);
+    return ball;
+  }
+  export function makeBallTwoPoints(boundary, points, p, q) {
+    // console.log("calling makeBallTwoPoints...");
+    const centerBall = makeBottomLeftMost(boundary, p, q);
+    // console.log("centerBall:", centerBall);
+    let left = null;
+    let right = null;
+    for (const r of points) {
+      // console.log("Checking point r: ", r);
+      if (!pointInPolygon(r,centerBall.polygon)) {
+        // console.log("r is not contained in centerBall.");
+        let cross = crossProduct(p.x, p.y, q.x, q.y, r.x, r.y);
+        //console.log("cross:", cross);
+        let circum = makeCircumcircle(boundary,p, q, r);
+        if (circum === null) {
+          continue;
+        } else if (cross > 0 && (left === null || crossProduct(p.x, p.y, q.x, q.y, circum.x, circum.y) > crossProduct(p.x, p.y, q.x, q.y, left.x, left.y))) {
+          left = circum;
+          //console.log("left has been updated: ", left);
+        } else if (cross < 0 && (right === null || crossProduct(p.x, p.y, q.x, q.y, circum.x, circum.y) < crossProduct(p.x, p.y, q.x, q.y, right.x, right.y))) {
+          right = circum;
+          //console.log("right has been updated: ", right);
+        }
+      }
+    }
+    if (left === null && right === null)
+      return centerBall;
+    else if (left === null && right !== null)
+      return right;
+    else if (left !== null && right === null)
+      return left;
+    else if (left !== null && right !== null)
+      return left.r <= right.r ? left : right;
+  }
+export function makeCircumcircle(boundary, p, q, r) {
+    /* Return Hilbert circumcircle, in which sites p, q, and r lie on its boundary. */
+    let h_p = calculateHilbertPoint(boundary,p)
+    let h_q = calculateHilbertPoint(boundary,q)
+    let h_r = calculateHilbertPoint(boundary,r)
+    let b_pq = calculateBisector(boundary,h_p,h_q)
+    let b_pr = calculateBisector(boundary,h_p,h_r)
+    let b_qr = calculateBisector(boundary,h_q,h_r)
+    let centers = calculateCircumcenter(boundary,b_pq, b_pr, b_qr);
+    let center = centers.circumcenter
+      if (center === null || center === undefined) {
+        return null;
+      }
+    let radius = calculateHilbertDistance(boundary,center, p);
+    return new Ball(calculateHilbertPoint(boundary,center),Ball_Types.HILBERT,boundary,radius);
+  }
