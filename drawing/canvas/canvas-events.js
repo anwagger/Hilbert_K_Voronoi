@@ -467,7 +467,7 @@ export function initEvents(canvas) {
    document.addEventListener('keydown', (event) => {
       const activeElement = document.activeElement;
       if (activeElement && activeElement.tagName !== 'INPUT') {
-         if (event.key === 'Delete') {
+         if (event.key === 'Delete' || event.key == "Backspace") {
             canvas.deleteSelectedSites()
          } else if (canvas.mode === "voronoi") {
             let int = parseInt(event.key);
