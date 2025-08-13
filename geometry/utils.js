@@ -26,9 +26,13 @@ export const colors = {"aqua":"#00ffff","aquamarine":"#7fffd4",
 
 export const colorNames = Array.from(Object.keys(colors))
 
+// at some point add full functionality for reloading centroid and rose
 export const fieldsToIgnore = ["canvas","ctx","dpr","absolute_border","mode","activeManager", "voronois", 
                                "voronoi_image", "hilbert_image", "draw_hilbert_image", "draggingPoint",
-                               "selectionAnchor", "selectionPointer", "selecting", "delaunay_degree", "voronoi_diagram", "space", "clusters"];
+                               "selectionAnchor", "selectionPointer", "selecting", "delaunay_degree", 
+                               "voronoi_diagram", "space", "clusters", "cluster_hulls", "current_voronoi_cell_index",
+                              "draw_enclosing_ball", "enclosing_ball", "hilbert_centroid", "draw_hilbert_centroid", "distances",
+                            "hilbert_rose", "hilbert_rose_depth"];
 
 export function euclideanDistance(point1,point2){
     let dx = point1.x - point2.x

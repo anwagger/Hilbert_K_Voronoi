@@ -230,6 +230,7 @@ export class VoronoiDiagram {
         this.metric = "hilbert"; // might make this an enum later idk
         this.mode = "k"; // can be "kth" or "k"
         this.p = 2; // for minkowski, defaults to euclidean
+        this.edges = new Map();
     }
 
     // just works for hilbert rn, needs cases for when metric isnt hilbert
@@ -655,5 +656,23 @@ export function n3lognVoronoi(boundary,points){
 }
 
 export function firstDegreeHilbertVoronoi(boundary,points) {
+    let conflicts = new Map();
+    let curr_vor = new VoronoiDiagram(boundary);
+
+    if (points.length <= 1) {
+        return curr_vor;
+    }
+
+    // create bisector between points[0] and points[1]
+    // create voronoi cell using bisector between the points
+    // curr_vor.edges[points[0]] = points[1], and curr_vor.edges[points[1]] = points[0]
+    // add rest of points to conflicts with 0 edges?
+    // one thing im confused abt is the paper mentions edges between an edge e in curr_vor and remaining sites
+    // are only made when the addition of a remaining site causes e to change (removed or trimmed)
+    // how do we tell that the site being added will cause e to change though?
+
+    for (let i = 2; i < points.length; i++) {
+
+    }
     
 }

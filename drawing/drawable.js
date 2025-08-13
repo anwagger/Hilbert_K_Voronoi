@@ -124,6 +124,7 @@ export class DrawablePolygon {
       ctx.fill();
     }
   }
+
 }
 
 export class DrawableSegment {
@@ -789,6 +790,7 @@ export class HilbertImage {
     let high_x = Math.ceil(Math.min(width,polygon_bound.right))
     let high_y = Math.ceil(Math.min(height,polygon_bound.top))
     // center around shape vs center around pointer somewhere here?
+    // id change the point value below, would have to have some o
     for (let x = low_x; x < high_x; x++) {
       for (let y = low_y; y < high_y; y++) {
         let point = new Point(x, y);

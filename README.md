@@ -94,7 +94,9 @@ Our algorithm calculates every degree voronoi diagram at once
 
 ## Partition Tree
 
-Allows the software to quickly determine which cell a point is in
+Allows the software to quickly determine which cell a point is in.
+
+The partition tree data structure stores information regarding which cell a point could potentially be in, with the maximum amount of potential cells being 3 (might be 4?). We can't use a data structure like a trapezoid map due to the convex nature of voronoi cells, which can't be decomposed into trapezoids and triangles like regular euclidean cells can. The partition tree searches for what point a cell may be in by asking a series of x and y questions about the point we are trying to locate, and each question shrinks the bounding box of the point in half until the bounding box only overlaps with 3 other cell's boxes. 
 
 
 ## Hilbertroids

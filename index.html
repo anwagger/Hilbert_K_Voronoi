@@ -346,9 +346,13 @@
             <input type="text" id="thresholdAmt" name="thresholdAmt" value="0.01">
           </div>
           <div id="kDiv">
-              <input type="range" id="clusterAmtRange" name="clusterAmtRange" min="1" max="1000" step="1" value="1" oninput="clusterAmt.value=clusterAmtRange.value"> K-Amt
+              <input type="range" id="clusterAmtRange" name="clusterAmtRange" min="1" max="1000" step="1" value="1" oninput="clusterAmt.value=clusterAmtRange.value"> Amt of Clusters
               <input type="text" id="clusterAmt" name="clusterAmt" value="1">
           </div>
+        </div>
+        <div style="position: relative; margin: 10px;">
+          <input style="width: 20px; height: 20px;" type="checkbox" id="showClustersConvexHull" class="checkbox-input">
+          <span class="checkbox-background"> Show Convex Hull of Clusters</span>
         </div>
       </div>
 

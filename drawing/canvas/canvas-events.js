@@ -3,7 +3,7 @@ import { calculateBisector, calculateHilbertPoint, HilbertPoint } from "../../ge
 import {Point, Polygon } from "../../geometry/primitives.js";
 import { calculateHilbertDistance, cleanArray, cleanJason, convexHull, euclideanDistance, fieldsToIgnore, hilbertFrechetMean, hilbertPull, pointInPolygon } from "../../geometry/utils.js";
 import { calculateVoronoiCellBoundary, VoronoiDiagram as Voronoi } from "../../geometry/voronoi.js";
-import { CAMERA, DrawableBruteForceVoronoi, DrawableVoronoiDiagram, HilbertImage } from "../drawable.js";
+import { CAMERA, DrawableBruteForceVoronoi, DrawableVoronoiDiagram, HilbertImage, DrawablePolygon } from "../drawable.js";
 import { kmeans, singleLinkKHilbert, singleLinkThresholdHilbert } from "../../geometry/clustering.js";
 import { pointToVector } from "../../math/linear.js";
 
@@ -14,7 +14,7 @@ export function initEvents(canvas) {
       canvas.mode = event.target.value
       toggleContainers(canvas);
       if (canvas.mode !== 'clusters') {
-         canvas.clusters = null;
+         canvas.cluster_hulls = null;
       }
       canvas.drawAll();
    });
@@ -231,6 +231,9 @@ export function initEvents(canvas) {
          })
 
          canvas.clusters = kmeans(k, points, canvas.boundary.polygon, canvas);
+         if (canvas.cluster_hulls) {
+            canvas.getClusterHulls(); //updates the hulls
+         }
          console.log(canvas.clusters);
          canvas.drawAll();
       } else {
@@ -249,6 +252,9 @@ export function initEvents(canvas) {
          })
 
          canvas.clusters = kmeans(k, points, canvas.boundary.polygon, canvas);
+         if (canvas.cluster_hulls) {
+            canvas.getClusterHulls(); //updates the hulls
+         }
          canvas.drawAll();
       } else {
          alert("k must be > 0 and no more than the total amount of sites!")
@@ -266,6 +272,9 @@ export function initEvents(canvas) {
          })
 
          canvas.clusters = kmeans(k, points, canvas.boundary.polygon, canvas);
+         if (canvas.cluster_hulls) {
+            canvas.getClusterHulls(); //updates the hulls
+         }
          canvas.drawAll();
       } else {
          alert("k must be > 0 and no more than the total amount of sites!")
@@ -294,6 +303,9 @@ export function initEvents(canvas) {
          })
 
          canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k, canvas);
+         if (canvas.cluster_hulls) {
+            canvas.getClusterHulls(); //updates the hulls
+         }
          canvas.drawAll();
       } else {
          canvas.clusters = null;
@@ -311,6 +323,9 @@ export function initEvents(canvas) {
          })
 
          canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k, canvas);
+         if (canvas.cluster_hulls) {
+            canvas.getClusterHulls(); //updates the hulls
+         }
          canvas.drawAll();
       } else {
          alert("k must be > 0 and no more than the total amount of sites!")
@@ -328,6 +343,9 @@ export function initEvents(canvas) {
          })
 
          canvas.clusters = singleLinkKHilbert(canvas.boundary.polygon, points, k, canvas);
+         if (canvas.cluster_hulls) {
+            canvas.getClusterHulls(); //updates the hulls
+         }
          canvas.drawAll();
       } else {
          alert("k must be > 0 and no more than the total amount of sites!")
@@ -349,6 +367,9 @@ export function initEvents(canvas) {
          })
 
          canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh, canvas);
+         if (canvas.cluster_hulls) {
+            canvas.getClusterHulls(); //updates the hulls
+         }
          canvas.drawAll();
       }
    });
@@ -361,6 +382,9 @@ export function initEvents(canvas) {
       })
 
       canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh, canvas);
+      if (canvas.cluster_hulls) {
+         canvas.getClusterHulls(); //updates the hulls
+      }
       canvas.drawAll();
    })
 
@@ -373,9 +397,22 @@ export function initEvents(canvas) {
             points.push(s.drawable_point.point);
          })
          canvas.clusters = singleLinkThresholdHilbert(canvas.boundary.polygon, points, thresh, canvas);
+         if (canvas.cluster_hulls) {
+            canvas.getClusterHulls(); //updates the hulls if theyve should be shown
+         }
          canvas.drawAll();
       } else {
          alert("thresh must be > 0")
+      }
+   })
+
+   document.getElementById('showClustersConvexHull').addEventListener('change', (event) => {
+      if (event.target.checked) {
+         canvas.getClusterHulls();
+         canvas.drawAll();
+      } else {
+         canvas.cluster_hulls = null;
+         canvas.drawAll();
       }
    })
 

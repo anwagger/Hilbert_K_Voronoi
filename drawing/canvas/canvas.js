@@ -9,6 +9,7 @@ import { BisectorSegment, findPointsOnEitherSideOfBisector, intersectBisectors }
 import { createVoronoiFromCanvas, VoronoiDiagram } from "../../geometry/voronoi.js";
 
 import { loadBoundary, loadSites, loadBisectors, loadSegments, loadBruteForceVoronoi, loadFastVoronoi, loadZRegions, loadInfiniteBalls} from "./load.js";
+import { Cluster } from "../../geometry/clustering.js";
 export class Canvas {
    constructor(canvasElement) {
       this.canvas = canvasElement;
@@ -45,6 +46,7 @@ export class Canvas {
       this.sites = [];
       this.site_radius = 3
       this.clusters = null;
+      this.cluster_hulls = [];
       this.segments = [];
       this.bisectors = [];
       this.bisector_intersections = [];
@@ -233,8 +235,8 @@ export class Canvas {
    }
 
    createNgon(n) {
-      const canvasCenterX = Math.min(this.canvas.width,1000) / (2 * this.dpr);
-      const canvasCenterY = Math.min(this.canvas.height,1000) / (2 * this.dpr);
+      const canvasCenterX = this.canvas.width / (2 * this.dpr);
+      const canvasCenterY = this.canvas.height / (2 * this.dpr);
         
       const radius = Math.min(this.canvas.width, this.canvas.height,1000) / (2.5 * this.dpr);
       
@@ -260,7 +262,7 @@ export class Canvas {
    }
 
    generateRandomGon(canvas) {
-      const vertices = Math.round(Math.random() * 5) + 3;
+      const vertices = Math.round(Math.random() * 7) + 3;
       this.createNgon(vertices);
    }
 
@@ -290,11 +292,32 @@ export class Canvas {
             site.drawable_point.label = this.sites.length+""
             site.color = site.drawable_point.color;
             this.sites.push(site);
+            if (this.clusters) {
+               this.clusters.push(new Cluster([this.sites.length - 1], site.color));
+            }
 
             amt -= 1;
          }
 
          this.drawAll();
+      }
+   }
+
+   getClusterHulls() {
+      if (this.clusters) {
+         this.cluster_hulls = [];
+
+         for (let c of this.clusters) {
+            let points = [];
+
+            for (let i of c.indices) {
+               points.push(this.sites[i].drawable_point.point);
+            }
+
+            let hull = new DrawablePolygon(new Polygon(convexHull(points)), c.color);
+
+            this.cluster_hulls.push(hull);
+         }
       }
    }
 
@@ -1485,6 +1508,13 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
          this.clusters.forEach((c) => {
             c.draw(this);
          });
+      }
+
+      if (this.cluster_hulls) {
+         this.cluster_hulls.forEach((h) => {
+            console.log(h.color)
+            h.draw(this.ctx);
+         })
       }
 
       this.drawSelectBox()
