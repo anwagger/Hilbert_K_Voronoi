@@ -328,16 +328,16 @@
         </div>
 
         <input type="radio" id="kmeans" name="clusteringType" value="Use kmeans" checked="true"> Kmeans Clustering <br>
-        <input type="radio" id="minLinkage" name="clusteringType" value="Use Single Linkage"> Single-linkage Clustering
+        <input type="radio" id="minLinkage" name="clusteringType" value="Use Single Linkage" checked="false"> Single-linkage Clustering
 
         <div id="kmeansClustering">
           <div id="kmeansSliderDiv">
-            <input type="range" id="kmeansAmtRange" name="kmeansAmtRange" min="1" max="1000" step="1" value="1" oninput="kmeansAmt.value=kmeansAmtRange.value"> Amount of Means
+            <input type="range" id="kmeansAmtRange" name="kmeansAmtRange" min="1" max="1000" step="1" value="1" oninput="kmeansAmt.value=kmeansAmtRange.value"> Amt of Means
             <input type="text" id="kmeansAmt" name="kmeansAmt" value="1">
           </div>
         </div>
 
-        <div id = "minLinkageClustering">
+        <div id = "minLinkageClustering" style="display: none">
           <input type="radio" id="generateKClusters" name="clusterType" value="Generate K Clusters" checked="true"> Generate K-Clusters <br>
           <input type="radio" id="generateThresholdClusters" name="clusterType" value="Generate Clusters by Threshold"> Generate Clusters by Threshold
 
@@ -353,6 +353,22 @@
         <div style="position: relative; margin: 10px;">
           <input style="width: 20px; height: 20px;" type="checkbox" id="showClustersConvexHull" class="checkbox-input">
           <span class="checkbox-background"> Show Convex Hull of Clusters</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+          <div style="display: flex; flex-direction: column;" >
+            <div class="mb-2">
+              <span class="text-[12px] underline"> 
+                Clustering
+              </span>
+              <span>
+                <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                  <li>Choose between kmeans or single-linkage (minimum distance) cluserting</li>
+                  <li>In kmeans, set the amount of means</li>
+                  <li>In single-linkage, you can choose between a distance threshold or set the amount of clusters</li>
+                </ul>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -472,6 +488,22 @@
           Image Scale
           <input type="text" id="imageScale" name="imageScale" value="1000" oninput="zoomRange.value=zoomAmt.value">
         </div>
+        <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+              <div style="display: flex; flex-direction: column;" >
+                <div class="mb-2">
+                  <span class="text-[12px] underline"> 
+                    Images
+                  </span>
+                  <span>
+                    <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                      <li>Upload your own images to hilbert-ify them!</li>
+                      <li>Click anywhere on the screen to change the pivot of the image</li>
+                    </ul>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
 
       </div>
       <div id="spaceContainer">
@@ -499,8 +531,22 @@
             <div id="energy" style="background-color: cornflowerblue; height:100%; width: 20%"></div>
           </div>
         </div>
+          <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+              <div style="display: flex; flex-direction: column;" >
+                <div class="mb-2">
+                  <span class="text-[12px] underline"> 
+                    Asteroids
+                  </span>
+                  <span>
+                    <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                      <li>Shoot the asteroids to gain points! </li>
+                    </ul>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
       </div>
-    </div>
     
     <div id="canvasContainer">
         <canvas id="canvas" style="

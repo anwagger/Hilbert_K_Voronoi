@@ -1320,3 +1320,8 @@
 .ballButton{
     margin: 10px;
 }
+
+#kmeansClustering,
+#minLinkageClustering {
+  margin-left: 1.5em;
+}
