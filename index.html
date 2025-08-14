@@ -465,7 +465,7 @@
         </div>
         <div style="position: relative; margin: 10px;">
           <input style="width: 20px; height: 20px;" type="checkbox" id="loopImage" class="checkbox-input" value="checked">
-          <span class="checkbox-background">Loop Image</span>
+          <span class="checkbox-background">Disable Looping Image</span>
         </div>
         <div style = "margin-bottom: 15px;">
           <input type="range" id="imageScaleRange" name="imageScaleRange" min="100" max="10000" value="1000" step="10" oninput="imageScale.value=imageScaleRange.value"/>
@@ -475,7 +475,6 @@
 
       </div>
       <div id="spaceContainer">
-
         <div style="position: relative; margin-right: 10px;">
           <input type="button" id="createSpace" name="createSpace" value="Start Hilbertroids"/>
         </div>
@@ -491,7 +490,15 @@
           <input style="width: 20px; height: 20px;" type="checkbox" id="makeInvulnerable" class="checkbox-input">
           <span class="checkbox-background"> Invulnerable Ship</span>
         </div>
-        
+        <div style="position: relative; margin: 10px;">
+          <span class="checkbox-background" id="score"> Score: 0</span>
+        </div>
+        <div style="position: relative; margin: 10px;">
+          <span class="checkbox-background" style="margin-bottom: 10px;"> Energy: </span>
+          <div style = "background-color: lightgray; width:150px; height:15px;  display: inline-block;">
+            <div id="energy" style="background-color: cornflowerblue; height:100%; width: 20%"></div>
+          </div>
+        </div>
       </div>
     </div>
     

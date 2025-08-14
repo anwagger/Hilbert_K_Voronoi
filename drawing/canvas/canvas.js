@@ -1147,6 +1147,7 @@ export class Canvas {
 
    recalculateHilbertImage(){
       if(this.hilbert_image){
+         this.hilbert_image.boundary = this.boundary.polygon
          if(!this.hilbert_image.image_data){
             this.hilbert_image.loadImageData()
          }

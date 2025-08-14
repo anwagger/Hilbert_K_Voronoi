@@ -776,9 +776,9 @@ export function initEvents(canvas) {
       
    })
 
-   document.getElementById('loopImage').addEventListener('input', (event) => {
+   document.getElementById('loopImage').addEventListener('change', (event) => {
       if (canvas.hilbert_image) {
-         canvas.hilbert_image.looping = event.target.value;
+         canvas.hilbert_image.looping = !event.target.checked;
          canvas.recalculateHilbertImage();
          canvas.drawAll();
       }

@@ -278,6 +278,8 @@ export class Ship{
 
         this.dtheta = 0.1 //change when turning 
         this.dpos = 0.001 //change when moving
+
+        this.score = 0
     }
 
     shipHitsAsteroid(asteroids, boundary) {
@@ -309,7 +311,7 @@ export class Ship{
         }
 
         if(this.fire){
-            if ((this.laser_cooldown > 25) && (this.firing_ratelimit < 0)) {
+            if ((this.laser_cooldown >= 10) && (this.firing_ratelimit < 0)) {
                 this.lasers.push(new Laser(this.pos,this.angle));
                 this.laser_cooldown -= 10;
                 this.firing_ratelimit = 50;
@@ -345,6 +347,8 @@ export class Ship{
         })
 
         this.laser_cooldown += .5;
+        this.laser_cooldown = Math.min(100,this.laser_cooldown)
+
         this.firing_ratelimit -= 10;
 
         this.lasers = cleanArray(this.lasers);
@@ -382,6 +386,9 @@ export class Ship{
             l.draw(ctx,space);
         });
 
+        document.getElementById('score').textContent = "Score: " + this.score
+        document.getElementById('energy').style.width = this.laser_cooldown+"%"
+
     }
 
 }
@@ -405,6 +412,8 @@ export class Space {
 
         this.useProjection = useProjection
         
+        this.gameover = false
+
         let ship_pos = this.ship.pos
 
 
@@ -435,6 +444,8 @@ export class Space {
         this._normInfo = null;
 
         this._origJohn = null;
+
+        this.gameover = false
         
         let ship_pos = this.ship.pos
 
@@ -562,7 +573,9 @@ export class Space {
     }
 
     runSpace(canvas){
-        this.updateSpace()
+        if (!this.gameover){
+            this.updateSpace()
+        }
         this.drawSpace(canvas)
 
         if(canvas.mode === "space"){
@@ -577,7 +590,8 @@ export class Space {
        
         if(this.showAsteroids){
             if ((!this.invulnerable) && this.ship.shipHitsAsteroid(this.asteroids, this.original_boundary.polygon)) {
-                this.reset();
+                this.gameover = true
+                //this.reset();
                 return true;
             }
 
@@ -590,6 +604,7 @@ export class Space {
             this.asteroids.forEach((a,i) => {
                 if(a.laserHitsAsteroid(this.ship.lasers, this.original_boundary.polygon)) {
                     this.ship.lasers = cleanArray(this.ship.lasers);
+                    this.ship.score += 100
                     let res = a.split();
                     if (res) {
                         this.asteroids.push(res);
