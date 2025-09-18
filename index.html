@@ -126,19 +126,6 @@
           </div>
         </div>
         <!-- --------------------------------------------------------------- -->
-
-        <div id="progressBarContainer">
-          <div id="progressBar"></div>
-        </div>
-
-        <div id="piGradientContainer" style="display: none; margin-top: 20px;">
-          <div style="font-weight: 500; font-size: 15px;">Pi Value Range</div>
-          <div style="display: flex; align-items: center; margin-top: 20px; height: 300px;">
-            <div id="piGradient" style="width: 30px; height: 100%; margin-right: 40px; border-radius: 3px;"></div>
-            <div id="piValues" style="height: 95%; position: relative;"></div>
-          </div>
-        </div>
-
       </div>
     </div>
 
@@ -277,7 +264,7 @@
                       <li>Double click to add a site to the polygon</li>
                       <li>Click and drag to move a site </li>
                       <li>Shift + click/drag to select multiple sites</li>
-                      <li>Press delete to remove selected sites</li>
+                      <li>Press delete/backspace to remove selected sites</li>
                       <li>Open the menus on the left to apply options to selected sites</li>
                     </ul>
                   </span>
@@ -311,7 +298,7 @@
               <span>
                 <ul class="text-[12px] pl-4" style="list-style-type:square;">
                   <li>Click "Add Balls" to add all selected balls to all selected sites</li>
-                  <li>Click "Delete Balls" to add delete selected balls from all selected sites</li>
+                  <li>Click "Delete Balls" to delete selected balls from all selected sites</li>
                   <li>Slide the "Ball Radius" slider or type in the text box to change all selected balls' radius</li>
                 </ul>
               </span>
@@ -461,6 +448,7 @@
                 <ul class="text-[12px] pl-4" style="list-style-type:square;">
                   <li>Change the voronoi's degree with the "Degree" text box or with the number keys </li>
                   <li>Change the metric used for brute force voronoi with the drop-down menu</li>
+                  <li>A fast voronoi diagram must be made to view Delaunay triangulation</li>
                 </ul>
               </span>
             </div>
@@ -510,10 +498,12 @@
         <div style="position: relative; margin-right: 10px;">
           <input type="button" id="createSpace" name="createSpace" value="Start Hilbertroids"/>
         </div>
+        <!--
         <div style="position: relative; margin: 10px;">
           <input style="width: 20px; height: 20px;" type="checkbox" id="projectPoints" class="checkbox-input">
           <span class="checkbox-background"> Projective Perspective</span>
         </div>
+        -->
         <div style="position: relative; margin: 10px;">
           <input style="width: 20px; height: 20px;" type="checkbox" id="showAsteroids" class="checkbox-input">
           <span class="checkbox-background"> Hide Asteroids</span>

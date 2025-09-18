@@ -996,11 +996,13 @@ export function initEvents(canvas) {
          canvas.space.reset()
       }
    })
+   /*
    document.getElementById('projectPoints').addEventListener('change', (event) => {
       if (canvas.space) {
          canvas.space.useProjection = event.target.checked
       }
    })
+      */
    document.getElementById('showAsteroids').addEventListener('change', (event) => {
       if (canvas.space) {
          canvas.space.showAsteroids = !event.target.checked

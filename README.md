@@ -30,11 +30,15 @@ Create a boundary for the Hilbert geometry in the `set boundary` mode
 
 Place and drag sites by clicking in the boundary in `insert sites`, `balls`, `voronoi`, and  `clustering` modes
 
-Select multiple sites by clicking `Shift` and dragging
+Select multiple sites by clicking `Shift` and dragging the mosue over the desired sites.
 
 # Documentation
 
 ## Sectors
+
+Sectors are defined by the faces of the boundary that a line through one of the two sites and an arbitrary point in the sector hits and in what order. These are denoted as p1_enter, p1_exit, p2_enter, and p2_exit. This is the main way sectors are "named". 
+
+Also included in the sector datastructure is pre-computed data about the boundaries of the sector, which are used in bisector calculations, among other things.
 
 ## Conics
 
@@ -98,5 +102,40 @@ Allows the software to quickly determine which cell a point is in.
 
 The partition tree data structure stores information regarding which cell a point could potentially be in, with the maximum amount of potential cells being 3 (might be 4?). We can't use a data structure like a trapezoid map due to the convex nature of voronoi cells, which can't be decomposed into trapezoids and triangles like regular euclidean cells can. The partition tree searches for what point a cell may be in by asking a series of x and y questions about the point we are trying to locate, and each question shrinks the bounding box of the point in half until the bounding box only overlaps with 3 other cell's boxes. 
 
+## Hilbert Rose
+
+We define a Hilbert Rose as the convergence of the following routine:
+
+1. Take the Convex hull of the current sites.
+2. For each adjacent vertex of the hull, take the hilbert midpoint.
+3. Add those midpoints to the list of sites, and take out the convex hull sites
+4. Repeat
+
+I don't think we have formally proven it converges, but it looks cool and seems to always converge. (Due to floating point, it doesn't go on forever in our visualization)
+
+## Hilbert Centroid
+
+In Euclidean geometry, the centroid of a set of points can be easily calculated by taking the average of each dimension's corrdinates. In Hilbert, that can't be done. We tried a few things 
+
+## Hilbert Images
+
+Convert an image into a Hilbert Image by seeing how it is warped by the Hilbert Geometry.
 
 ## Hilbertroids
+
+Fly a spaceship through the Hilbert "Space" as you dodge and destroy asteroids! The movement and size of the obsticles is governed by the warping of Hilert Geometry, which makes it quite a tricky challenge!
+
+Primarily uses a function to move some length in some euclidean angle through the Hilbert Geometry, which is done by converting the slice at that angle to a 1-D Hilbert Geometry and using an inverse Hilbert Distance function.
+
+## Bugs
+
+Unfortunately, due to the nature of floating point values, there are many slight edge cases where the current algorithms break. Many are due to needing to use approximations for 0 which can either be too lax or too strict at times.
+
+These include conic sections in bisectors freaking out at edges, a voronoi diagram missing a wall due to circumcenter calculations going wrong, and more
+
+The conic intersection algorithm can also freak out, and occasionally crash. but very rarely. 
+The current algorithm is a brute force check, as exact methods are complex and unreliable. 
+
+When filling in voronoi cells, occasionally the algorithm doesn't fill in the cell correcty due to the placement of vertices. 
+
+Most of these bugs happen at very specific placements, so slightly moving a point is usually enough to get the program back in order.
