@@ -1,4 +1,4 @@
-import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall, DrawableZRegion, DrawableInfiniteBalls, DrawableDistance } from "../drawable.js"
+import { CAMERA, DrawablePolygon,DrawablePoint,Site, DrawableSegment, DrawableSpoke, DrawableBisector, DrawableBisectorSegment, DrawableVoronoiDiagram, DrawableBall, DrawableZRegion, DrawableInfiniteBalls, DrawableDistance, DrawableBruteForceVoronoi } from "../drawable.js"
 import { calculateBisector, calculateSpokes, calculateHilbertPoint, calculateMidsector} from "../../geometry/hilbert.js"
 import { initEvents } from "./canvas-events.js";
 import { Polygon,Point} from "../../geometry/primitives.js";
@@ -52,7 +52,8 @@ export class Canvas {
       this.bisector_intersections = [];
       this.z_regions = [];
       this.infinite_balls = [];
-      this.brute_force_voronoi = null;
+      this.brute_force_voronoi = new DrawableBruteForceVoronoi(new VoronoiDiagram(null,null,null));
+      this.brute_force_voronoi.draw = false
       this.voronoi_image = null;
 
       this.calculate_fast_voronoi = false;
@@ -199,7 +200,7 @@ export class Canvas {
    }
 
    drawVoronoi(){
-      if(this.brute_force_voronoi){
+      if(this.brute_force_voronoi && this.brute_force_voronoi.draw){
          this.brute_force_voronoi.drawBruteForce(this,false);  
          this.brute_force_voronoi.update = false
       }
@@ -268,7 +269,7 @@ export class Canvas {
 
    generateRandomSites(amt) {
       this.delaunay = null;
-      this.brute_force_voronoi = null;
+      this.brute_force_voronoi.draw = false // = null;
       this.voronois = null;
       this.voronoi_diagram = null; 
       this.calculate_fast_voronoi = false;
@@ -883,7 +884,7 @@ export class Canvas {
       }
 
       this.bisector_intersections = []
-      if(this.brute_force_voronoi){
+      if(this.brute_force_voronoi && this.brute_force_voronoi.draw){
          
          if(this.brute_force_voronoi.voronoi.mode === "minmax"){
             let grid = this.brute_force_voronoi.grid
@@ -1140,7 +1141,7 @@ export class Canvas {
    }
 
    recalculateBruteForceVoronoi(){
-      if (this.brute_force_voronoi){
+      if (this.brute_force_voronoi && this.brute_force_voronoi.draw){
          this.brute_force_voronoi.calculateBruteForce(this)
       }
    }

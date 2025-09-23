@@ -516,6 +516,7 @@ export class DrawableBruteForceVoronoi {
     this.voronoi = voronoi;
     this.grid = [];
     this.update = false;
+    this.draw = true;
   }
 
   calculateBruteForce(canvas){

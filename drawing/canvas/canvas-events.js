@@ -656,18 +656,21 @@ export function initEvents(canvas) {
 
    document.getElementById('bruteForceVoronoi').addEventListener('change', (event) => {
       if(event.target.checked){
+         const metric = canvas.brute_force_voronoi.voronoi.metric;
          const input = document.getElementById('voronoiDegree').value;
          const degree = parseInt(input);
          if (degree >= 1 && degree <= canvas.sites.length) {
             const voronoi = new DrawableBruteForceVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
+            voronoi.voronoi.metric = metric?metric:"hilbert";
             canvas.brute_force_voronoi = voronoi;
+
             canvas.recalculateBruteForceVoronoi()
             canvas.drawAll()
          } else {
             alert("Invalid degree :((((");
          }
       }else{
-         canvas.brute_force_voronoi = null
+         canvas.brute_force_voronoi.draw = false;
          canvas.drawAll()
       }
       

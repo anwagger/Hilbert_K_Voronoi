@@ -139,3 +139,8 @@ The current algorithm is a brute force check, as exact methods are complex and u
 When filling in voronoi cells, occasionally the algorithm doesn't fill in the cell correcty due to the placement of vertices. 
 
 Most of these bugs happen at very specific placements, so slightly moving a point is usually enough to get the program back in order.
+
+
+TODO:
+
+Add option to make voronoi only recalc on placement

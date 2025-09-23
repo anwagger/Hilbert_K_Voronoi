@@ -1,5 +1,5 @@
 import { Point, Segment,Bound } from "./primitives.js"
-import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon, boundArea, isColinear } from "./utils.js"
+import { euclideanDistance, isBetween,isLeZero,isZero,lineEquation,solveQuadratic,intersectBounds, pointOnPolygon, boundArea, isColinear, intersectSegments } from "./utils.js"
 import {complex, crossProduct, makeMatrixComplex, multiplyMatrix, pointToVector, rowReduceMatrix, scaleVector, standardizePoint, transform, transposeSquare} from "./../math/linear.js"
 // just stores the equation
 export class Conic {
@@ -115,7 +115,61 @@ export function unrotateConic(c){
 export function intersectConicSegments(c_s1,c_s2){
     //console.log("INTERSECTING:",c_s1.parameterized_conic.type,c_s1.parameterized_conic.orientation,"AND",c_s2.parameterized_conic.type,c_s2.parameterized_conic.orientation)
     count = 0
+
+    let c1_line = (c_s1.parameterized_conic.type === Conic_Type.DEGENERATE && c_s1.parameterized_conic.orientation === Conic_Orientation.NONE)
     
+    let c2_line = (c_s2.parameterized_conic.type === Conic_Type.DEGENERATE && c_s2.parameterized_conic.orientation === Conic_Orientation.NONE)
+    
+    if(c1_line && c2_line){
+        let p_c1 = c_s1.parameterized_conic
+        let start1 = p_c1.getPointFromT(c_s1.start)
+        let end1 = p_c1.getPointFromT(c_s1.end)
+        let s1 = new Segment(start1,end1)
+        let p_c2 = c_s2.parameterized_conic
+        let start2 = p_c2.getPointFromT(c_s2.start)
+        let end2 = p_c2.getPointFromT(c_s2.end)
+        let s2 = new Segment(start2,end2)
+        
+        let intersect = intersectSegments(s1,s2)
+        /**
+        if(intersect){
+            console.log("INT LINES!")
+            console.log("C1: ",c_s1,s1)
+            console.log("C2: ",c_s2,s2)
+            console.log("INT AT: ",intersect)
+        }
+             */
+        
+        return intersect?[intersect]:false
+    }
+    else if(c1_line){
+        let p_c1 = c_s1.parameterized_conic
+        let start1 = p_c1.getPointFromT(c_s1.start)
+        let end1 = p_c1.getPointFromT(c_s1.end)
+        let s1 = new Segment(start1,end1)
+        let ints = c_s2.parameterized_conic.conic.intersectSegment(s1)
+        let final_ints = []
+        ints.forEach((point) => {
+            if(c_s2.isOn(point)){
+                final_ints.push(point)
+            }
+        })
+        return final_ints
+    }else if(c2_line){
+        let p_c2 = c_s2.parameterized_conic
+        let start2 = p_c2.getPointFromT(c_s2.start)
+        let end2 = p_c2.getPointFromT(c_s2.end)
+        let s2 = new Segment(start2,end2)
+        let ints = c_s1.parameterized_conic.conic.intersectSegment(s2)
+        let final_ints = []
+        ints.forEach((point) => {
+            if(c_s1.isOn(point)){
+                final_ints.push(point)
+            }
+        })
+        return final_ints
+    }
+        
 
     let approx = approximateConicSegmentIntersection(c_s1,c_s2);
 
