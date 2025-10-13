@@ -918,10 +918,10 @@ export function getDistanceFromMetric(metric,p,point,first,last,minkowski_p=2){
         distance = minkowskiMetric(p,point,minkowski_p);
     break;
     case "funk":
-        distance = weakFunk(p,point,first);
+        distance = weakFunk(p,point,last);
     break;
     case "reverse funk":
-        distance = weakFunk(point,p,last);
+        distance = weakFunk(point,p,first);
     break;
     case "quasi":
         distance = quasiMetric(first,p,point,last);

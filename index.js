@@ -12,7 +12,7 @@ let canvas = new Canvas(canvasElement);
 let ctx = canvas.ctx;
 console.log(canvas);  
 
-
+/*
 let m = [[1,2,2],[4,5,6],[9,8,9]] 
 let c_m = makeMatrixComplex(m)
 console.log(c_m)
@@ -42,3 +42,4 @@ let p_c1 = parameterizeConic(c1)
 let p_c2 = parameterizeConic(c2)
 console.log("CONICS",p_c1,p_c2)
 let ints = matrixConicIntersection(p_c1,p_c2)
+ */
