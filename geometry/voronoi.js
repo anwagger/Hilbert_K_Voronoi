@@ -1,5 +1,5 @@
 import { DrawableSegment } from "../drawing/drawable.js";
-import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter, findPointsOnEitherSideOfBisector, intersectBisectors } from "./bisectors.js";
+import { BisectorSegment, calculateBisectorSegmentBounds, calculateCircumcenter, findBisectorBoundaryIntersection, findPointsOnEitherSideOfBisector, intersectBisectors } from "./bisectors.js";
 import { calculateBisector, calculateHilbertPoint } from "./hilbert.js";
 import { PartitionTree } from "./partition_tree.js";
 import { Bound, Point, Polygon, Segment } from "./primitives.js";
@@ -113,8 +113,11 @@ export function calculateVoronoiCellBoundary(boundary, sites, bisector_segments,
         let bisector = b_s.bisector
         
         let data = bisector_data[b]
-        let start_p = bisector.getPointFromT(0)
-        let end_p = bisector.getPointFromT(bisector.conic_segments.length)
+        //let start_p = bisector.getPointFromT(0)
+        let start_p,start_t = findBisectorBoundaryIntersection(boundary,bisector,true)
+        //let end_p = bisector.getPointFromT(bisector.conic_segments.length)
+        let end_p,end_t = findBisectorBoundaryIntersection(boundary,bisector,false)
+
         let side_points = findPointsOnEitherSideOfBisector(boundary,bisector)
         if(side_points){
             let pos_point_order = []
@@ -162,14 +165,14 @@ export function calculateVoronoiCellBoundary(boundary, sites, bisector_segments,
             if(debug){
                 console.log("ORDER",order)
             }
-            let start_t = boundary.getTOfPoint(start_p)
+            //let start_t = boundary.getTOfPoint(start_p)
             if(isZero(start_t%1)){
                 start_t = Math.sign(start_t)*Math.floor(Math.abs(start_t))
             }
             if(isZero((start_t%1)-1)){
                 start_t = Math.sign(start_t)*Math.ceil(Math.abs(start_t))
             }
-            let end_t = boundary.getTOfPoint(end_p)
+            //let end_t = boundary.getTOfPoint(end_p)
             if(isZero(end_t%1)){
                 end_t = Math.sign(end_t)*Math.floor(Math.abs(end_t))
             }
@@ -182,7 +185,7 @@ export function calculateVoronoiCellBoundary(boundary, sites, bisector_segments,
             let boundary_points = []
             for(let i = first; i != last; i = (i + order + boundary.points.length) %(boundary.points.length)){
                 if(boundary_points.length >= boundary.points.length){
-                    console.log("TOO MNY BOUND PTS",boundary_points)
+                    console.log("TOO MNY BOUND PTS",boundary_points,"first",first,"last",last,"length",boundary.points.length)
                 }
                 if(i != start_t){
                     boundary_points.push(i)
@@ -374,17 +377,17 @@ export function n3lognVoronoi(boundary,points){
 
     const n = points.length
 
-    console.time("spokes")
+    //console.time("spokes")
     // calculate spokes
     let h_points = []
     for(let i = 0; i < n; i++){
         h_points.push(calculateHilbertPoint(boundary,points[i]))
     }
 
-    console.timeEnd("spokes")
+    //console.timeEnd("spokes")
 
 
-    console.time("bisectors")
+    //console.time("bisectors")
     // calculate bisectors
     let bisectors = matrix(n,n,null)
     for(let i = 0; i < n; i++){
@@ -394,11 +397,11 @@ export function n3lognVoronoi(boundary,points){
             bisectors[j][i] = bisector
         }
     }
-    console.timeEnd("bisectors")
+    //console.timeEnd("bisectors")
 
     //console.log("BISECTORS:",bisectors)
 
-    console.time("point order")
+    //console.time("point order")
     // get ordering of other points
     let point_orders = []
     let distances = matrix(n,n,0)
@@ -416,11 +419,11 @@ export function n3lognVoronoi(boundary,points){
         const sort_orders = (a,b) => distances[i][a] - distances[i][b]
         point_orders[i].sort(sort_orders)
     }
-    console.timeEnd("point order")
+    //console.timeEnd("point order")
 
     //console.log("POINT ORDERS:",point_orders)
     
-    console.time("circumcenters")
+    //console.time("circumcenters")
     // calculate circumcenters
     let circumcenter_data = matrix3D(n,n,n,false)
     let circumcenters = []
@@ -503,11 +506,11 @@ export function n3lognVoronoi(boundary,points){
             }
         }
     }
-    console.timeEnd("circumcenters")
+    //console.timeEnd("circumcenters")
 
     //console.log("CIRCUMCENTERS:",circumcenter_data)
 
-    console.time("bisector classification")
+    //console.time("bisector classification")
     // classify each segment of the bisectors
     let bisector_classifications = matrix(n,n,false)
     // this can be made a self-balancing binary search tree to guarentee lg(n)
@@ -602,12 +605,12 @@ export function n3lognVoronoi(boundary,points){
             }
         }
     }
-    console.timeEnd("bisector classification")
+    //console.timeEnd("bisector classification")
 
     //console.log("CLASSIFICATION",bisector_classifications)
     //console.log("CELL MAP",voronoi_cell_map)
 
-    console.time("voronoi creation")
+    //console.time("voronoi creation")
     // list of voronoi cells for each degree
     let voronoi_lists = []
     for(let i = 0; i < n; i++){
@@ -632,9 +635,9 @@ export function n3lognVoronoi(boundary,points){
         voronoi_cell.bound = calculateVoronoiCellBounds(voronoi_cell.bisector_segments,voronoi_cell.boundary_points)
         voronoi_lists[degree-1].push(voronoi_cell)
     }
-    console.timeEnd("voronoi creation")
+    //console.timeEnd("voronoi creation")
 
-    console.time("partition trees")
+    //console.time("partition trees")
     // combine the cells into diagrams
     let voronois = []
     for(let d = 1; d <= n; d++){
@@ -648,7 +651,7 @@ export function n3lognVoronoi(boundary,points){
         voronoi.partition_tree = partition_tree
         voronois.push(voronoi)
     }
-    console.timeEnd("partition trees")
+    //console.timeEnd("partition trees")
 
     //console.log("VORONOIS",voronois)
 

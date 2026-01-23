@@ -301,7 +301,40 @@ export function calculateCircumcenter3(boundary,b1,b2,b3){
     }    
 }
 
+export function findBisectorBoundaryIntersection(boundary,bisector,start=true){
+    let segment_no = start?0:bisector.conic_segments.length; // was just length...
+    let point = bisector.getPointFromT(segment_no)
+    if (!start){
+        // sub 1 from length
+        segment_no--;
+    }
+    
+    let t = boundary.getTOfPoint(point)
+    if(t === undefined){
+        let ints = bisector.conic_segments[segment_no].parameterized_conic.conic.intersectPolygon(boundary)
+        let closest = null
+        ints.forEach((i) => {
+            i.forEach((p) => {
+                if(closest){
+                    if(euclideanDistance(p,point) < euclideanDistance(closest,point)){
+                        closest = p
+                    }
+                }else{
+                    closest = p
+                }
+            })
+            
+        })
+        t = boundary.getTOfPoint(closest)
+        console.log("NEXT START",t,"OLD",point,"NEW",closest)
+    }
+    return point,t
+
+}
+
+
 export function findPointsOnEitherSideOfBisector(boundary,bisector){
+    /*
     let start_p = bisector.getPointFromT(0)
     let end_p = bisector.getPointFromT(bisector.conic_segments.length)
     
@@ -341,6 +374,9 @@ export function findPointsOnEitherSideOfBisector(boundary,bisector){
         end_t = boundary.getTOfPoint(closest)
         console.log("NEXT END",end_t,"OLD",end_p,"NEW",closest)
     }
+    */
+   let start_p,start_t = findBisectorBoundaryIntersection(boundary,bisector,true)
+   let end_p,end_t = findBisectorBoundaryIntersection(boundary,bisector,false)
 
     let range1 = (end_t - start_t)
     if (range1 < 0){
