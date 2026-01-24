@@ -950,7 +950,7 @@ export function cleanJason(canvas_clone) {
 
   // gets rid of the brute force grid in the json so itll be wayway smaller lol
   if (canvas_clone["brute_force_voronoi"]) {
-    canvas_clone["brute_force_voronoi"] = true;
+    canvas_clone["brute_force_voronoi"] = canvas_clone["brute_force_voronoi"]["draw"];
   }
 
   if (canvas_clone["delaunay"]) {

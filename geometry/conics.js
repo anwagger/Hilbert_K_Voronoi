@@ -786,13 +786,26 @@ export class ParameterizedConic {
 
                         xi_func = (x) => {
                             // was Math.acos(this.x_mult/(x - x_off)
-                            if((this.x_mult/(x - x_off)) > 1 && isZero(this.x_mult/(x - x_off) - 1)){
+                            let arg = this.x_mult/(x - x_off)
+                            if((arg) > 1 && isZero(arg - 1)){
                                 return [0]
                             }
-                            if((this.x_mult/(x - x_off)) < -1 && isZero(this.x_mult/(x - x_off) + 1)){
+                            if((arg) < -1 && isZero(arg + 1)){
                                 return [Math.PI]
                             }
                             let t = Math.acos(this.x_mult/(x - x_off))
+
+                            // if(isNaN(t)){
+                            //     //CAP IT?
+                            //     console.log("HH Xi NAN: ","acos of:",arg,{x_mult:this.x_mult,x:x,x_off:x_off})
+
+                            //     if (arg < -1){
+                            //         return [Math.PI]
+                            //     }
+                            //     if(arg > 1){
+                            //         return [0]
+                            //     }
+                            // }
                             return [t,-t]
                         }
                         yi_func = (y) => {
@@ -838,14 +851,25 @@ export class ParameterizedConic {
                             return [t, t + Math.PI] 
                         }
                         yi_func = (y) => {
-                            if((this.y_mult/(y - y_off)) > 1 && isZero(this.y_mult/(y - y_off) - 1)){
+                            let arg = this.y_mult/(y - y_off)
+                            if((arg) > 1 && isZero(arg - 1)){
                                 return [0]
                             }
-                            if((this.y_mult/(y - y_off)) < -1 && isZero(this.y_mult/(y - y_off) + 1)){
+                            if(arg < -1 && isZero(arg + 1)){
                                 return [Math.PI]
                             }
                             let t = Math.acos(this.y_mult/(y - y_off))//1/Math.acos((y - y_off)/this.y_mult)
+                            // if(isNaN(t)){
+                            //     //CAP IT?
+                            //     console.log("HV Yi NAN: ","acos of:",this.y_mult/(y - y_off),{y_mult:this.y_mult,y:y,y_off:y_off})
 
+                            //     if (arg < -1){
+                            //         return [Math.PI]
+                            //     }
+                            //     if(arg > 1){
+                            //         return [0]
+                            //     }
+                            // }
                             return [t,-t]
                         }
                         /*
@@ -922,7 +946,7 @@ export class ParameterizedConic {
         let y = cos*point.y - sin * point.x
 
         // sometimes we don't want the sanity check, since it has to be pretty exact
-        if (this.isOn(point) || skipOn){
+        if (skipOn || this.isOn(point)){
 
             // inverse 
             let x_ts = this.xi_func(x)
@@ -960,6 +984,7 @@ export class ParameterizedConic {
                     }
                 }
             }
+            console.trace()
             console.log("NO HITS:",x_ts,y_ts,point)
         }else{
             console.log("INVALID POINT",point,this)

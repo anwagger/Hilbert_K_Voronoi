@@ -22,7 +22,9 @@ export function loadSites(data, canvas) {
    for (let s of data) {
       const point = new Point(s["drawable_point"]["point"]["x"], s["drawable_point"]["point"]["y"]);
       const dP = new DrawablePoint(point);
-      let site = new Site(dP,[], s["radius"]);
+      dP.radius = s["drawable_point"]["radius"]
+      dP.label = s["drawable_point"]["label"]
+      let site = new Site(dP,[], dP.radius);
       site.color = s["color"];
       site.drawable_point.color = s["color"];
 

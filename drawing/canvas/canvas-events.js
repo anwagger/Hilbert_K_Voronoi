@@ -480,7 +480,7 @@ export function initEvents(canvas) {
          reader.onload = function(e) {
                try {
                   const fileContent = e.target.result;
-                  const obj = JSON.parse(fileContent);
+                  const obj = JSON.parse(fileContent);                  
 
                   canvas.load(obj);
                   canvas.drawAll();
