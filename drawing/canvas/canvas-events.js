@@ -408,7 +408,7 @@ export function initEvents(canvas) {
 
    document.getElementById('showClustersConvexHull').addEventListener('change', (event) => {
       if (event.target.checked) {
-         canvas.getClusterHulls();
+         event.target.checked = canvas.getClusterHulls();
          canvas.drawAll();
       } else {
          canvas.cluster_hulls = null;
@@ -667,7 +667,8 @@ export function initEvents(canvas) {
             canvas.recalculateBruteForceVoronoi()
             canvas.drawAll()
          } else {
-            alert("Invalid degree :((((");
+            //alert("Invalid degree :((((");
+            event.target.checked = false
          }
       }else{
          canvas.brute_force_voronoi.draw = false;
@@ -679,7 +680,8 @@ export function initEvents(canvas) {
    document.getElementById("calculateFastVoronoi").addEventListener('change', (event) => {
       const input = document.getElementById('voronoiDegree').value;
       const degree = parseInt(input);
-      canvas.setFastVoronoi(event,degree);
+      event.target.checked = canvas.setFastVoronoi(event,degree);
+      document.getElementById("currentCell").style.display = event.target.checked?"block":"none";
    });
 
     document.getElementById("calculateHilbertDelaunay").addEventListener('change', (event) => {
@@ -691,6 +693,7 @@ export function initEvents(canvas) {
          canvas.recalculateHilbertDelaunay(degree)
       } else {
          canvas.delaunay = null;
+         event.target.checked = false
       }
 
       canvas.drawAll();
@@ -765,12 +768,15 @@ export function initEvents(canvas) {
 
    document.getElementById('drawHilbertImage').addEventListener('change', (event) => {
       if(event.target.checked){
-         canvas.draw_hilbert_image = true
+         
          if (canvas.hilbert_image) {
+            canvas.draw_hilbert_image = true
             if(!canvas.hilbert_image.image_data){
                canvas.hilbert_image.loadImageData()
             }
             canvas.drawAll()
+         }else{
+            event.target.checked = false
          }
       }else{
          canvas.draw_hilbert_image = false
@@ -784,6 +790,8 @@ export function initEvents(canvas) {
          canvas.hilbert_image.looping = !event.target.checked;
          canvas.recalculateHilbertImage();
          canvas.drawAll();
+      }else{
+         event.target.checked = false
       }
    })
 
@@ -834,6 +842,13 @@ export function initEvents(canvas) {
                })
                let voronoi = canvas.voronoi_diagram.voronoi
                canvas.current_voronoi_cell_index = voronoi.partition_tree.findCurrentCell(voronoi,points,point)
+               let sites = []
+               if (canvas.current_voronoi_cell_index >= 0){
+                  let cell = canvas.voronoi_diagram.drawable_cells[canvas.current_voronoi_cell_index]
+                  sites = cell.sites_included  
+               }
+               document.getElementById("currentCell").textContent = "Inside Cell: " + sites
+               
             }
             
          }
@@ -960,15 +975,15 @@ export function initEvents(canvas) {
             let voronoi = canvas.voronoi_diagram.voronoi
             let last_index = canvas.current_voronoi_cell_index 
             canvas.current_voronoi_cell_index = voronoi.partition_tree.findCurrentCell(voronoi,points,point)
-            //console.log("CHAN",canvas.current_voronoi_cell_index)
+            document.getElementById("currentCell").style.display = "block";
+            let sites = []
+            if (canvas.current_voronoi_cell_index >= 0){
+               let cell = canvas.voronoi_diagram.drawable_cells[canvas.current_voronoi_cell_index]
+               sites = cell.sites_included  
+            }
+            document.getElementById("currentCell").textContent = "Inside Cell: " + sites
             if(last_index != canvas.current_voronoi_cell_index){
                canvas.drawAll()
-               /**
-               if(canvas.current_voronoi_cell_index >= 0){
-                  let cell = voronoi.cells[canvas.current_voronoi_cell_index]
-                  console.log("BOUNDARY",calculateVoronoiCellBoundary(voronoi.boundary,points,cell.bisector_segments,cell.bisector_data,cell.contained_sites,true))
-               }
-               */
             }
             
          }
@@ -1009,11 +1024,15 @@ export function initEvents(canvas) {
    document.getElementById('showAsteroids').addEventListener('change', (event) => {
       if (canvas.space) {
          canvas.space.showAsteroids = !event.target.checked
+      }else{
+         event.target.checked = false
       }
    })
    document.getElementById('makeInvulnerable').addEventListener('change', (event) => {
       if (canvas.space) {
          canvas.space.invulnerable = event.target.checked
+      }else{
+         event.target.checked = false
       }
    })
 }

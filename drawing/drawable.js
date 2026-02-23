@@ -19,7 +19,8 @@ orderByAngle,
 euclideanDistance,
 isZero,
 convexHullIndex,
-orderByAngleIndex} from "../geometry/utils.js";
+orderByAngleIndex,
+avgColors} from "../geometry/utils.js";
 
 export let CAMERA =  {
   move_lock: true,
@@ -56,11 +57,15 @@ export let CAMERA =  {
 }
 
 export class DrawablePolygon {
-   constructor(polygon = new Polygon(), color = "blue", stroke_style = "black", show_vertices = true) {
+   constructor(polygon = new Polygon(), color = "blue", stroke_style = "black", show_vertices = true,show_info = false) {
       this.polygon = polygon;
       this.points = [];
+      this.points.forEach((point) => {
+            point.deleteInfoBox()
+         })
       for (let i = 0; i < polygon.points.length; i++) {
         this.points.push(new DrawablePoint(polygon.points[i]));
+        this.points[i].showInfo = show_info; 
         this.points[i].label = i
       }
 
@@ -73,16 +78,22 @@ export class DrawablePolygon {
       this.color = color;
       this.stroke_style = stroke_style;
       this.show_vertices = show_vertices;
+      this.showInfo = show_info
       this.dashes = null
    }
 
    addPoint(point){
     this.polygon.addPoint(point)
+    this.points.forEach((point) => {
+            point.deleteInfoBox()
+         })
     this.points = []
     this.segments = []
     for(let i = 0; i < this.polygon.points.length; i++){
       let p = this.polygon.points[i]
       this.points.push(new DrawablePoint(p))
+      this.points[i].showInfo = this.showInfo; 
+      this.points[i].label = i
       let s = this.polygon.segments[i]
       if (s){
         this.segments.push(new DrawableSegment(s))
@@ -188,6 +199,12 @@ export class DrawablePoint {
 
   draw(ctx) {
       if (this.drawPoint) {
+        if(this.outline){
+          ctx.fillStyle = 'white';
+          ctx.beginPath();
+          ctx.arc(CAMERA.x(this.point.x), CAMERA.y(this.point.y), this.radius+1, 0, 2 * Math.PI);
+        }
+        ctx.fill();
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(CAMERA.x(this.point.x), CAMERA.y(this.point.y), this.radius, 0, 2 * Math.PI);
@@ -596,6 +613,7 @@ export class DrawableVoronoiCell {
       d_b_s.color = "black"
       this.drawable_bisector_segments.push(d_b_s)
     })
+    this.sites_included = this.voronoi_cell.get_site_indices()
     this.drawable_polygon = this.createPolygon2()
     this.draw_bounding_box = false
   }
@@ -736,6 +754,18 @@ export class DrawableVoronoiDiagram {
       let d_c = new DrawableVoronoiCell(cell)
       this.drawable_cells.push(d_c)
     })
+  }
+
+  set_colors(sites) {
+    for(let i = 0; i < this.drawable_cells.length; i++){
+      let site_indices = this.drawable_cells[i].sites_included
+      let colors = []
+       site_indices.forEach((s) => {
+        colors.push(sites[s].drawable_point.color)
+      })
+      let avg =  avgColors(colors)
+      this.drawable_cells[i].drawable_polygon.color = avg
+    }
   }
 
   draw(ctx){

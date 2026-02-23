@@ -68,6 +68,19 @@ export class VoronoiCell {
         }
         return true
     }
+    get_site_indices(){
+        let sites = []
+        let sites_binary = this.contained_sites
+        let i = 0
+        while(sites_binary > 0){
+            if(sites_binary % 2 == 1){
+                sites.push(i)
+            }
+            i++
+            sites_binary >>= 1 
+        }
+        return sites
+    }
 }
 
 export function calculateVoronoiCellBounds(bisectors,boundary_points){

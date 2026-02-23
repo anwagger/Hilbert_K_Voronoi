@@ -745,7 +745,7 @@
         font-weight: 400;
         color:#444;
         display: flex;
-        background-color: white;
+        background-color: whitesmoke;
         overflow-x: hidden;
     }
 
@@ -783,17 +783,20 @@
         overflow-y: scroll;
     }
 
+    
     #canvasContainer {
         flex-grow: 1;
         position: relative;
         flex-direction: column;
-        border-radius: 20px;
-        border: 1px solid #444;
+       
         margin: 10px;
+        z-index: 2;
     }
 
     canvas {
         z-index: -1;
+         border-radius: 20px;
+        border: 1px solid #444;
         background-color: #ffffff;
         user-select: none;
         -webkit-user-select: none; /* Chrome, Safari, Opera */

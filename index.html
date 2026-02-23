@@ -401,6 +401,9 @@
           <input style="width: 20px; height: 20px;" type="checkbox" id="calculateFastVoronoi" class="checkbox-input">
           <span class="checkbox-background"> Calculate Fast Hilbert Voronoi</span>
         </div>
+        <div id="currentCell" style="position: relative; margin: 10px; margin-left: 40px; display: none;">
+          Inside Cell:
+        </div>
         <div style="position: relative; margin: 10px;">
           <input style="width: 20px; height: 20px;" type="checkbox" name="bruteForceVoronoi" id="bruteForceVoronoi" class="checkbox-input">
           <span class="checkbox-background"> Brute Force Voronoi</span>
@@ -540,7 +543,7 @@
     </div>
     <div id="canvasContainer">
         <canvas id="canvas" style="
-        width: 100%; height: 100%; 
+        width: 100%; height: 100%;
         "></canvas>
     </div>
 

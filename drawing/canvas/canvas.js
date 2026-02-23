@@ -30,8 +30,8 @@ export class Canvas {
       this.absolute_border = new DrawablePolygon(new Polygon([new Point(0,0),new Point(1000,0),new Point(1000,1000),new Point(0,1000)]))
       this.absolute_border.color = "black"
       this.absolute_border.dashes = [3,3]
-      
-      this.boundary = new DrawablePolygon(new Polygon([]),"black");
+      this.deleteBoundaryPoints()
+      this.boundary = new DrawablePolygon(new Polygon([]),"black",null,true,false);
       this.mode = 'boundary';
       
       initEvents(this);
@@ -127,7 +127,8 @@ export class Canvas {
    }
 
    setPolygonType(type) {
-         this.boundary = new DrawablePolygon(new Polygon([]),this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
+         this.deleteBoundaryPoints()
+         this.boundary = new DrawablePolygon(new Polygon([]),this.boundary.color, this.boundary.penWidth, this.boundary.show_vertices, this.boundary.showInfo);
         this.boundaryType = type;
         if (type === 'customNgon') {
             const n = parseInt(this.customNgonInput);
@@ -208,6 +209,7 @@ export class Canvas {
       if (this.calculate_fast_voronoi){
          if(this.current_voronoi_cell_index >= 0){
             if(this.voronoi_diagram.drawable_cells[this.current_voronoi_cell_index]){
+               
                this.voronoi_diagram.drawable_cells[this.current_voronoi_cell_index].drawFill(this.ctx)
             }
          }
@@ -242,7 +244,7 @@ export class Canvas {
       const radius = Math.min(this.canvas.width, this.canvas.height,1000) / (2.5 * this.dpr);
       
       this.deleteBoundaryPoints()
-      this.boundary = new DrawablePolygon(new Polygon([]),this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
+      this.boundary = new DrawablePolygon(new Polygon([]),this.boundary.color, this.boundary.penWidth, this.boundary.show_vertices, this.boundary.showInfo);
         
       const tempVertices = [];
       for (let i = 0; i < n; i++) {
@@ -291,6 +293,7 @@ export class Canvas {
             let site = new Site(new DrawablePoint(point),[],this.site_radius);
             site.drawable_point.color = this.getNewColor();
             site.drawable_point.label = this.sites.length+""
+            site.drawable_point.outline = true
             site.color = site.drawable_point.color;
             this.sites.push(site);
             if (this.clusters) {
@@ -319,7 +322,9 @@ export class Canvas {
 
             this.cluster_hulls.push(hull);
          }
+         return true
       }
+      return false
    }
 
    getMousePos(event) {
@@ -357,6 +362,7 @@ export class Canvas {
       if (!pointOnPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.boundary.polygon) && pointInPolygon(point,this.absolute_border.polygon)){
          let site = new Site(new DrawablePoint(point),[],this.site_radius)
          site.drawable_point.label = this.sites.length  + ""
+         site.drawable_point.outline = true
          this.sites.push(site);
          let color = this.getNewColor(this.sites)
          console.log("COLOR: ",color)
@@ -431,7 +437,8 @@ export class Canvas {
             this.boundaryType = 'freeDraw'
             let points = this.boundary.polygon.points
             points[this.selected_boundary] = point
-            this.boundary = this.boundary = new DrawablePolygon(new Polygon(convexHull(points)),this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
+            this.deleteBoundaryPoints()
+            this.boundary = new DrawablePolygon(new Polygon(convexHull(points)),this.boundary.color, this.boundary.penWidth, this.boundary.show_vertices, this.boundary.showInfo);
             this.recalculateAll()
             this.drawAll()
       }
@@ -472,6 +479,9 @@ export class Canvas {
 
 
    setPolygonShowInfo(event) {
+      if(this.boundary.points.length == 0){
+         event.target.checked = false
+      }
       this.boundary.showInfo = event.target.checked;
       this.boundary.points.forEach((point,i) => {
          if (this.boundary.showInfo) { 
@@ -1092,6 +1102,7 @@ export class Canvas {
    }
 
    setFastVoronoi(event,degree){
+      let out = false
       if (!event.target.checked){
          this.calculate_fast_voronoi = false
       }
@@ -1102,17 +1113,21 @@ export class Canvas {
             this.voronois = voronois
             this.bisector_intersections = []
             this.changeFastVoronoiDegree(degree)
+            out = true
          }
       }
       this.drawAll()
+      return out
    }
 
    changeFastVoronoiDegree(degree){
       if(this.calculate_fast_voronoi){
          if (this.voronois[degree-1]){
             this.voronoi_diagram = new DrawableVoronoiDiagram(this.voronois[degree-1])
+            this.voronoi_diagram.set_colors(this.sites)
          }else{
             this.voronoi_diagram = new DrawableVoronoiDiagram(new VoronoiDiagram(this.boundary.polygon,[],1))
+            this.voronoi_diagram.set_colors(this.sites)
          }
       }
       this.current_voronoi_cell_index = -1
@@ -1529,7 +1544,7 @@ makeDraggableAroundPoint(element, drawable_point, canvasRect) {
    resetCanvas() {
         this.resetSites()
         this.deleteBoundaryPoints()
-        this.boundary = new DrawablePolygon(new Polygon([]), this.boundary.color, this.boundary.penWidth, this.boundary.showInfo, this.boundary.show_vertices, this.boundary.vertexRadius);
+        this.boundary = new DrawablePolygon(new Polygon([]), this.boundary.color, this.boundary.penWidth, this.boundary.show_vertices, this.boundary.showInfo);
         this.delaunay = null;
         this.boundaryType = 'freeDraw';
         document.querySelector('input[name="polygonType"][value="freeDraw"]').checked = true;

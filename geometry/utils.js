@@ -810,9 +810,39 @@ export function avgColor(c1,c2){
         b = "0" + b
       }
       let new_color = "#" + r + g + b
-      console.log("COLOR",c1,c2,new_color)
+      //console.log("COLOR",c1,c2,new_color)
       return new_color
 
+}
+
+export function avgColors(colors){
+  let r = 0
+  let g = 0
+  let b = 0
+  if (colors.length == 0){
+    return "#000000"
+  }
+  for(let i = 0; i < colors.length; i++){
+    let h = colorNameToHex(colors[i])
+    let rgb = hexToRgb(h?h:colors[i])
+    r += rgb.r
+    g += rgb.g
+    b += rgb.b
+  }
+  r = Math.floor(r/colors.length).toString(16)
+  g = Math.floor(g/colors.length).toString(16)
+  b = Math.floor(b/colors.length).toString(16)
+  if(r.length === 1){
+    r = "0" + r
+  }
+  if(g.length === 1){
+    g = "0" + g
+  }
+  if(b.length === 1){
+    b = "0" + b
+  }
+  let new_color = "#" + r + g + b
+  return new_color
 }
 
 export function pushOrCreateInObject(obj,index,value){
