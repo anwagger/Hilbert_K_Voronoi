@@ -520,6 +520,14 @@ export class Site {
   }
 
   drawSelectionRing(ctx){
+    if (this.drawable_point.outline){
+      
+      ctx.strokeStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(CAMERA.x(this.drawable_point.point.x), CAMERA.y(this.drawable_point.point.y), this.radius+1, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
+    
     ctx.strokeStyle = this.color;
     ctx.beginPath();
     ctx.arc(CAMERA.x(this.drawable_point.point.x), CAMERA.y(this.drawable_point.point.y), this.radius, 0, 2 * Math.PI);
