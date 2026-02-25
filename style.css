@@ -765,6 +765,7 @@
         border-radius: 20px;
         margin: 10px;
         margin-left: 20px;
+        
     }
 
     /* Hide scrollbar for Webkit browsers (Chrome, Safari, Edge) */
@@ -814,6 +815,8 @@
     .polygon-setting-card {
         background-color: #ffffff;
         padding: 10px;
+        padding-top: 5px;
+        padding-bottom: 0px;
     }
 
     .polygon-setting-card label {
@@ -1328,4 +1331,27 @@
 #kmeansClustering,
 #minLinkageClustering {
   margin-left: 1.5em;
+}
+
+
+.tutorialButton {
+       
+        
+        width:100%;
+        text-align: center;
+        margin-top: 10px;
+}
+
+#tutorialButton {
+       
+         border-radius: 20px;
+        border: 1px solid #444;
+        background-color: #ffffff;
+        width:50%;
+        height: 20px;
+        background-color: whitesmoke;
+        position: relative;
+        display: inline-block;
+        text-align: center;
+
 }

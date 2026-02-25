@@ -513,7 +513,7 @@ export function initEvents(canvas) {
          } else if (canvas.mode === "voronoi") {
             let int = parseInt(event.key);
             if (int !== NaN && int <= canvas.sites.length && int >= 1) {
-               if(canvas.brute_force_voronoi){
+               if(canvas.brute_force_voronoi && canvas.brute_force_voronoi.draw){
                   canvas.brute_force_voronoi.voronoi.degree = int;
                   canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
                }
@@ -527,13 +527,18 @@ export function initEvents(canvas) {
                canvas.drawAll();
             } else {
                if (event.key === "k") {
-                  if (canvas.brute_force_voronoi.voronoi.mode === "kth") {
-                     canvas.brute_force_voronoi.voronoi.mode = "k";
-                  } else if (canvas.brute_force_voronoi.voronoi.mode === "k") {
-                     canvas.brute_force_voronoi.voronoi.mode = "kth";
+                  if (canvas.brute_force_voronoi){
+                     if (canvas.brute_force_voronoi.voronoi.mode === "kth") {
+                        canvas.brute_force_voronoi.voronoi.mode = "k";
+                     } else if (canvas.brute_force_voronoi.voronoi.mode === "k") {
+                        canvas.brute_force_voronoi.voronoi.mode = "kth";
+                     }
+                     if (canvas.brute_force_voronoi.draw){
+                        canvas.brute_force_voronoi.calculateBruteForceImage(canvas);
+                        canvas.drawAll();
+                     }  
+                     
                   }
-                  canvas.brute_force_voronoi.calculateBruteForceImage(canvas);
-                  canvas.drawAll();
                   }
                }
             }else if (canvas.mode === "space"){
@@ -659,13 +664,16 @@ export function initEvents(canvas) {
          const metric = canvas.brute_force_voronoi.voronoi.metric;
          const input = document.getElementById('voronoiDegree').value;
          const degree = parseInt(input);
-         if (degree >= 1 && degree <= canvas.sites.length) {
+         if (degree >= 1 && degree <= canvas.sites.length && canvas.brute_force_voronoi) {
             const voronoi = new DrawableBruteForceVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
             voronoi.voronoi.metric = metric?metric:"hilbert";
             canvas.brute_force_voronoi = voronoi;
 
-            canvas.recalculateBruteForceVoronoi()
-            canvas.drawAll()
+            if (canvas.brute_force_voronoi.draw){
+               canvas.recalculateBruteForceVoronoi()
+               canvas.drawAll()
+            }
+            
          } else {
             //alert("Invalid degree :((((");
             event.target.checked = false
@@ -706,7 +714,9 @@ export function initEvents(canvas) {
          alert("Invalid degree :((((");
       } else {
          canvas.brute_force_voronoi.voronoi.degree = degree;
-         canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
+         if (canvas.brute_force_voronoi.draw){
+            canvas.brute_force_voronoi.calculateBruteForceImage(canvas)
+         }
          canvas.changeFastVoronoiDegree(degree)
          canvas.recalculateHilbertDelaunay(degree)
          canvas.drawAll();
@@ -722,8 +732,11 @@ export function initEvents(canvas) {
             document.getElementById('minkowskiDiv').style.display = 'none';
          }
          canvas.brute_force_voronoi.voronoi.metric = event.target.value
-         canvas.recalculateBruteForceVoronoi()
-         canvas.drawAll()
+         if (canvas.brute_force_voronoi.draw){
+            canvas.recalculateBruteForceVoronoi()
+            canvas.drawAll()
+         }
+         
       }
       
    });
@@ -731,8 +744,10 @@ export function initEvents(canvas) {
    document.getElementById('minkowskiVal').addEventListener('change', (event) => {
       if (canvas.brute_force_voronoi.voronoi) {
          canvas.brute_force_voronoi.voronoi.p = event.target.value;
-         canvas.recalculateBruteForceVoronoi();
-         canvas.drawAll();
+         if (canvas.brute_force_voronoi.voronoi.draw){
+            canvas.recalculateBruteForceVoronoi();
+            canvas.drawAll();
+         }
       }
    })
 
@@ -740,8 +755,10 @@ export function initEvents(canvas) {
       if (canvas.brute_force_voronoi.voronoi) {
          canvas.brute_force_voronoi.voronoi.p = event.target.value;
          document.getElementById('minkowskiVal').value = event.target.value;
-         canvas.recalculateBruteForceVoronoi();
-         canvas.drawAll();
+         if (canvas.brute_force_voronoi.voronoi.draw){
+            canvas.recalculateBruteForceVoronoi();
+            canvas.drawAll();
+         }
       }
    })
 

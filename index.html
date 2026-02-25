@@ -29,250 +29,250 @@
                 
         </form>
 
-    <!-- Polygon Settings -->
-    <div class="polygon-setting-card" id="polygonContainer">
-      <div>
-        <label style="margin-bottom: 10px;">Polygon Boundary Color</label>
-        <input type="color" id="polygonColor" value="#000000">
-      </div>
-
-      <div style="display: block; align-items: center; margin-bottom: 10px;">
-        <div style="position: relative; margin-right: 10px;">
-          <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowInfo" class="checkbox-input">
-          <span class="checkbox-background"> Show Info</span>
-        </div>
-      </div>
-
-      <div style="display: flex; align-items: center; margin-bottom: 10px; display: none;">
-        <div style="position: relative; margin-right: 10px;">
-          <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowDiag" class="checkbox-input">
-          <span class="checkbox-background"></span>
-        </div>
-        <label for="polygonShowDiag" class="checkbox-label">Show Diagonals</label>
-      </div>
-
-      <div style="display: flex; align-items: center; margin-bottom: 10px; display: none;">
-        <div style="position: relative; margin-right: 10px;">
-          <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowCentroid" class="checkbox-input">
-          <span class="checkbox-background"></span>
-        </div>
-        <label for="polygonShowCentroid" class="checkbox-label">Show Centroid</label>
-      </div>
-    
-      <div>
-
-        <!-- --------------------------------------------------------------- -->
-        <div class="gon-radio-container">
-          <div style="display: flex; align-items: center;" class="gonRadio">
-            <input class="gonRadioItem" type="radio" id="freeDraw" name="polygonType" value="freeDraw" checked>
-            <label class="checkbox-label" for="freeDraw">Free Draw</label>
-          </div>
-          <div style="display: flex; align-items: center;" class="gonRadio">
-            <input class="gonRadioItem" type="radio" id="3gon" name="polygonType" value="3">
-            <label class="checkbox-label" for="3gon">3-gon</label>
-          </div>
-          <div style="display: flex; align-items: center;" class="gonRadio">
-            <input class="gonRadioItem" type="radio" id="4gon" name="polygonType" value="4">
-            <label class="checkbox-label" for="4gon">4-gon</label>
-          </div>
-          <div style="display: flex; align-items: center;" class="gonRadio">
-            <input class="gonRadioItem" type="radio" id="5gon" name="polygonType" value="5">
-            <label class="checkbox-label" for="5gon">5-gon</label>
-          </div>
-          <div style="display: flex; align-items: center;" class="gonRadio">
-            <input class="gonRadioItem" type="radio" id="6gon" name="polygonType" value="6">
-            <label class="checkbox-label" for="6gon">6-gon</label>
-          </div>
-          <div style="align-items: center; margin-top: 5px; justify-content: space-between;">
-            
-            <div style="display: flex;">
-              <input class="gonRadioItem" type="radio" id="customNgon" name="polygonType" value="customNgon">
-              <label class="checkbox-label" for="customNgon">n-gon</label>
-            </div>
-          
-            <div style="display:flex; align-items: center; margin-top: 10px; margin-left: 25px;">
-              <input type="number" id="customNgonInput" style="margin-bottom: 10px; width: 60px; text-align: center; display: none; height: 30px;">
-              <button id="createCustomNgon" class="gon-icon-button" style="display: none; margin-bottom: 10px;">
-                <b class="">
-                  Set
-                </b>
-              </button>
-            </div>
-
-          </div>
-
-        </div>
-
+      <!-- Polygon Settings -->
+      <div class="polygon-setting-card" id="polygonContainer">
         <div>
-          <input type="button" name="saveData" id="saveData" value="Save Data">
-          <input type="button" name="loadData" id="loadData" value="Load Data">
-          <a id="downloadData" download="myHilbertData.txt" style="display: none"></a>
-          <input type="file" id="loadFile" name="loadFile" style="display: none" accept="text/txt">
+          <label style="margin-bottom: 10px;">Polygon Boundary Color</label>
+          <input type="color" id="polygonColor" value="#000000">
         </div>
 
-
-        <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
-          <div style="display: flex; flex-direction: column;" >
-            <div class="mb-2">
-              <span class="text-[12px] underline"> 
-                Set Boundary
-              </span>
-              <span>
-                <ul class="text-[12px] pl-4" style="list-style-type:square;">
-                  <li>Double click to add polygon vertices in free draw mode (3+ vertices required)</li>
-                  <li>Check "Show Info" to show the boundary's vertex positions</li>
-                </ul>
-              </span>
-            </div>
+        <div style="display: block; align-items: center; margin-bottom: 10px;">
+          <div style="position: relative; margin-right: 10px;">
+            <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowInfo" class="checkbox-input">
+            <span class="checkbox-background"> Show Info</span>
           </div>
         </div>
-        <!-- --------------------------------------------------------------- -->
-      </div>
-    </div>
 
-        <div id="siteContainer">
-            <!-- SITE -->
-            <div class="collapsible" id="siteCollapsible">
-                <div id= "siteHeader" class="collapsible-header">Site<span class="plus-minus-icon"></span></div>
-                  <div class="content" style="display: none;">
+        <div style="display: flex; align-items: center; margin-bottom: 10px; display: none;">
+          <div style="position: relative; margin-right: 10px;">
+            <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowDiag" class="checkbox-input">
+            <span class="checkbox-background"></span>
+          </div>
+          <label for="polygonShowDiag" class="checkbox-label">Show Diagonals</label>
+        </div>
 
-                  <div class="flex justify-between items-center w-full mb-5" style="margin-bottom: 15px;">
-                      <label for="siteColor" class="text-left">Site Color</label>
-                      <input type="color" id="siteColor" value="#0000FF" class="flex-shrink-0" />
-                  </div>
-                  <div id="siteSize" style="display:block; margin-bottom:10px">
-                    <input type="range" id="siteSizeRange" name="siteSizeRange" min="1" max="10" step="0.2" value="3" oninput="siteSizeAmt.value=siteSizeRange.value"> Site Radius
-                    <input style= "margin-top: 10px;" type="text" id="siteSizeAmt" name="siteSizeAmt" value="3" oninput="siteSizeRange.value=siteSizeAmt.value">
-                  </div>
+        <div style="display: flex; align-items: center; margin-bottom: 10px; display: none;">
+          <div style="position: relative; margin-right: 10px;">
+            <input style="width: 20px; height: 20px;" type="checkbox" id="polygonShowCentroid" class="checkbox-input">
+            <span class="checkbox-background"></span>
+          </div>
+          <label for="polygonShowCentroid" class="checkbox-label">Show Centroid</label>
+        </div>
+      
+        <div>
 
-                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                      <label for="siteDrawSpokes" class="checkbox-label">Draw Spokes</label>
-                      <div style="position: relative;">
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawSpokes" class="checkbox-input">
-                        <span class="checkbox-background"></span>
-                      </div>
-                  </div>
-
-                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                      <label for="siteShowInfo" class="checkbox-label">Show Info</label>
-                      <div style="position: relative;">
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteShowInfo" class="checkbox-input">
-                        <span class="checkbox-background"></span>
-                      </div>
-                  </div>
-
-                  <div id="positionDiv" style="display: flex; align-items: center; justify-content: space-between;">
-                      <label>Position</label>
-                      <div id="sitePosition">
-                        <input type="text" id="sitePos" name="sitePos" size="10">
-                  </div>
-                  <button id="insertPosition" class="gon-icon-button" style="display: block;">
-                        <b class="">
-                          Set
-                        </b>
-                      </button>
-                </div>
-
-                </div>
+          <!-- --------------------------------------------------------------- -->
+          <div class="gon-radio-container">
+            <div style="display: flex; align-items: center;" class="gonRadio">
+              <input class="gonRadioItem" type="radio" id="freeDraw" name="polygonType" value="freeDraw" checked>
+              <label class="checkbox-label" for="freeDraw">Free Draw</label>
             </div>
+            <div style="display: flex; align-items: center;" class="gonRadio">
+              <input class="gonRadioItem" type="radio" id="3gon" name="polygonType" value="3">
+              <label class="checkbox-label" for="3gon">3-gon</label>
+            </div>
+            <div style="display: flex; align-items: center;" class="gonRadio">
+              <input class="gonRadioItem" type="radio" id="4gon" name="polygonType" value="4">
+              <label class="checkbox-label" for="4gon">4-gon</label>
+            </div>
+            <div style="display: flex; align-items: center;" class="gonRadio">
+              <input class="gonRadioItem" type="radio" id="5gon" name="polygonType" value="5">
+              <label class="checkbox-label" for="5gon">5-gon</label>
+            </div>
+            <div style="display: flex; align-items: center;" class="gonRadio">
+              <input class="gonRadioItem" type="radio" id="6gon" name="polygonType" value="6">
+              <label class="checkbox-label" for="6gon">6-gon</label>
+            </div>
+            <div style="align-items: center; margin-top: 5px; justify-content: space-between;">
+              
+              <div style="display: flex;">
+                <input class="gonRadioItem" type="radio" id="customNgon" name="polygonType" value="customNgon">
+                <label class="checkbox-label" for="customNgon">n-gon</label>
+              </div>
             
-            <!-- PAIR -->
-            <div class="collapsible" id="pairCollapsible">
-                <div id="pairHeader"class="collapsible-header">Pairs<span class="plus-minus-icon"></span></div>
-                    <div class="content" style="display: none;">
+              <div style="display:flex; align-items: center; margin-top: 10px; margin-left: 25px;">
+                <input type="number" id="customNgonInput" style="margin-bottom: 10px; width: 60px; text-align: center; display: none; height: 30px;">
+                <button id="createCustomNgon" class="gon-icon-button" style="display: none; margin-bottom: 10px;">
+                  <b class="">
+                    Set
+                  </b>
+                </button>
+              </div>
 
-                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                        <label for="siteDrawBisector" class="checkbox-label">Draw Bisector</label>
-                        <div style="position: relative;">
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawBisector" class="checkbox-input">
-                        <span class="checkbox-background"></span>
-                        </div>
-                    </div>
-
-
-                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                        <label for="siteDrawZRegion" class="checkbox-label">Draw Z-Region</label>
-                        <div style="position: relative;">
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawZRegion" class="checkbox-input">
-                        <span class="checkbox-background"></span>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                        <label for="siteDrawInfiniteBalls" class="checkbox-label">Draw Infinite-Balls</label>
-                        <div style="position: relative;">
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawInfiniteBalls" class="checkbox-input">
-                        <span class="checkbox-background"></span>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <label>Show Distance</label>
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="showDistance" class="checkbox-input">
-                        
-                    </div>
-                    <div id="distances"></div>
-                </div>
             </div>
 
-            <div class="collapsible" id="allCollapsible">
-              <div id="allHeader"class="collapsible-header">All<span class="plus-minus-icon"></span></div>
-                  <div class="content" style="display: none;">
+          </div>
 
-                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                        <label for="hideSites" class="checkbox-label">Hide Sites</label>
-                        <div style="position: relative;">
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="hideSites" class="checkbox-input">
-                        <span class="checkbox-background"></span>
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                        <label for="minBall" class="checkbox-label">Minimum Enclosing Ball</label>
-                        <div style="position: relative;">
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="minBall" class="checkbox-input">
-                        <span class="checkbox-background"></span>
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                        <label for="siteDrawCentroid" class="checkbox-label">Draw Hilbert Centroid</label>
-                        <div style="position: relative;">
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawCentroid" class="checkbox-input">
-                        <span class="checkbox-background"></span>
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
-                        <label for="siteDrawHilbertRose" class="checkbox-label">Draw Hilbert Rose</label>
-                        <div style="position: relative;">
-                        <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawHilbertRose" class="checkbox-input">
-                        <span class="checkbox-background"></span>
-                        </div>
-                    </div>
-                    <div id="roseDepth" style="display:block; margin-bottom: 15px;">
-                      <input type="range" id="roseDepthRange" name="roseDepthRange" min="1" max="200" step="1" value="1" oninput="roseDepthAmt.value=roseDepthRange.value"> Rose Depth
-                      <input style= "margin-top: 10px;" type="text" id="roseDepthAmt" name="roseDepthAmt" value="1" oninput="roseDepthRange.value=roseDepthAmt.value">
-                    </div>
+          <div>
+            <input type="button" name="saveData" id="saveData" value="Save Data">
+            <input type="button" name="loadData" id="loadData" value="Load Data">
+            <a id="downloadData" download="myHilbertData.txt" style="display: none"></a>
+            <input type="file" id="loadFile" name="loadFile" style="display: none" accept="text/txt">
+          </div>
 
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
-              <div style="display: flex; flex-direction: column;" >
-                <div class="mb-2">
-                  <span class="text-[12px] underline"> 
-                    Insert Sites
-                  </span>
-                  <span>
-                    <ul class="text-[12px] pl-4" style="list-style-type:square;">
-                      <li>Double click to add a site to the polygon</li>
-                      <li>Click and drag to move a site </li>
-                      <li>Shift + click/drag to select multiple sites</li>
-                      <li>Press delete/backspace to remove selected sites</li>
-                      <li>Open the menus on the left to apply options to selected sites</li>
-                    </ul>
-                  </span>
-                </div>
+
+          <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+            <div style="display: flex; flex-direction: column;" >
+              <div class="mb-2">
+                <span class="text-[12px] underline"> 
+                  Set Boundary
+                </span>
+                <span>
+                  <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                    <li>Double click to add polygon vertices in free draw mode (3+ vertices required)</li>
+                    <li>Check "Show Info" to show the boundary's vertex positions</li>
+                  </ul>
+                </span>
               </div>
             </div>
+          </div>
+          <!-- --------------------------------------------------------------- -->
         </div>
+      </div>
+
+      <div id="siteContainer">
+          <!-- SITE -->
+          <div class="collapsible" id="siteCollapsible">
+              <div id= "siteHeader" class="collapsible-header">Site<span class="plus-minus-icon"></span></div>
+                <div class="content" style="display: none;">
+
+                <div class="flex justify-between items-center w-full mb-5" style="margin-bottom: 15px;">
+                    <label for="siteColor" class="text-left">Site Color</label>
+                    <input type="color" id="siteColor" value="#0000FF" class="flex-shrink-0" />
+                </div>
+                <div id="siteSize" style="display:block; margin-bottom:10px">
+                  <input type="range" id="siteSizeRange" name="siteSizeRange" min="1" max="10" step="0.2" value="3" oninput="siteSizeAmt.value=siteSizeRange.value"> Site Radius
+                  <input style= "margin-top: 10px;" type="text" id="siteSizeAmt" name="siteSizeAmt" value="3" oninput="siteSizeRange.value=siteSizeAmt.value">
+                </div>
+
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="siteDrawSpokes" class="checkbox-label">Draw Spokes</label>
+                    <div style="position: relative;">
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawSpokes" class="checkbox-input">
+                      <span class="checkbox-background"></span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="siteShowInfo" class="checkbox-label">Show Info</label>
+                    <div style="position: relative;">
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="siteShowInfo" class="checkbox-input">
+                      <span class="checkbox-background"></span>
+                    </div>
+                </div>
+
+                <div id="positionDiv" style="display: flex; align-items: center; justify-content: space-between;">
+                    <label>Position</label>
+                    <div id="sitePosition">
+                      <input type="text" id="sitePos" name="sitePos" size="10">
+                </div>
+                <button id="insertPosition" class="gon-icon-button" style="display: block;">
+                      <b class="">
+                        Set
+                      </b>
+                    </button>
+              </div>
+
+              </div>
+          </div>
+          
+          <!-- PAIR -->
+          <div class="collapsible" id="pairCollapsible">
+              <div id="pairHeader"class="collapsible-header">Pairs<span class="plus-minus-icon"></span></div>
+                  <div class="content" style="display: none;">
+
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label for="siteDrawBisector" class="checkbox-label">Draw Bisector</label>
+                      <div style="position: relative;">
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawBisector" class="checkbox-input">
+                      <span class="checkbox-background"></span>
+                      </div>
+                  </div>
+
+
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label for="siteDrawZRegion" class="checkbox-label">Draw Z-Region</label>
+                      <div style="position: relative;">
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawZRegion" class="checkbox-input">
+                      <span class="checkbox-background"></span>
+                      </div>
+                  </div>
+
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label for="siteDrawInfiniteBalls" class="checkbox-label">Draw Infinite-Balls</label>
+                      <div style="position: relative;">
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawInfiniteBalls" class="checkbox-input">
+                      <span class="checkbox-background"></span>
+                      </div>
+                  </div>
+
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <label>Show Distance</label>
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="showDistance" class="checkbox-input">
+                      
+                  </div>
+                  <div id="distances"></div>
+              </div>
+          </div>
+
+          <div class="collapsible" id="allCollapsible">
+            <div id="allHeader"class="collapsible-header">All<span class="plus-minus-icon"></span></div>
+                <div class="content" style="display: none;">
+
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label for="hideSites" class="checkbox-label">Hide Sites</label>
+                      <div style="position: relative;">
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="hideSites" class="checkbox-input">
+                      <span class="checkbox-background"></span>
+                      </div>
+                  </div>
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label for="minBall" class="checkbox-label">Minimum Enclosing Ball</label>
+                      <div style="position: relative;">
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="minBall" class="checkbox-input">
+                      <span class="checkbox-background"></span>
+                      </div>
+                  </div>
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label for="siteDrawCentroid" class="checkbox-label">Draw Hilbert Centroid</label>
+                      <div style="position: relative;">
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawCentroid" class="checkbox-input">
+                      <span class="checkbox-background"></span>
+                      </div>
+                  </div>
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                      <label for="siteDrawHilbertRose" class="checkbox-label">Draw Hilbert Rose</label>
+                      <div style="position: relative;">
+                      <input style="width: 15px; height: 15px;" type="checkbox" id="siteDrawHilbertRose" class="checkbox-input">
+                      <span class="checkbox-background"></span>
+                      </div>
+                  </div>
+                  <div id="roseDepth" style="display:block; margin-bottom: 15px;">
+                    <input type="range" id="roseDepthRange" name="roseDepthRange" min="1" max="200" step="1" value="1" oninput="roseDepthAmt.value=roseDepthRange.value"> Rose Depth
+                    <input style= "margin-top: 10px;" type="text" id="roseDepthAmt" name="roseDepthAmt" value="1" oninput="roseDepthRange.value=roseDepthAmt.value">
+                  </div>
+
+              </div>
+          </div>
+          <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+            <div style="display: flex; flex-direction: column;" >
+              <div class="mb-2">
+                <span class="text-[12px] underline"> 
+                  Insert Sites
+                </span>
+                <span>
+                  <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                    <li>Double click to add a site to the polygon</li>
+                    <li>Click and drag to move a site </li>
+                    <li>Shift + click/drag to select multiple sites</li>
+                    <li>Press delete/backspace to remove selected sites</li>
+                    <li>Open the menus on the left to apply options to selected sites</li>
+                  </ul>
+                </span>
+              </div>
+            </div>
+          </div>
+      </div>
 
       <div id="ballContainer">
         <input type="checkbox" id="hilbertBall" name="hilbertBall" value="Hilbert">
@@ -525,22 +525,32 @@
             <div id="energy" style="background-color: cornflowerblue; height:100%; width: 20%"></div>
           </div>
         </div>
-          <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
-              <div style="display: flex; flex-direction: column;" >
-                <div class="mb-2">
-                  <span class="text-[12px] underline"> 
-                    Asteroids
-                  </span>
-                  <span>
-                    <ul class="text-[12px] pl-4" style="list-style-type:square;">
-                      <li>Shoot the asteroids to gain points! </li>
-                    </ul>
-                  </span>
-                </div>
-              </div>
+        <div style="display: flex; align-items: center; margin-top: 10px; background-color: #ffffff; padding: 10px; border-radius: 8px; align-items: center; border: 1px solid #ddd;">
+          <div style="display: flex; flex-direction: column;" >
+            <div class="mb-2">
+              <span class="text-[12px] underline"> 
+                Asteroids
+              </span>
+              <span>
+                <ul class="text-[12px] pl-4" style="list-style-type:square;">
+                  <li>Shoot the asteroids to gain points! </li>
+                </ul>
+              </span>
             </div>
           </div>
+        </div>
       </div>
+      
+        <a href="https://andrew.wagger.net/public/hilbert_demo.mp4">
+          <div class="tutorialButton">
+            <div id="tutorialButton">
+            Tutorial Video
+            </div>
+          </div>
+          
+        </a>
+      </div>
+      
     </div>
     <div id="canvasContainer">
         <canvas id="canvas" style="
