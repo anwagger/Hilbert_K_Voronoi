@@ -664,7 +664,7 @@ export function initEvents(canvas) {
          const metric = canvas.brute_force_voronoi.voronoi.metric;
          const input = document.getElementById('voronoiDegree').value;
          const degree = parseInt(input);
-         if (degree >= 1 && degree <= canvas.sites.length && canvas.brute_force_voronoi) {
+         if (canvas.sites.length > 0 && degree >= 1 && degree <= canvas.sites.length && canvas.brute_force_voronoi) {
             const voronoi = new DrawableBruteForceVoronoi(new Voronoi(canvas.boundary.polygon,[],degree));
             voronoi.voronoi.metric = metric?metric:"hilbert";
             canvas.brute_force_voronoi = voronoi;
@@ -850,7 +850,7 @@ export function initEvents(canvas) {
          
          if(canvas.mode === "voronoi"){
 
-            if(canvas.calculate_fast_voronoi){
+            if(canvas.calculate_fast_voronoi && canvas.sites.length > 0){
                const {x,y} = canvas.getMousePos(event)
                let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
                let points = []
@@ -982,7 +982,7 @@ export function initEvents(canvas) {
       } 
       if(canvas.mode === "voronoi"){
 
-         if(canvas.calculate_fast_voronoi){
+         if(canvas.calculate_fast_voronoi && canvas.sites.length > 0){
             const {x,y} = canvas.getMousePos(event)
             let point = new Point(CAMERA.ix(x),CAMERA.iy(y))
             let points = []

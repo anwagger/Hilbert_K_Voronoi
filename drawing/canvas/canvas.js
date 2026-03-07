@@ -1289,7 +1289,11 @@ export class Canvas {
       this.reindexAll()
 
       this.sites = cleanArray(this.sites) // removes any null elts from array
+      
+      
       this.recalculateAll()
+
+      
       this.drawAll();
    }
 
@@ -1406,6 +1410,14 @@ export class Canvas {
       this.calculateBisectorIntersections()
 
       this.recalculateSingleSiteDependent()
+
+      // If we deleted a site that makes
+      if (this.sites.length > 0 && document.getElementById('voronoiDegree').value > this.sites.length){
+         document.getElementById('voronoiDegree').value = this.sites.length
+         this.changeFastVoronoiDegree(this.sites.length)
+         this.brute_force_voronoi.voronoi.degree = this.sites.length
+      }
+
       this.recalculateBruteForceVoronoi()
       this.recalculateHilbertImage()
 

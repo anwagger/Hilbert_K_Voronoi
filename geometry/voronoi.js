@@ -661,6 +661,10 @@ export function n3lognVoronoi(boundary,points){
         if(!cells){
             cells = []
         }
+        if (d == n){
+            
+            cells.push(new VoronoiCell((2**(n)-1),[],[],boundary.points,computeBoundingBox(boundary)))
+        }
         let voronoi = new VoronoiDiagram(boundary,cells,d,null)
         let partition_tree = new PartitionTree(voronoi,boundary)
         //console.log(partition_tree)
