@@ -203,8 +203,9 @@ export class DrawablePoint {
           ctx.fillStyle = 'white';
           ctx.beginPath();
           ctx.arc(CAMERA.x(this.point.x), CAMERA.y(this.point.y), this.radius+1, 0, 2 * Math.PI);
+          ctx.fill();
         }
-        ctx.fill();
+        
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(CAMERA.x(this.point.x), CAMERA.y(this.point.y), this.radius, 0, 2 * Math.PI);
@@ -528,7 +529,7 @@ export class Site {
       ctx.stroke();
     }
     
-    ctx.strokeStyle = this.color;
+    ctx.strokeStyle = this.drawable_point.color;
     ctx.beginPath();
     ctx.arc(CAMERA.x(this.drawable_point.point.x), CAMERA.y(this.drawable_point.point.y), this.radius, 0, 2 * Math.PI);
     ctx.stroke();

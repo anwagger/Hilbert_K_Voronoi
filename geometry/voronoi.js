@@ -444,7 +444,6 @@ export function n3lognVoronoi(boundary,points){
     for(let i = 0; i < n; i++){
         for(let j = i+1; j < n; j++){
             for(let k = j+1; k < n; k++){
-                //console.log("CIRCUMCENTER:",i,j,k)
                 let circs = calculateCircumcenter(boundary, bisectors[i][j],bisectors[j][k],bisectors[i][k])
                 if(circs){
                     //console.log("HIT")

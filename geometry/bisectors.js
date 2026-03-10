@@ -243,20 +243,69 @@ export function intersectBisectors(boundary,b1,b2){
 export function calculateCircumcenter(boundary,b1,b2,b3){
     // quick check to avoid work if possible
     // only need to intersect twice to get the circumcenter
+    /*
     if (checkIfBisectorsIntersect(b1,b2) === -1){
         return false
     }
-    let i12 = intersectBisectors(boundary,b1,b2)
     if (checkIfBisectorsIntersect(b1,b3) === -1){
         return false
     }
-    let i13 = intersectBisectors(boundary,b1,b3)
     if (checkIfBisectorsIntersect(b2,b3) === -1){
         return false
     }
-    let i23 = intersectBisectors(boundary,b2,b3)
+    */
+    let int12 = checkIfBisectorsIntersect(b1,b2) === -1
+    let int13 = checkIfBisectorsIntersect(b1,b3) === -1
+    let int23 = checkIfBisectorsIntersect(b2,b3) === -1
+    if(int12 || int13 || int23){
+        if(!(int12 && int23 && int13)){
+            console.log("INITIAL DISAGREE:",int12,int13,int23)
+        }
+        return false
+    }
+    let is = []
+
+    //let i12 = 
+    is.push(intersectBisectors(boundary,b1,b2))
+    //let i13 = 
+    is.push(intersectBisectors(boundary,b1,b3))
+    //let i23 = 
+    is.push(intersectBisectors(boundary,b2,b3))
     let sensitivity = 1e-2
     // if both intersections exist, check if they're close enough and get the avg
+    let simple = simpleCircCheck(is[0],is[1],is[2])
+    let loop = loopCircCheck(is)
+    if(simple || loop){
+        if (!simple || !loop){
+            console.log("DISGREEE","SIMPLE:",simple, "LOOP:",loop)
+        }
+        return loop
+    }else{
+        return false
+    }
+}
+
+function loopCircCheck(is){
+    let sensitivity = 1e-2
+    for (let i = 0; i < is.length-1; i++){
+        for (let j = i+1; j < is.length; j++){
+            if(is[i] && is[j]){
+                let circumcenter = new Point((is[i].x + is[j].x)/2,(is[i].y + is[j].y)/2)
+                if(
+                    euclideanDistance(is[i],is[j])**2 <= sensitivity
+                ){
+                    return {circumcenter: circumcenter,12:is[0],13:is[1],23:is[2]}
+                }else{
+                    console.log("TOOOOO FARRR",i,j,is)
+                }
+            }
+        }
+    }
+    return null
+}
+
+function simpleCircCheck(i12,i13,i23){
+    let sensitivity = 1e-2
     if (i12 && i13 && i23){
         let circumcenter = new Point((i12.x + i13.x)/2,(i12.y + i13.y)/2)
         if(
@@ -266,7 +315,8 @@ export function calculateCircumcenter(boundary,b1,b2,b3){
         }else{
             console.log("TOOOOO FARRR",i12,i13,euclideanDistance(i12,i13)**2)
         }
-    }    
+    } 
+    return null   
 }
 
 

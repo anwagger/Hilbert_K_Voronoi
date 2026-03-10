@@ -984,7 +984,6 @@ export class ParameterizedConic {
                     }
                 }
             }
-            console.trace()
             console.log("NO HITS:",x_ts,y_ts,point)
         }else{
             console.log("INVALID POINT",point,this)

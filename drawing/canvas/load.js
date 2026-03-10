@@ -24,6 +24,7 @@ export function loadSites(data, canvas) {
       const dP = new DrawablePoint(point);
       dP.radius = s["drawable_point"]["radius"]
       dP.label = s["drawable_point"]["label"]
+      dP.outline = s["drawable_point"]["outline"]
       let site = new Site(dP,[], dP.radius);
       site.color = s["color"];
       site.drawable_point.color = s["color"];
@@ -88,6 +89,7 @@ export function loadFastVoronoi(data, canvas, delaunay) {
       let {voronois:voronois} = createVoronoiFromCanvas(canvas);
       canvas.voronois = voronois;
       canvas.voronoi_diagram = new DrawableVoronoiDiagram(canvas.voronois[0])
+      canvas.voronoi_diagram.set_colors(canvas.sites)
 
       if(delaunay) {
          canvas.delaunay = canvas.voronois[0].hilbertDelaunay(canvas.sites);

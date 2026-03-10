@@ -90,6 +90,12 @@ export class Canvas {
    }
 
     load(data) {
+      this.boundary.points.forEach((point) =>{
+         point.deleteInfoBox()
+      })
+      this.sites.forEach((site) =>{
+         site.drawable_point.deleteInfoBox()
+      })
       for (let d in data) {
          let val = data[d];
          switch(d) {
